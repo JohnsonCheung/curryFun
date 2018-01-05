@@ -1,0 +1,20 @@
+{
+  "name": "curryfun",
+  "version": "0.1.0",
+  "description": "some javascript functions written in curry form",
+  "main": "curryfun.js",
+  "scripts": {
+    "test": "curryfun.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github/johnsoncheung/curryfun.git"
+  },
+  "keywords": [
+    "curry",
+    "javascript",
+    "functions"
+  ],
+  "author": "johnsoncheunghk06@yahoo.com.hk",
+  "license": "ISC"
+}
