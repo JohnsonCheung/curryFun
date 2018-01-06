@@ -1,6 +1,118 @@
+const dmp = console.log
+const stop = () => throws(new Error())
+const er = (msg) => (...v) => {
+    console.log(`\n-- error[${msg}] ------------------------\n`)
+    each(dmp)(v)
+    stop()
+}
+const $er = { dmp, stop, er }
+//-----------------------------------------------------------------------
+const split = sep => s => s.split(sep)
+const splitCrLf = split(/\r\n/)
+const splitSpc = split(/\s+/)
+const $split = { dmp, stop, er }
+//-----------------------------------------------------------------------
+const len = v => v && v.length
+const midN = pos => n => s => s.substr(pos, n)
+const mid = pos => s => s.substr(pos)
+const left = n => s => s.substr(0, n)
+const right = n => s => {
+    if (!isNum(n)) return ''
+    const l = len(s)
+    if (n >= l) return s
+    if (0 >= n) return ''
+    return s.substr(-n)
+}
+const strAt = substr => s => s.indexOf(substr)
+const revAt = substr => s => s.lastIndexOf(substr)
+const brkAt = (at, len) => s => {
+    const s1 = trim(left(at)(s))
+    const s2 = trim(mid(at + len)(s))
+    return { s1, s2 }
+}
+const brk1 = sep => s => { const at = strAt(sep)(s); at === -1 ? { s1: trim(s), s2: '' } : brkAt(at, len(sep))(s) }
+const brk2 = sep => s => { const at = strAt(sep)(s); at === -1 ? { s1: '', s2: trim(s) } : brkAt(at, len(sep))(s) }
+const brk = sep => s => { const at = strAt(sep)(s); return brkAt(at, len(sep))(s) }
+const takBef = sep => s => revBrk2(sep)(s).s1
+const takAft = sep => s => revBrk1(sep)(s).s2
+
+const revBrk1 = sep => s => { const at = strAt(sep)(s); at === -1 ? { s1: trim(s), s2: '' } : brkAt(at, len(sep))(s) }
+const revBrk2 = sep => s => { const at = strAt(sep)(s); at === -1 ? { s1: '', s2: trim(s) } : brkAt(at, len(sep))(s) }
+const revBrk = sep => s => { const at = revAt(sep)(s); return brkAt(at, len(sep))(s) }
+const revTakBef = sep => s => revBrk2(sep)(s).s1
+const revTakAft = sep => s => revBrk1(sep)(s).s2
+/**
+* @description return string array from {strOrSy}.  If {strOrSy} is string, return splitSpc(.)
+* @param {string|string[]} strOrSy 
+* @@Sy string array
+*/
+const strOrSy2Sy = strOrSy => isStr(strOrSy) ? splitSpc(strOrSy) : strOrSy
+const rmvFstChr = mid(1)
+const rmvLasChr = s => left(len(s) - 1)(s)
+const rmvSubStr = subStr => s => s.replace(new RegExp(s, 'g'), '')
+const rmvColon = rmvSubStr(":")
+const $strOp = {
+    len, midN, mid, left, right,
+    strAt, revAt,
+    brkAt,
+    brk, brk1, brk2,
+    takBef, takAft,
+    revBrk, revBrk1, revBrk2,
+    revTakBef, revTakBef,
+    strOrSy2Sy,
+    rmvFstChr, rmvLasChr,
+    rmvSubStr, rmvColon
+}
+//-----------------------------------------------------------------------
+const pthSep = require('path').sep
+const $pth = { pthSep }
+//-----------------------------------------------------------------------
+const ffnPth = ffn => { const at = strAtRev(pthSep)(ffn); return at === -1 ? "" : left(at + 1)(ffn) }
+const ffnFn = ffn => { const at = strAtRev(pthSep)(ffn); return at === -1 ? ffn : mid(at + 1)(ffn) }
+const ffnExt = ffn => { const at = strAtRev('.')(ffn); return at === -1 ? '' : mid(at)(ffn) }
+const rmvExt = ffn => { const at = strAtRev('.')(ffn); return at === -1 ? ffn : left(at)(ffn) }
+const ffnFnn = ffn => ffnFn(rmvExt(ffn))
+const $ffn = { ffnPth, ffnFn, ffnExt, rmvExt, ffnFnn }
+//-----------------------------------------------------------------------
+const tmpNm = () => rmvColon(new Date().toJSON())
+const tmpPth = require('os').tempdir + pthSep
+const tmpFfn = (pfx, ext) => tmpPth + pfx + tmpNm() + ext
+const tmpFt = tmpFfn("T", ".txt")
+const $tmp = { tmpNm, tmpPth, tmpFfn, tmpFt }
+//-----------------------------------------------------------------------
+/**
+ * @description return a Promise of {er,rslt} by calling f(...,p,cb), where cb is (er,rslt)=>{...}
+ * it is usefully in creating a promise by any async f(...p,cb), assuming cb is (er,rslt)=>{...}
+ * @param {(er,rslt)=>void} f 
+ * @param {...any} p 
+ * @see
+ */
+const pm = (f, ...p) => new Promise(rs => f(...p, (er, rslt) => rs({ er, rslt })))
+//-----------------------------------------------------------------------
+/**
+ * @description return Promise of {er,lines} where lines is string of lines
+ * @param {ffn} ffn 
+ */
+const pmFfn2lines = async (ffn) => { return { er, rslt: lines } = pm(fs.readFile, ffn) }
+/**
+ * @description return Promise of {er,ly} where ly is line array
+ * @param {ffn} ffn 
+ */
+const pmFfn2ly = async (ffn) => {
+    const { er, lines } = await pmFfn2lines(ffn)
+    if (er) return Promise.catch({ er, undefined })
+    const ly = splitCrLf(lines)
+    return Promise.solve({ er: null, ly })
+}
+const $pmFfn = { pmFfn2lines, pmFfn2ly }
+//-----------------------------------------------------------------------
 const where = f => ay => { const o = []; for (let i of ay) if (f(i)) o.push(i); return o }
 const map = f => ay => { const o = []; for (let i of ay) o.push(f(i)); return o }
-const pm = (f, ...p) => new Promise(rs => f(...p, (er, rslt) => rs({ er, rslt })))
+const each = f => ay => { for (let i of ay) f(i) }
+const fst = ay => hasLen(ay) ? ay[0] : undefined
+const las = ay => hasLen(ay) ? ay[len(ay) - 1] : undefined
+const $ayOp = { where, map, each, fst, las }
+//---------------------------------------------------------------------------
 /**
  * @description return the property value of object {o} by property path {pprPth}
  * @param {string} prpPth
@@ -17,6 +129,11 @@ const prp = prpPth => o => {
     }
     return oo
 }
+const prpNy = o => Object.getOwnPropertyNames(o)
+const hasPrp = prpNm => o => { try { return o[prpNm] !== undefined } catch (e) { return false } }
+const hasLen = hasPrp('length')
+const $prp = { prp, prpNy, hasPrp, hasLen }
+//---------------------------------------------------
 /**
  * @description return the constructor name of object (o) if any else return undefined
  * @param {object} o
@@ -33,6 +150,8 @@ const hasCtorNm = nm => o => ctorNm(o) === nm
 /**
  * @description return true if given {o} is a string (having construction name === 'String')
  */
+const $ctor = { ctorNm, isInstance, hasCtorNm }
+//-----------------------------------------------------
 const isStr = hasCtorNm("String")
 /**
  * @description return true if given {o} is a string (having construction name === 'Number')
@@ -46,13 +165,44 @@ const isAy = hasCtorNm("Array")
  * @description return true if given {o} is a string (having construction name === 'Date')
  */
 const isDte = hasCtorNm("Date")
+
 /**
- * @description return string array from {strOrSy}.  If {strOrSy} is string, return splitSpc(.)
- * @param {string|string[]} strOrSy 
- * @@Sy string array
+ * @description return true if given {o} is a string (having construction name === 'Function')
  */
-const strOrSy2Sy = strOrSy => isStr(strOrSy) ? splitSpc(strOrSy) : strOrSy
-const splitSpc = s => s.split(/\s/)
+const isFun = hasCtorNm("Function")
+/**
+ * @description return true if given {o} is a string (having construction name === 'Boolean')
+ */
+const isBool = hasCtorNm("Boolean")
+const isNull = v => v === null
+const isUndefined = v => v === undefined
+const isNaN = v => v ===NaN
+
+const isEmpStr = v => v === ''
+const isEmpAy = v => v === []
+const isEmp = v => or(isNull, isUndefined, isEmpStr, isEmpAy)(v)
+
+const must = (p, t) => v => { if (!p(v)) er(`given v must be [${t}]`, { v }) }
+const mnon = (p, t) => v => { if (p(v)) er(`given v must be non-[${t}]`, { v }) }
+const musFun = must(isFun, 'Function')
+const musNum = must(isNum, 'Number')
+const musStr = must(isStr, 'String')
+const musAy = must(isAy, 'Array')
+const musDte = must(isDte, 'Date')
+
+const mnonEmp = mnon(isEmp, 'Empty')
+const mnonEmpStr = mnon(isEmpStr, 'EmpStr')
+const mnonEmpAy = mnon(isEmpAy, 'EmpAy')
+
+const $is = {
+    must, mnon,
+    isFun, isStr, isNum, isDte, isBool,
+    isNaN, isNull, isUndefined, 
+    isEmpStr, isEmpAy, isEmp,
+    musFun, musNum, musStr, musAy, musDte, 
+    mnonEmp, mnonEmpStr, mnonEmpAy
+}
+//--------------------------------------------------------------------------------------------------------
 /**
  * @description return (#dr) of properties of (#o) by given (#pthOrAy)
  * @param @pthOrSy String | String Array.  
@@ -72,7 +222,8 @@ const obj2dr = pthOrSy => o => {
     }
     return oo
 }
-const apply = o = f => f(o)
+const $obj = { obj2dr }
+// ----------------------------------------------
 /**
  * @description return data row array (dry) by selecting object array (oy) by (pthOAy) 
  * @param {pthOrAy} pthOrAy 
@@ -83,7 +234,7 @@ const select = pthOrAy => oy => {
     const prpAy = map(prp)(strOrSy2Sy(pthOrAy))
     const o = []
     for (oo of oy) {
-        const dr =[]
+        const dr = []
         for (let prp of prpAy) {
             const v = prp(oo)
             dr.push(v)
@@ -92,6 +243,8 @@ const select = pthOrAy => oy => {
     }
     return o
 }
+const $oyOp = { select, where }
+//-------------------------------------
 const pipe = v => (...f) => {
     let o = v
     for (let ff of f)
@@ -105,18 +258,37 @@ const or = (...p) => v => {
         if (pp(i)) return true
     return false
 }
+const apply = o = f => f(o)
 const not = p => v => !p(v)
 const and = (...p) => v => {
     for (let pp of p)
         if (!pp(i)) return false
     return true
 }
+const $funOp = { not, and, or, swap, pipe, compose, apply }
+//---------------------------------------
+const bEQ = a => b => a===b
+const bNE = a => b => a!==b
+const bGT = a => n => n > a
+const bLT = a => n => n < a
+const bGE = a => n => n >= a
+const bLE = a => n => n <= a
+const bLIK = a => n => n > a
+const bBET = a => n => n > a
+const bNBET = (a, b) => n => !bBET(a, b)(n)
+const bNLIK = lik => s => !bLIK(lik)(s)
+const $boolOp = { bGT, bLT, bEQ, bNE, bGE, bLIK, bBET }
+//---------------------------------------
 const multiply = a => b => a * b
 const divide = a => b => b / a
 const add = a => b => a + b
-const decr = add(-1)
-const incr = add(1)
 const minus = a => b => b - a
+const decr = minus(1)
+const incr = add(1)
+const isOdd = n => n % 2 === 1
+const isEven = n => n % 2 === 0
+const $numOp = {multiply, divide, add, minus, decr, incr}
+// -------------------------------------------------------------
 const ayMax = ay => {
     let o = fst(ay)
     for (i of ay)
@@ -131,125 +303,32 @@ const ayMin = ay => {
             o = i
     return o
 }
-const hasPrp = prpNm => o => { try { return o[prpNm] !== undefined } catch (e) { return false } }
-const hasLen = hasPrp('length')
-const len = v => v && v.length
-const fst = ay => hasLen(ay) ? ay[0] : undefined
-const las = ay => hasLen(ay) ? ay[len(ay) - 1] : undefined
 const min = (...v) => ayMin(v)
 const max = (...v) => ayMax(v)
-const isOdd = n => n % 2 === 1
-const isEven = n => n % 2 === 0
-
-if (module.id === ".") {
-    const assert = require('assert')
-    let act
-    // where
-    act = where(isOdd)([1, 2, 3, 4, 5, 7, 9])
-    assert.deepStrictEqual(act, [1, 3, 5, 7, 9])
-
-    // select
-    act = select('a b c')([{ a: 1, b: 2, c: 3, d: 4 }, { aa: 11, b: 22, c: 33, d: 44 }, { a: 111, bb: 222, cc: 333, d: 444 }])
-    assert.deepStrictEqual(act, [[1, 2, 3], [undefined, 22, 33], [111, undefined, undefined]])
-
-    // swap
-    act = minus(1)(6);;;;;;; assert.strictEqual(act, 5)
-    act = swap(minus)(1)(6); assert.strictEqual(act, -5)
-
-    // hasPrp
-    act = hasPrp('a')({ a: 1 }); assert.strictEqual(act, true)
-    act = hasPrp('b')({ a: 1 }); assert.strictEqual(act, false)
-
-    // hasLen
-    act = hasLen({ a: 1 });; assert.strictEqual(act, false)
-    act = hasLen(123);;;; assert.strictEqual(act, false)
-    act = hasLen('a');;;; assert.strictEqual(act, true)
-
-    // max
-    act = max(1, 2, 3, 4); assert.equal(act, 4)
-    act = max();;;;;;;; assert.equal(act, undefined)
-    act = max(1);;;;;;; assert.equal(act, 1)
-    act = max('abc');;; assert.equal(act, 'abc')
-
-    // min
-    act = min(1, 2, 3, 4); assert.equal(act, 1)
-    act = min();;;;;;;; assert.equal(act, undefined)
-    act = min(1);;;;;;; assert.equal(act, 1)
-    act = min('abc');;; assert.equal(act, 'abc')
-
-    // obj2dr
-    act = obj2dr('a.x b c')({ a: { x: 1 }, b: 2, c: 3, d: 4 })
-    assert.deepEqual(act, [1, 2, 3])
-
-    // compose
-    const add3 = compose(add(1), add(2))
-    act = add3(8)
-    assert.deepStrictEqual(act, 11)
-
-    // pipe
-    act = pipe(3)(add(1), add(2))
-    assert.deepStrictEqual(act, 6)
-
-    // fst
-    act = fst(undefined); assert.strictEqual(undefined)
-    act = fst(null);;;;;; assert.strictEqual(undefined)
-    act = fst({ a: 1 });;;;; assert.strictEqual(undefined)
-    act = fst(123);;;;;;; assert.deepStrictEqual(act, undefined)
-    act = fst('abc');;;;; assert.deepStrictEqual(act, 'a')
-    act = fst('');;;;;;;; assert.deepStrictEqual(act, undefined)
-    act = fst([1, 2, 3]); assert.deepStrictEqual(act, 1)
-    act = fst([]);;;;;;;; assert.deepStrictEqual(act, undefined)
-    act = fst({ length: 1, a: 1 }); assert.strictEqual(act, undefined)
-    act = fst({ length: 1, 0: 1 }); assert.strictEqual(act, 1)
-
-    // las
-    act = las(undefined); assert.strictEqual(undefined)
-    act = las(null);;;;;; assert.strictEqual(undefined)
-    act = las({ a: 1 });;;;; assert.strictEqual(undefined)
-    act = las(123);;;;;;; assert.deepStrictEqual(act, undefined)
-    act = las('abc');;;;; assert.deepStrictEqual(act, 'c')
-    act = las('');;;;;;;; assert.deepStrictEqual(act, undefined)
-    act = las([1, 2, 3]); assert.deepStrictEqual(act, 3)
-    act = las([]);;;;;;;; assert.deepStrictEqual(act, undefined)
-    act = las({ length: 3, a: 1 }); assert.strictEqual(act, undefined)
-    act = las({ length: 3, 2: 1 }); assert.strictEqual(act, 1)
-}
+const $minMax = {min,max}
 //---------------------------------------------------------------------------
-module.exports = {
-    where,
-    map,
-    pm,
-    prp,
-    ctorNm,
-    isInstance,
-    hasCtorNm,
-    isStr,
-    isNum,
-    isAy,
-    isDte,
-    strOrSy2Sy,
-    obj2dr,
-    apply,
-    select,
-    pipe,
-    swap,
-    compose,
-    or,
-    and,
-    not,
-    multiply,
-    divide,
-    add,
-    decr,
-    incr,
-    minus,
-    ayMax,
-    ayMin,
-    hasPrp,
-    hasLen,
-    len,
-    fst,
-    las,
-    min,
-    max   
+const $ = {
+    $ayOp,
+    $boolOp,
+    $ctor,
+    $er,
+    $ffn,
+    $funOp,
+    $is,
+    $minMax,
+    $numOp,
+    $obj,
+    $oyOp,
+    $pmFfn,
+    $prp,
+    $pth,
+    $split,
+    $strOp,
+    $tmp,
+}
+debugger
+module.exports = $
+for (let i of prpNy($)) {
+    for (let nm of prpNy(i))
+        exports[nm] = $[i][nm]
 }

@@ -4,7 +4,7 @@
   "description": "some javascript functions written in curry form",
   "main": "curryfun.js",
   "scripts": {
-    "test": "curryfun.js"
+    "test": "node curryfun.js"
   },
   "repository": {
     "type": "git",
