@@ -1,55 +1,77 @@
+declare const require: (filename: string) => any
+declare const __filename: s
+declare type ay = Array<any>
+declare type s = string
+declare type int = number
+declare type f = (a: any) => any
+declare type re = RegExp
+declare type brk = (sep:sOrRe) => (s:s) => s1s2
+declare type tak = (sep:sOrRe) => (s:s) => s
+declare type sTfm = (s:s) => s
+declare type sOrRe = (s|re)
+declare type n = int
+declare const isSy:(v)=>boolean
+declare const isRegExp:(v)=>boolean
+declare const er1:(msg:s)=>(...v)=>void
+interface s1s2 { s1:string, s2:string }
+interface erRslt { er: any, rslt: any}
+interface path { sep: s}
+interface module {exports:any}
+declare const module:module
 const fs = require('fs')
-const path = require('path')
+const path:path = require('path')
 const os = require('os')
+
 //---------------------------------------
 const vEQ = a => v => a === v
 const vNE = a => v => a !== v
 const vGT = a => v => v > a
 const vIN = itr => v => { for (let i of itr) if (i === v) return true; return false }
-const vNIN = itr => v => !(vIN(itr)(v))
+const vNIN = itr => v => !vIN(itr)(v)
 const vLT = a => v => v < a
 const vGE = a => v => v >= a
 const vLE = a => v => v <= a
 const vBET = (a, b) => v => a<=v && v<=b
-const vNBET = (a, b) => v => !(vBET(a, b)(v))
+const vNBET = (a, b) => v => !vBET(a, b)(v)
 const vIsInstanceOf = x => v => v instanceof x
 const $val = { vGT, vLT, vEQ, vNE, vGE, vIN, vNIN, vBET, vNBET, vIsInstanceOf }
 //----------------------------------
-const ensSy = sOrSy => isStr(sOrSy) ? splitSpc(sOrSy) : isSy(sOrSy) ? sOrSy : er({ msg: 'Given [syOrStr] is neither str nor sy', sOrSy })
+const ensSy = sOrSy => isStr(sOrSy) ? splitSpc(sOrSy) : isSy(sOrSy) ? sOrSy : er('Given [syOrStr] is neither str nor sy', sOrSy)
 const ensRe = sOrRe => isRegExp(sOrRe) ? sOrRe : new RegExp(sOrRe)
 const $ens = { ensSy, ensRe }
 //----------------------------------
 const dmp = console.log
-const stop = () => throws(new Error())
-const er = (msg) => (...v) => {
+const halt = () => {throw new Error()}
+const er = (msg:string,...v) => {
     console.log(`\n-- error[${msg}] ------------------------\n`)
     each(dmp)(v)
-    if (isDbg)
+    if (true)
         debugger
     else
-        stop()
+        halt()
 }
-const $er = { dmp, stop, er }
+
+const $er = { dmp, halt, er }
 //-----------------------------------------------------------------------
-const split = sep => s => s.split(sep)
+const split = (sep:sOrRe) => (s: s) => s.split(sep)
 const splitCrLf = split('\r\n')
 const splitLf = split('\n')
 const splitSpc = split(/\s+/)
-const splitCommaSpc = lin => lin.split(/,\s*/)
+const splitCommaSpc = split(/,\s*/)
 const $sSplit = { split, splitCrLf, splitLf, splitSpc, splitCommaSpc }
 //-----------------------------------------------------------------------
-const ayFst = ay => ay[0]
-const aySnd = ay => ay[1]
-const ayLas = ay => ay[len(ay) - 1]
-const ayEle = ix => ay => ay[ix]
-const ayTfm = f => ay => { for (i in ay) ay[i] = f(ay[i]) }
-const aySetEle = ix => v => ay => ay[ix] = v
-const ayTfmEle = ix => f => ay => ay[ix] = f(ay[ix])
+const ayFst = (ay:ay) => ay[0]
+const aySnd = (ay:ay) => ay[1]
+const ayLas = (ay:ay) => ay[len(ay) - 1]
+const ayEle = (ix:n) => (ay:ay) => ay[ix]
+const ayTfm = (f:f) => (ay:ay) => { for (let i in ay) ay[i] = f(ay[i]) }
+const aySetEle: (ix: n) => (v: any) => (ay: ay) => void = (ix: n) => v => (ay: ay) => ay[ix] = v
+const ayTfmEle = (ix:n) => (f:f) => (ay:ay) => ay[ix] = f(ay[ix])
 const $ay = {
     ayFst, ayLas, aySnd, ayEle, aySetEle, ayTfmEle
 }
 //-----------------------------------------------------------------------
-const jn = sep => ay => s.join(sep)
+const jn = sep => ay => ay.join(sep)
 const jnCrLf = jn('\r\n')
 const jnLf = jn('\n')
 const jnSpc = jn(' ')
@@ -57,23 +79,23 @@ const jnComma = jn(',')
 const jnCommaSpc = jn(', ')
 const $jn = { jn, jnCrLf, jnLf, jnSpc, jnComma, jnCommaSpc }
 //-----------------------------------------------------------------------
-const fstChr = s => s[0]
-const lasChr = s => s[s.length - 1]
-const addPfx = pfx => s => pfx + s
-const addSfx = sfx => s => s + sfx
-const addPfxSfx = (pfx, sfx) => s => pfx + s + sfx
+const fstChr = (s: s) => s[0]
+const lasChr = (s: s) => s[s.length - 1]
+const addPfx = (pfx:s) => v => pfx + v
+const addSfx = (sfx:s) => v => v + sfx
+const addPfxSfx = (pfx:s, sfx:s) => v => pfx + v + sfx
 const len = v => (v && v.length) || String(v).length
-const midN = pos => n => s => s.substr(pos, n)
-const mid = pos => s => s.substr(pos)
-const left = n => s => s.substr(0, n)
-const right = n => s => {
-    if (!isNum(n)) return ''
+const midN = (pos:n) => (n:n) => (s:s) => s.substr(pos, n)
+const mid = (pos:n) => (s:s) => s.substr(pos)
+const left = (n:n) => (s:s) => s.substr(0, n)
+const trim = (s:s) => s.trim()
+const right = (n:n) => (s:s) => {
     const l = len(s)
     if (n >= l) return s
     if (0 >= n) return ''
     return s.substr(-n)
 }
-const alignL = w => s => {
+const alignL = (w:n) => (s:s) => {
     const l = len(s)
     if (l > w) return s
     return s + ' '.repeat(w - l)
@@ -83,12 +105,12 @@ const alignR = w => s => {
     if (l > w) return s
     return ' '.repeat(w - l) + s
 }
-const sbsPos = sbs => s => s.indexOf(substr)
-const sbsRevPos = sbs => s => s.lastIndexOf(substr)
-const cmlNm = s => cmlNy(s).reverse().join(' ') // @eg cmlNm(relItmNy) === 'Ny Itm rel'
-const cmlNy = s => {
+const sbsPos = (sbs:sOrRe) => (s:s) => s.search(sbs)
+const sbsRevPos = (sbs:sOrRe) => (s:s) => s.search(sbs)
+const cmlNm = (nm:s) => cmlNy(nm).reverse().join(' ') // @eg cmlNm(relItmNy) === 'Ny Itm rel'
+const cmlNy = (nm:s) => {
     const o = []
-    if (s.trim() === '')
+    if (nm.trim() === '')
         return o
     let j = 0
     while (true) {
@@ -103,28 +125,28 @@ const cmlNy = s => {
     function pseg() {
         let o = pchr()
         let j = 0
-        while (s.length > 0) {
+        while (nm.length > 0) {
             if (j++ > 100) { debugger; throw null }
-            if (/^[A-Z]/.test(s))
+            if (/^[A-Z]/.test(nm))
                 return o
             o += pchr()
         }
         return o
     }
     function pchr() {
-        if (s === '')
+        if (nm === '')
             return ''
-        const o = s[0]
-        s = rmvFstChr(s)
+        const o = nm[0]
+        nm = rmvFstChr(nm)
         return o
     }
 }
-const hasPfx = pfx => s => s.substr(0, pfx.length) === pfx
-const rmvPfx = pfx => s => hasPfx(s) ? s.substr(pfx.length) : s
-const hasSfx = pfx => s => right(pfx.length)(s) === sfx
-const rmvSfx = pfx => s => hasSfx(s) ? s.substr(0,s.length-pfx.length) : s
+const hasPfx = (pfx:s) => (s:s) => s.substr(0, pfx.length) === pfx
+const rmvPfx = (pfx:s) => (s:s) => hasPfx(s) ? s.substr(pfx.length) : s
+const hasSfx = (sfx:s) => (s:s) => right(sfx.length)(s) === sfx
+const rmvSfx = (sfx:s) => (s:s) => hasSfx(s) ? s.substr(0,s.length-sfx.length) : s
 const match = re => s => s.match(re)
-const notMatch = re => s => not(match(re)(s))
+const notMatch = re => s => !(match(re)(s))
 //-----------------------------------------------------------------------
 const $str = {
     fstChr, lasChr, addPfx, addSfx, addPfxSfx,
@@ -155,52 +177,48 @@ const linRmvMsg = lin => {
 }
 const $lin = { isRmkLin, isNonRmkLin, linRmvMsg}
 //------------------------------------------------------------------
-const brkAt = (at, len) => s => {
-    const s1 = trim(left(at)(s))
-    const s2 = trim(mid(at + len)(s))
+const brkAt:(at:n,len:n)=>(s:s)=>s1s2 = (at,len) => s => { 
+    const s1 = left(at)(s).trim()
+    const s2 = mid(at + len)(s).trim()
     return { s1, s2 }
 }
-const brk1 = sep => s => { const at = strAt(sep)(s); at === -1 ? { s1: trim(s), s2: '' } : brkAt(at, len(sep))(s) }
-const brk2 = sep => s => { const at = strAt(sep)(s); at === -1 ? { s1: '', s2: trim(s) } : brkAt(at, len(sep))(s) }
-const brk = sep => s => { const at = strAt(sep)(s); return brkAt(at, len(sep))(s) }
+const brk1: brk = sep => s => { const at = sbsPos(sep)(s); return at === -1 ? { s1: trim(s), s2: '' } : brkAt(at, len(sep))(s) }
+const brk2: brk = sep => s => { const at = sbsPos(sep)(s); return at === -1 ? { s1: '', s2: trim(s) } : brkAt(at, len(sep))(s) }
+const brk: brk = sep => s => { const at = sbsPos(sep)(s); return brkAt(at, len(sep))(s) }
 const $sBrk = { brkAt, brk1, brk2, brk }
 //-----------------------------------------------------------------------
-const takBef = sep => s => revBrk2(sep)(s).s1
-const takAft = sep => s => revBrk1(sep)(s).s2
+const takBef:tak = sep => s => revBrk2(sep)(s).s1
+const takAft:tak = sep => s => revBrk1(sep)(s).s2
 const $sTak = { takBef, takAft }
 //-----------------------------------------------------------------------
-const revBrk1 = sep => s => { const at = strAt(sep)(s); at === -1 ? { s1: trim(s), s2: '' } : brkAt(at, len(sep))(s) }
-const revBrk2 = sep => s => { const at = strAt(sep)(s); at === -1 ? { s1: '', s2: trim(s) } : brkAt(at, len(sep))(s) }
-const revBrk = sep => s => { const at = revAt(sep)(s); return brkAt(at, len(sep))(s) }
-const revTakBef = sep => s => revBrk2(sep)(s).s1
-const revTakAft = sep => s => revBrk1(sep)(s).s2
+const revBrk1:brk = sep => s => { const at = sbsPos(sep)(s); return at === -1 ? { s1: trim(s), s2: '' } : brkAt(at, len(sep))(s) }
+const revBrk2:brk = sep => s => { const at = sbsPos(sep)(s); return at === -1 ? { s1: '', s2: trim(s) } : brkAt(at, len(sep))(s) }
+const revBrk:brk = sep => s => { const at = sbsRevPos(sep)(s); return brkAt(at, len(sep))(s) }
+const revTakBef:tak = sep => s => revBrk2(sep)(s).s1
+const revTakAft:tak = sep => s => revBrk1(sep)(s).s2
 const $sRev = {
     revBrk, revBrk1, revBrk2,
-    revTakBef, revTakBef,
+    revTakBef, revTakAft
 }
 //-----------------------------------------------------------------------
-const rmvFstChr = mid(1)
-const rmvLasChr = s => left(len(s) - 1)(s)
-const rmvSubStr = subStr => s => {
-    const re = new RegExp(subStr, 'g')
-    const o = s.replace(re, '')
-    return o
-}
+const rmvFstChr: sTfm = mid(1)
+const rmvLasChr: sTfm = s => left(len(s) - 1)(s)
+const rmvSubStr = (sbs: s) => (s: s) => { const re = new RegExp(sbs, 'g'); return s.replace(re, '') }
 const rmvColon = rmvSubStr(":")
 const $sRmv = { rmvFstChr, rmvLasChr, rmvSubStr, rmvColon }
 //-----------------------------------------------------------
 const pthSep = path.sep
 const $fsPth = { pthSep }
 //-----------------------------------------------------------------------
-const ffnPth = ffn => { const at = revAt(pthSep)(ffn); return at === -1 ? "" : left(at + 1)(ffn) }
-const ffnFn = ffn => { const at = revAt(pthSep)(ffn); return at === -1 ? ffn : mid(at + 1)(ffn) }
-const ffnExt = ffn => { const at = revAt('.')(ffn); return at === -1 ? '' : mid(at)(ffn) }
-const rmvExt = ffn => { const at = revAt('.')(ffn); return at === -1 ? ffn : left(at)(ffn) }
-const ffnFnn = ffn => ffnFn(rmvExt(ffn))
+const ffnPth = (ffn:s) => { const at = sbsPos(pthSep)(ffn); return at === -1 ? "" : left(at + 1)(ffn) }
+const ffnFn = (ffn:s) => { const at = sbsPos(pthSep)(ffn); return at === -1 ? ffn : mid(at + 1)(ffn) }
+const ffnExt = (ffn:s) => { const at = sbsPos('.')(ffn); return at === -1 ? '' : mid(at)(ffn) }
+const rmvExt = (ffn:s) => { const at = sbsPos('.')(ffn); return at === -1 ? ffn : left(at)(ffn) }
+const ffnFnn = (ffn:s) => ffnFn(rmvExt(ffn))
 const $fsFfn = { ffnPth, ffnFn, ffnExt, rmvExt, ffnFnn }
 //-----------------------------------------------------------------------
-const ftLines = ft => fs.readFileSync(ft).toString()
-const ftLy = ft => splitCrLf(ftLines(ft))
+const ftLines: (ft: s) => s = ft => (fs.readFileSync(ft).toString())
+const ftLy : (ft:s) => s[] = ft => splitCrLf(ftLines(ft))
 const $fsFt = { ftLines, ftLy }
 //-----------------------------------------------------------------------
 const tmpNm = () => rmvColon(new Date().toJSON())
@@ -234,21 +252,25 @@ const pm = (f, ...p) => new Promise(
     }
 )
 const $pm = { pm }
-const ftLinesPm = async (ft) => { const { er, rslt } = await pm(fs.readFile, ft); return { er, lines: er ? null : rslt } }
-const ftLyPm = async (ft) => { const { er, lines } = await pmFtLines(ffn); return { er, ly: er ? null : splitCrLf(lines) } }
+const ftLinesPm = async (ft:s) => await pm(fs.readFile, ft).then(({er,rslt})=>{let lines:s = rslt; return{er,lines}})
+const ftLyPm = async (ft:s) => await ftLinesPm(ft).then(({er, lines})=>{return{er,ly:splitCrLf(lines)}})
 const $fsPm = { ftLinesPm, ftLyPm }
+ftLinesPm(__filename).then(s=>{
+    debugger
+
+})
 //-----------------------------------------------------------------------
 const where = p => itr => { const o = []; for (let i of itr) if (p(i)) o.push(i); return o }
-const map = f => itr => { const o = []; for (let i of itr) o.push(f(i)); return o }
+const map = (f:f) => itr => { const o = []; for (let i of itr) o.push(f(i)); return o }
 const each = f => itr => { for (let i of itr) f(i) }
-const fold = f => cum => itr => { for (i of itr) cum = f(cum)(i); return cum }
+const fold = f => cum => itr => { for (let i of itr) cum = f(cum)(i); return cum }
 const reduce = f => itr => fold(f)(itrFst(itr))(itr)
 const $itrOperation = {
     where, map, each, fold, reduce
 }
 //---------------------------------------------------------------------------
 const mapKy = mp => map(mp.keys())
-const mapVy = mp => itrAyy(mp.values())
+const mapVy = mp => itrAy(mp.values())
 const mapKvy = mp => itrAy(mp.entries())
 const mapKset = mp => new Set(mp.keys())
 const $map = { mapKy, mapVy, mapKvy, mapKset }
@@ -262,7 +284,7 @@ const setWhere = p => set => {
     return z
 }
 const setAdd = x => set => { for (let i of x) set.add(i); return set }
-const setMinus = x => set => { for (let i of b) set.delete(i); return set }
+const setMinus = x => set => { for (let i of x) set.delete(i); return set }
 const setAft_ = (incl, a, set) => {
     const z = new Set
     let found = false
@@ -281,7 +303,7 @@ const setAft_ = (incl, a, set) => {
 const setAft = a => set => setAft_(false, a, set)
 const setAftIncl = a => set => setAft_(true, a, set)
 const setClone = set => itrSet(set)
-const itrSet = itr => {const o = new Set; for(i of itr) o.add(i); return o}
+const itrSet = itr => {const o = new Set; for(let i of itr) o.add(i); return o}
 const setMap = f => set => { const o = new Set; for (let i of set) o.add(f(i)); return o }
 const $set = { setAft, setAftIncl, setMinus, setAdd, setAy, setWhere, setMap, setClone }
 //---------------------------------------------------------------------------
@@ -304,11 +326,10 @@ const isObj = v => typeof v === 'object'
 const isAy = Array.isArray
 const isDte = vIsInstanceOf(Date)
 const isFun = vIsInstanceOf(Function)
-const isRe = v => vIsClassX(RegExp)
+const isRe = v => vIsInstanceOf(RegExp)
 const isNonNull = v => v !== null
 const isNull = v => v === null
 const isUndefined = v => v === undefined
-const isNaN = v => v === NaN
 const isTrue = v => !!v
 const isFalse = v => !!v
 const isEmp = isFalse
@@ -317,32 +338,32 @@ const isOdd = n => n % 2 === 1
 const isEven = n => n % 2 === 0
 const $is = {
     isFun, isStr, isNum, isDte, isBool,
-    isNaN, isNull, isUndefined, isNonNull,
+    isNull, isUndefined, isNonNull,
     isOdd, isEven, 
     isEmp, isNonEmp, isTrue, isFalse
 }
 //----------------------------------------------------------------------------
-const itrIsAllTrue = itr => { for (i of itr) if (isFalse(i)) return false; return true }
-const itrIsAllFalse = itr => { for (i of itr) if (isTrue(i)) return false; return true }
-const itrIsSomeTrue = itr => { for (i of itr) if (isTrue(i)) return true; return false }
-const itrIsSomeFalse = itr => { for (i of itr) if (isFalse(i)) return true; return false }
-const itrPredIsAllTrue = pred => itr => { for (i of itr) if (!pred(i)) return false; return true }
-const itrPredIsAllFalse = pred => itr => { for (i of itr) if (pred(i)) return false; return true }
-const itrPredIsSomeFalse = pred => itr => { for (i of itr) if (!pred(i)) return true; return false }
-const itrPredIsSomeTrue = pred => itr => { for (i of itr) if (pred(i)) return true; return false }
-const itrBrkForTrueFalse = pred => itr => { const t = [], f = []; for (i of itr) pred(i) ? t.push(i) : f.push(i); return [t, f] }
+const itrIsAllTrue = itr => { for (let i of itr) if (isFalse(i)) return false; return true }
+const itrIsAllFalse = itr => { for (let i of itr) if (isTrue(i)) return false; return true }
+const itrIsSomeTrue = itr => { for (let i of itr) if (isTrue(i)) return true; return false }
+const itrIsSomeFalse = itr => { for (let i of itr) if (isFalse(i)) return true; return false }
+const itrPredIsAllTrue = pred => itr => { for (let i of itr) if (!pred(i)) return false; return true }
+const itrPredIsAllFalse = pred => itr => { for (let i of itr) if (pred(i)) return false; return true }
+const itrPredIsSomeFalse = pred => itr => { for (let i of itr) if (!pred(i)) return true; return false }
+const itrPredIsSomeTrue = pred => itr => { for (let i of itr) if (pred(i)) return true; return false }
+const itrBrkForTrueFalse = pred => itr => { const t = [], f = []; for (let i of itr) pred(i) ? t.push(i) : f.push(i); return [t, f] }
 const itrAy = itr => { const o = []; for (let i of itr) o.push(i); return o }
 const itrFst = itr => { for (let i of itr) return i }
-const itrAddPfxSfx = (pfx, sfx) => itr => map(addPfxSfx(pfx, sfx))(ay)
+const itrAddPfxSfx = (pfx, sfx) => itr => map(addPfxSfx(pfx, sfx))(itr)
 const itrAddPfx = pfx => itr => map(addPfx(pfx))(itr)
 const itrAddSfx = sfx => itr => map(addSfx(sfx))(itr)
-const itrWdt = itr => pipe(map(len)(itr))(max)
+const itrWdt = itr => pipe(map(len)(itr))(itrMax)
 const itrAlignL = itr => map(alignL(itrWdt(itr)))(itr)
 const itrClone = itr => map(i => i)(itr)
-const itrFind = pred => iter => { for (i of iter) if (pred(i)) return i }
-const itrHasDup = itr => { const set = new Set(); for (i of itr) if (set.has(i)) {return true} else set.add(i); return false }
-const itrMax = itr => { let o = fst(itr); for (i of itr) if (i > o) o = i; return o }
-const itrMin = itr => { let o = fst(ay); for (i of ay) if (i < o) o = i; return o }
+const itrFind = pred => iter => { for (let i of iter) if (pred(i)) return i }
+const itrHasDup = itr => { const set = new Set(); for (let i of itr) if (set.has(i)) {return true} else set.add(i); return false }
+const itrMax = itr => { let o = itrFst(itr); for (let i of itr) if (i > o) o = i; return o }
+const itrMin = itr => { let o = itrFst(itr); for (let i of itr) if (i < o) o = i; return o }
 const itrRmvEmp = itr => where(isNonEmp)(itr)
 const $itr = {
     itrAy, itrMax, itrMin,
@@ -393,14 +414,14 @@ const oBringUpDollarPrp = o => {
 const oCmlDry = o => {
     let oo = map(n =>[cmlNm(n), n])(oPrpNy(o))
     drySrt(ayEle(0))(oo)
-    const w = dryColIxWdt(0)(oo)
+    const w = dryColWdt(0)(oo)
     const a = alignL(w)
-    dryMapCol(0)(a)(oo)
+    dryTfmCol(0)(a)(oo)
     return oo
 }
 const oCtorNm = o => o && o.constructor && o.constructor.name
 const oIsInstance = instance => o => o instanceof instance
-const oHasCtorNm = nm => o => ctorNm(o) === nm
+const oHasCtorNm = nm => o => oCtorNm(o) === nm
 /**
  * @description return the property value of object {o} by property path {pprPth}
  * @param {string} prpPth
@@ -425,7 +446,7 @@ const $obj = {
     oCmlObj
 }
 // ----------------------------------------------
-const dryColWdt = colIx => dry => itrWdt(dryCol(colIdx)(dry))
+const dryColWdt = colIx => dry => itrWdt(dryCol(colIx)(dry))
 const dryColWdtAy = dry => map(i => dryColWdt(i)(dry))(nItr(dryColCnt(dry))) 
 const dryCol = colIx => dry => {
     debugger
@@ -434,16 +455,16 @@ const dryCol = colIx => dry => {
 const dryColCnt = dry => itrMax(map(len)(dry))
 const dryTfmCell = f => dry => { each(ayTfm(f))(dry) }
 const dryClone = dry => map(dr=>itrClone(dr))(dry)
-const dryTfmCol = colIx => f => dry => { each(ayTfmEle(colIdx)(f)) }
-const drySrt = fun_of_dr_to_key => dry => dry.sort((dr_A, dr_B) => compare(fun_of_dr_to_key(dr_A), f(dr_B)))
+const dryTfmCol = colIx => f => dry => { each(ayTfmEle(colIx)(f)) }
+const drySrt = fun_of_dr_to_key => dry => dry.sort((dr_A, dr_B) => compare(fun_of_dr_to_key(dr_A), fun_of_dr_to_key(dr_B)))
 const $dry = { drySrt, dryTfmCell, dryTfmCol, dryColWdt, dryCol, dryColCnt, dryColWdtAy }
 //-----------------------------------------------------------------------
-const oyPrpCol = prpNm => oy => { const oo = []; for (o of oy) oo.push(o[prpNm]); return oo }
-const oyPrpDry = prpNy => oy => { const oo = []; for (o of oy) oo.push(oPrpAy(prpNy)(o)); return oo }
+const oyPrpCol = prpNm => oy => { const oo = []; for (let o of oy) oo.push(o[prpNm]); return oo }
+const oyPrpDry = prpNy => oy => { const oo = []; for (let o of oy) oo.push(oPrpAy(prpNy)(o)); return oo }
 const $oy = { oyPrpCol, oyPrpDry }
 //-------------------------------------
 const pipe = v => (...f) => { let o = v; for (let ff of f) o = ff(o); return o }
-const apply = o = f => f(o)
+const apply = o => f => f(o)
 const swap = f => a => b => f(b)(a)
 const compose = (...f) => v => pipe(v)(...f)
 const $fun = { swap, pipe, compose, apply }
@@ -472,9 +493,7 @@ const $ = {
     $fsFfn,
     $fun,
     $is,
-    $val,
     $num,
-    $obj,
     $oy,
     $pm,
     $fsPm,
@@ -490,11 +509,8 @@ const $ = {
     $itr,
     $fsFt,
     $lin,
-    $lazy
 }
 //------------------------------------------------------------------
 
 module.exports = oBringUpDollarPrp($)
-
-pipe(__filename)(ftConstDollarNy,dmp)
-debugger
+//pipe(__filename)(ftConstDollarNy,dmp)

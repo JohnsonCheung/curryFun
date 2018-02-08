@@ -1,6 +1,8 @@
-const { act, assert, cf, eq, t, f, $ } = require("./$tstConst.js")("$is")
+console.log(__filename)
+debugger
+const { $$, $, end, eq, t, f } = require("./$tstConst.js")(__filename)
 const dte = new Date()
-const aFun = () =>{}
+const aFun = () => { }
 const aStr = 'aaa'
 const aNum = 1
 const aNaN = NaN

@@ -1,0 +1,3 @@
+file-a.txt
+line1
+line2
