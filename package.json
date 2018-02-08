@@ -16,5 +16,8 @@
     "functions"
   ],
   "author": "johnsoncheunghk06@yahoo.com.hk",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^9.4.2"
+  }
 }

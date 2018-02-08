@@ -1,0 +1,9 @@
+{
+  "name": "curryfun",
+  "version": "0.0.0",
+  "description": "curryfun",
+  "main": "app.js",
+  "author": {
+    "name": "user"
+  }
+}
