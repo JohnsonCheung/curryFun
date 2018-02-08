@@ -114,7 +114,7 @@ var curryfun;
             else
                 o.push(i.trim());
         }
-        return;
+        return o;
         function pseg() {
             let o = pchr();
             let j = 0;
@@ -283,7 +283,7 @@ var curryfun;
     const setAy = set => { const o = []; for (let i of set)
         o.push(i); return o; };
     const setWhere = p => set => {
-        const z = new Set;
+        const z = new Set();
         for (let i of set)
             if (p(i))
                 z.add(i);
@@ -294,7 +294,7 @@ var curryfun;
     const setMinus = x => set => { for (let i of x)
         set.delete(i); return set; };
     const setAft_ = (incl, a, set) => {
-        const z = new Set;
+        const z = new Set();
         let found = false;
         for (let i of set)
             if (found)
@@ -311,9 +311,9 @@ var curryfun;
     const setAft = a => set => setAft_(false, a, set);
     const setAftIncl = a => set => setAft_(true, a, set);
     const setClone = set => itrSet(set);
-    const itrSet = itr => { const o = new Set; for (let i of itr)
+    const itrSet = itr => { const o = new Set(); for (let i of itr)
         o.add(i); return o; };
-    const setMap = f => set => { const o = new Set; for (let i of set)
+    const setMap = f => set => { const o = new Set(); for (let i of set)
         o.add(f(i)); return o; };
     const $set = { setAft, setAftIncl, setMinus, setAdd, setAy, setWhere, setMap, setClone };
     //---------------------------------------------------------------------------
@@ -570,4 +570,3 @@ var curryfun;
     module.exports = oBringUpDollarPrp($);
     //pipe(__filename)(ftConstDollarNy,dmp)
 })(curryfun || (curryfun = {}));
-//# sourceMappingURL=curryfunTs.js.map

@@ -9,7 +9,12 @@
             "type": "node",
             "request": "launch",
             "name": "Launch the Program",
-            "program": "${file}"
+            "program": "${file}",
+            "console": "internalConsole",
+//            "runtimeArgs": [
+//                "--experimental-modules"
+//            ]
         },
     ]
+
 }

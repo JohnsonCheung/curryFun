@@ -3,8 +3,8 @@ const path = require('path')
 const os = require('os')
 //---------------------------------------
 const vEQ = a => v => a === v
-const vNE = a => v => a !== v
 const vGT = a => v => v > a
+const vNE = a => v => a !== v
 const vIN = itr => v => { for (let i of itr) if (i === v) return true; return false }
 const vNIN = itr => v => !(vIN(itr)(v))
 const vLT = a => v => v < a
@@ -13,11 +13,9 @@ const vLE = a => v => v <= a
 const vBET = (a, b) => v => a<=v && v<=b
 const vNBET = (a, b) => v => !(vBET(a, b)(v))
 const vIsInstanceOf = x => v => v instanceof x
-const $val = { vGT, vLT, vEQ, vNE, vGE, vIN, vNIN, vBET, vNBET, vIsInstanceOf }
 //----------------------------------
 const ensSy = sOrSy => isStr(sOrSy) ? splitSpc(sOrSy) : isSy(sOrSy) ? sOrSy : er({ msg: 'Given [syOrStr] is neither str nor sy', sOrSy })
 const ensRe = sOrRe => isRegExp(sOrRe) ? sOrRe : new RegExp(sOrRe)
-const $ens = { ensSy, ensRe }
 //----------------------------------
 const dmp = console.log
 const stop = () => throws(new Error())
@@ -29,14 +27,12 @@ const er = (msg) => (...v) => {
     else
         stop()
 }
-const $er = { dmp, stop, er }
 //-----------------------------------------------------------------------
 const split = sep => s => s.split(sep)
 const splitCrLf = split('\r\n')
 const splitLf = split('\n')
 const splitSpc = split(/\s+/)
 const splitCommaSpc = lin => lin.split(/,\s*/)
-const $sSplit = { split, splitCrLf, splitLf, splitSpc, splitCommaSpc }
 //-----------------------------------------------------------------------
 const ayFst = ay => ay[0]
 const aySnd = ay => ay[1]
@@ -45,17 +41,13 @@ const ayEle = ix => ay => ay[ix]
 const ayTfm = f => ay => { for (i in ay) ay[i] = f(ay[i]) }
 const aySetEle = ix => v => ay => ay[ix] = v
 const ayTfmEle = ix => f => ay => ay[ix] = f(ay[ix])
-const $ay = {
-    ayFst, ayLas, aySnd, ayEle, aySetEle, ayTfmEle
-}
 //-----------------------------------------------------------------------
-const jn = sep => ay => s.join(sep)
+const jn = sep => ay => ay.join(sep)
 const jnCrLf = jn('\r\n')
 const jnLf = jn('\n')
 const jnSpc = jn(' ')
 const jnComma = jn(',')
 const jnCommaSpc = jn(', ')
-const $jn = { jn, jnCrLf, jnLf, jnSpc, jnComma, jnCommaSpc }
 //-----------------------------------------------------------------------
 const fstChr = s => s[0]
 const lasChr = s => s[s.length - 1]
@@ -83,7 +75,7 @@ const alignR = w => s => {
     if (l > w) return s
     return ' '.repeat(w - l) + s
 }
-const sbsPos = sbs => s => s.indexOf(substr)
+const sbsPos = sbs => s => s.indexOf(sbs)
 const sbsRevPos = sbs => s => s.lastIndexOf(substr)
 const cmlNm = s => cmlNy(s).reverse().join(' ') // @eg cmlNm(relItmNy) === 'Ny Itm rel'
 const cmlNy = s => {
@@ -125,20 +117,10 @@ const hasSfx = pfx => s => right(pfx.length)(s) === sfx
 const rmvSfx = pfx => s => hasSfx(s) ? s.substr(0,s.length-pfx.length) : s
 const match = re => s => s.match(re)
 const notMatch = re => s => not(match(re)(s))
-//-----------------------------------------------------------------------
-const $str = {
-    fstChr, lasChr, addPfx, addSfx, addPfxSfx,
-    len, mid, midN, left, right, sbsPos, sbsRevPos,
-    cmlNy, cmlNm,
-    alignL, alignR,
-    hasPfx, rmvPfx, hasSfx, rmvSfx,
-    match, notMatch
-}
 //-----------------------------------------------------------
 const predsOr = (...p) => v => { for (let pp of p) if (pp(v)) return true; return false }
 const predsAnd = (...p) => v => { for (let pp of p) if (!pp(v)) return false; return true }
 const predNot = pred => itm => !pred(itm)
-const $pred = { predNot, predsAnd, predsOr }
 //-----------------------------------------------------------------------
 const isRmkLin = lin => {
     const l = lin.trim()
@@ -153,31 +135,25 @@ const linRmvMsg = lin => {
     if (hasPfx("^")(b.trimLeft())) return ""
     return b
 }
-const $lin = { isRmkLin, isNonRmkLin, linRmvMsg}
 //------------------------------------------------------------------
 const brkAt = (at, len) => s => {
     const s1 = trim(left(at)(s))
     const s2 = trim(mid(at + len)(s))
     return { s1, s2 }
 }
-const brk1 = sep => s => { const at = strAt(sep)(s); at === -1 ? { s1: trim(s), s2: '' } : brkAt(at, len(sep))(s) }
-const brk2 = sep => s => { const at = strAt(sep)(s); at === -1 ? { s1: '', s2: trim(s) } : brkAt(at, len(sep))(s) }
+const brk1 = sep => s => { const at = sbsPos(sep)(s); return at === -1 ? { s1: s.trim(), s2: '' } : brkAt(at, len(sep))(s) }
+const brk2 = sep => s => { const at = strAt(sep)(s); return at === -1 ? { s1: '', s2: trim(s) } : brkAt(at, len(sep))(s) }
 const brk = sep => s => { const at = strAt(sep)(s); return brkAt(at, len(sep))(s) }
-const $sBrk = { brkAt, brk1, brk2, brk }
 //-----------------------------------------------------------------------
-const takBef = sep => s => revBrk2(sep)(s).s1
+const takBef = sep => s => brk2(sep)(s).s1
+const takBefOrAll = sep => s => brk1(sep)(s).s1 
 const takAft = sep => s => revBrk1(sep)(s).s2
-const $sTak = { takBef, takAft }
 //-----------------------------------------------------------------------
 const revBrk1 = sep => s => { const at = strAt(sep)(s); at === -1 ? { s1: trim(s), s2: '' } : brkAt(at, len(sep))(s) }
-const revBrk2 = sep => s => { const at = strAt(sep)(s); at === -1 ? { s1: '', s2: trim(s) } : brkAt(at, len(sep))(s) }
-const revBrk = sep => s => { const at = revAt(sep)(s); return brkAt(at, len(sep))(s) }
+const revBrk2 = sep => s => { const at = sbsPos(sep)(s); return at === -1 ? { s1: '', s2: s.trim() } : brkAt(at, len(sep))(s) }
+const revBrk = sep => s => { const at = sbsRevPos(sep)(s); return brkAt(at, len(sep))(s) }
 const revTakBef = sep => s => revBrk2(sep)(s).s1
 const revTakAft = sep => s => revBrk1(sep)(s).s2
-const $sRev = {
-    revBrk, revBrk1, revBrk2,
-    revTakBef, revTakBef,
-}
 //-----------------------------------------------------------------------
 const rmvFstChr = mid(1)
 const rmvLasChr = s => left(len(s) - 1)(s)
@@ -187,21 +163,17 @@ const rmvSubStr = subStr => s => {
     return o
 }
 const rmvColon = rmvSubStr(":")
-const $sRmv = { rmvFstChr, rmvLasChr, rmvSubStr, rmvColon }
 //-----------------------------------------------------------
 const pthSep = path.sep
-const $fsPth = { pthSep }
 //-----------------------------------------------------------------------
 const ffnPth = ffn => { const at = revAt(pthSep)(ffn); return at === -1 ? "" : left(at + 1)(ffn) }
 const ffnFn = ffn => { const at = revAt(pthSep)(ffn); return at === -1 ? ffn : mid(at + 1)(ffn) }
 const ffnExt = ffn => { const at = revAt('.')(ffn); return at === -1 ? '' : mid(at)(ffn) }
 const rmvExt = ffn => { const at = revAt('.')(ffn); return at === -1 ? ffn : left(at)(ffn) }
 const ffnFnn = ffn => ffnFn(rmvExt(ffn))
-const $fsFfn = { ffnPth, ffnFn, ffnExt, rmvExt, ffnFnn }
 //-----------------------------------------------------------------------
 const ftLines = ft => fs.readFileSync(ft).toString()
 const ftLy = ft => splitCrLf(ftLines(ft))
-const $fsFt = { ftLines, ftLy }
 //-----------------------------------------------------------------------
 const tmpNm = () => rmvColon(new Date().toJSON())
 const tmpPth = os.tmpdir + pthSep
@@ -216,7 +188,6 @@ const tmpFilFm = fm => {
     fs.copyFileSync(fm, o)
     return o
 }
-const $fsTmp = { tmpNm, tmpPth, tmpFfn, tmpFt, tmpFilFm }
 //-----------------------------------------------------------------------
 /**
  * @description return a Promise of {er,rslt} by calling f(...,p,cb), where cb is (er,rslt)=>{...}
@@ -233,25 +204,19 @@ const pm = (f, ...p) => new Promise(
         })
     }
 )
-const $pm = { pm }
 const ftLinesPm = async (ft) => { const { er, rslt } = await pm(fs.readFile, ft); return { er, lines: er ? null : rslt } }
 const ftLyPm = async (ft) => { const { er, lines } = await pmFtLines(ffn); return { er, ly: er ? null : splitCrLf(lines) } }
-const $fsPm = { ftLinesPm, ftLyPm }
 //-----------------------------------------------------------------------
 const where = p => itr => { const o = []; for (let i of itr) if (p(i)) o.push(i); return o }
 const map = f => itr => { const o = []; for (let i of itr) o.push(f(i)); return o }
 const each = f => itr => { for (let i of itr) f(i) }
 const fold = f => cum => itr => { for (i of itr) cum = f(cum)(i); return cum }
 const reduce = f => itr => fold(f)(itrFst(itr))(itr)
-const $itrOperation = {
-    where, map, each, fold, reduce
-}
 //---------------------------------------------------------------------------
 const mapKy = mp => map(mp.keys())
 const mapVy = mp => itrAyy(mp.values())
 const mapKvy = mp => itrAy(mp.entries())
 const mapKset = mp => new Set(mp.keys())
-const $map = { mapKy, mapVy, mapKvy, mapKset }
 //---------------------------------------------------------------------------
 const setAy = set => { const o = []; for (let i of set) o.push(i); return o }
 const setWhere = p => set => {
@@ -283,7 +248,6 @@ const setAftIncl = a => set => setAft_(true, a, set)
 const setClone = set => itrSet(set)
 const itrSet = itr => {const o = new Set; for(i of itr) o.add(i); return o}
 const setMap = f => set => { const o = new Set; for (let i of set) o.add(f(i)); return o }
-const $set = { setAft, setAftIncl, setMinus, setAdd, setAy, setWhere, setMap, setClone }
 //---------------------------------------------------------------------------
 const lyReDry = re => ly => map(matchDr)(lyMatchAy(re)(ly))
 const lyReCol = re => ly => matchAyFstCol(lyMatchAy(re)(ly)).sort()
@@ -295,7 +259,6 @@ const lyConstNy = lyReCol(/^const\s+([$\w][$0-9\w_]*) /)
 const lyConstDollarNy = lyReCol(/^const (\$[$0-0\w_]*) /)
 const ftConstNy = ft => pipe(ft)(ftLy,lyConstNy)
 const ftConstDollarNy = ft => pipe(ft)(ftLy,lyConstDollarNy)
-const $src = { ftConstDollarNy, ftConstNy, lyReDry, lyReCol, lyMatchAy, lyConstNy }
 //---------------------------------------------------------------------------
 const isStr = v => typeof v === 'string'
 const isNum = v => typeof v === 'number'
@@ -315,12 +278,6 @@ const isEmp = isFalse
 const isNonEmp = isTrue
 const isOdd = n => n % 2 === 1
 const isEven = n => n % 2 === 0
-const $is = {
-    isFun, isStr, isNum, isDte, isBool,
-    isNaN, isNull, isUndefined, isNonNull,
-    isOdd, isEven, 
-    isEmp, isNonEmp, isTrue, isFalse
-}
 //----------------------------------------------------------------------------
 const itrIsAllTrue = itr => { for (i of itr) if (isFalse(i)) return false; return true }
 const itrIsAllFalse = itr => { for (i of itr) if (isTrue(i)) return false; return true }
@@ -333,21 +290,18 @@ const itrPredIsSomeTrue = pred => itr => { for (i of itr) if (pred(i)) return tr
 const itrBrkForTrueFalse = pred => itr => { const t = [], f = []; for (i of itr) pred(i) ? t.push(i) : f.push(i); return [t, f] }
 const itrAy = itr => { const o = []; for (let i of itr) o.push(i); return o }
 const itrFst = itr => { for (let i of itr) return i }
-const itrAddPfxSfx = (pfx, sfx) => itr => map(addPfxSfx(pfx, sfx))(ay)
+const itrAddPfxSfx = (pfx, sfx) => itr => map(addPfxSfx(pfx, sfx))(itr)
 const itrAddPfx = pfx => itr => map(addPfx(pfx))(itr)
 const itrAddSfx = sfx => itr => map(addSfx(sfx))(itr)
 const itrWdt = itr => pipe(map(len)(itr))(max)
 const itrAlignL = itr => map(alignL(itrWdt(itr)))(itr)
 const itrClone = itr => map(i => i)(itr)
+const itrFindIx = pred => iter => { for (i in itr) if (pred(i)) return i; return null }
 const itrFind = pred => iter => { for (i of iter) if (pred(i)) return i }
 const itrHasDup = itr => { const set = new Set(); for (i of itr) if (set.has(i)) {return true} else set.add(i); return false }
 const itrMax = itr => { let o = fst(itr); for (i of itr) if (i > o) o = i; return o }
 const itrMin = itr => { let o = fst(ay); for (i of ay) if (i < o) o = i; return o }
 const itrRmvEmp = itr => where(isNonEmp)(itr)
-const $itr = {
-    itrAy, itrMax, itrMin,
-    itrHasDup, itrClone, itrFind, itrRmvEmp
-}
 //-----------------------------------------------------------------------------------------
 const must = (p, t) => v => { if (!p(v)) er(`given v must be [${t}]`, { v }) }
 const mnon = (p, t) => v => { if (p(v)) er(`given v must be non-[${t}]`, { v }) }
@@ -358,19 +312,12 @@ const musAy = must(isAy, 'Array')
 const musObj = must(isObj, 'Object')
 const musDte = must(isDte, 'Date')
 const mnonEmp = mnon(isEmp, 'Emp')
-const $must = {
-    must, mnon,
-    musFun, musNum, musStr, musAy, musDte,
-    mnonEmp
-}
 /**
  * Bring up all {o} child object member up one level.  Throw exception if there is name conflict
  * assume all members of {o} are objects
  * @param {obj} o 
  * @example 
- * const $a = {a1:'a1',a2:'s2'}
- * const $b = {b1:'b1',b2:'b2'}
- * const o = {$a,$b}
+ *  *  * const o = {$a,$b}
  * bringUp(o)
  * eq(o,{$a,$b,a1,a2,b1,b2})
  * //-----------
@@ -419,11 +366,6 @@ const oCmlObj = o => {
     dry.forEach(([cmlNm, prpNm]) => oo[cmlNm] = o[prpNm])
     return oo
 }
-const $obj = {
-    oPrp, oPrpAy, oPrpNy, oHasPrp, oHasLen,
-    oBringUpDollarPrp, oCmlDry, oCtorNm, oHasCtorNm,
-    oCmlObj
-}
 // ----------------------------------------------
 const dryColWdt = colIx => dry => itrWdt(dryCol(colIdx)(dry))
 const dryColWdtAy = dry => map(i => dryColWdt(i)(dry))(nItr(dryColCnt(dry))) 
@@ -436,17 +378,14 @@ const dryTfmCell = f => dry => { each(ayTfm(f))(dry) }
 const dryClone = dry => map(dr=>itrClone(dr))(dry)
 const dryTfmCol = colIx => f => dry => { each(ayTfmEle(colIdx)(f)) }
 const drySrt = fun_of_dr_to_key => dry => dry.sort((dr_A, dr_B) => compare(fun_of_dr_to_key(dr_A), f(dr_B)))
-const $dry = { drySrt, dryTfmCell, dryTfmCol, dryColWdt, dryCol, dryColCnt, dryColWdtAy }
 //-----------------------------------------------------------------------
 const oyPrpCol = prpNm => oy => { const oo = []; for (o of oy) oo.push(o[prpNm]); return oo }
 const oyPrpDry = prpNy => oy => { const oo = []; for (o of oy) oo.push(oPrpAy(prpNy)(o)); return oo }
-const $oy = { oyPrpCol, oyPrpDry }
 //-------------------------------------
 const pipe = v => (...f) => { let o = v; for (let ff of f) o = ff(o); return o }
 const apply = o = f => f(o)
 const swap = f => a => b => f(b)(a)
 const compose = (...f) => v => pipe(v)(...f)
-const $fun = { swap, pipe, compose, apply }
 //---------------------------------------
 const multiply = a => b => a * b
 const divide = a => b => b / a
@@ -455,46 +394,23 @@ const minus = a => b => b - a
 const nDecr = minus(1)
 const nIncr = add(1)
 const nItr = function* (n) { for (let j = 0; j < n; j++) yield j }
-const $num = { multiply, divide, add, minus, nDecr, nIncr}
 // -------------------------------------------------------------
 const compare = (a, b) => a === b ? 0 : a > b ? 1 : -1
-const $operation = { compare }
 //---------------------------------------------------------------------------
 const lazy = vf => { let v, done = false; return () => { if (!done) { v = vf(); done = true }; return v } }
-const $lazy = { lazy }
 //---------------------------------------------------------------------------
-const $ = {
-    $lazy,
-    $ay,
-    $obj,
-    $val,
-    $er,
-    $fsFfn,
-    $fun,
-    $is,
-    $val,
-    $num,
-    $obj,
-    $oy,
-    $pm,
-    $fsPm,
-    $fsPth,
-    $sSplit,
-    $str,
-    $fsTmp,
-    $sRmv,
-    $sRev,
-    $jn,
-    $map,
-    $set,
-    $itr,
-    $fsFt,
-    $lin,
-    $lazy
+const lyImpStmt = ly => {
+    //--------------
+    let ny 
+    ny = lyConstNy(ly).sort()
+    ny = where(hasPfx("_"))(ny)
+    if(!ny) return null
+    const h1 = "module.exports = {"
+    const h2 = jnComma(ny)
+    const h3 = "}"
+    const o = h1+h2+h3
+    return o
 }
-//------------------------------------------------------------------
-
-module.exports = oBringUpDollarPrp($)
-
-pipe(__filename)(ftConstDollarNy,dmp)
 debugger
+//pipe(__filename)(ftConstDollarNy,dmp)
+//debugger

@@ -1,50 +1,54 @@
-const x = require('.\curryfun.js')
-const sqtprslt = sqtp => pipe(sqtp)(splitLf,lyRmvMsg,lyGp,gpRmvRmk,gpGpy('=='),gpyBky,rm,er,pm,sw,sq)
-const gpRmvRmk = gp => {
-    const o = where(([ix,lin])=>isNonRmkLin(lin))(gp)
-    return o
-}
-const lyGp = ly => {
-    const o =[]
-    let i = 0
-    for(lin of ly)
-        o.push([i++,lin])
+const x = require('./curryfun.js')
+const sqtprslt = sqtp => x.pipe(sqtp)(x.splitLf, lyRmvMsg, lyGp, gpRmvRmk, gpGpy('=='), gpyBky, rm, er, pm, sw, sq)
+const linRmvMsg = lin => {
+    if(x.hasPfx("^")(lin.trim())) return ""
+    let o = x.takBefOrAll("---")(lin)
     return o
 }
 const lyRmvMsg = ly => {
-    const a = itrMap(linRmvMsg)(ly)
-    const b = lyRmvBlankLin(a)
-    return b
+    let o = x.pipe(ly)(x.map(linRmvMsg),x.itrRmvEmp)
+    return o
 }
-const pm = ({bky,er}) => {
-    const [pmBky,remainBky] = itrBrkForTrueFalse(isPmBk)(bky)
+const gpRmvRmk = gp => {
+    const o = x.where(([ix, lin]) => x.isNonRmkLin(lin))(gp)
+    return o
+}
+const lyGp = ly => {
+    const o = []
+    let i = 0
+    for (lin of ly)
+        o.push([i++, lin])
+    return o
+}
+const pm = ({ bky, er }) => {
+    const [pmBky, remainBky] = itrBrkForTrueFalse(isPmBk)(bky)
     const e1 = bkyExcessBkIXLNER('Three is already parameter block.  This block is ignored')(pmBky)
-    const [pm,e2] = bkPm(pmBky[0])
+    const [pm, e2] = bkPm(pmBky[0])
     const ixlner = e1.concat(e2)
-    return{bky:remainBky,pm,ixlner}
+    return { bky: remainBky, pm, ixlner }
 }
-const sw = ({bky,pm,er}) => {
-    const [swBky,remainBky] = itrBrkForTrueFalse(isSwBk)(bky)
-    const e1 = bkyExcessBkIXLNER('There is already switch block.  This block is ignored')(swBky)    
-    const [sw,e2] = bkSw(pm)(swBky[0])
+const sw = ({ bky, pm, er }) => {
+    const [swBky, remainBky] = itrBrkForTrueFalse(isSwBk)(bky)
+    const e1 = bkyExcessBkIXLNER('There is already switch block.  This block is ignored')(swBky)
+    const [sw, e2] = bkSw(pm)(swBky[0])
     const e = e1.concat(e2)
-    return{bky:remainBky,pm,sw,er:e}
+    return { bky: remainBky, pm, sw, er: e }
 }
-const sq = ({bky,sw,pm,er}) => {vtp,sq}
-const rm = bky => where((bk)=>bk.bkty!==Bkty.rm)(bky)
+const sq = ({ bky, sw, pm, er }) => { vtp, sq }
+const rm = bky => where((bk) => bk.bkty !== Bkty.rm)(bky)
 const er = bky => {
-    const [erBky,nonErBky] = itrBrkForTrueFalse(isErBk)(bky)
+    const [erBky, nonErBky] = itrBrkForTrueFalse(isErBk)(bky)
     const er = []
-    return{bky:nonErBky,ixlner:[]}
+    return { bky: nonErBky, ixlner: [] }
 }
 const bkyEr = msg => bky => {
-    const o =[]
-    for(bk in bky) {
+    const o = []
+    for (bk in bky) {
         const ix = bkLasIx(bk)
         const sfxmsg = []
-        const endmsg = [msg] 
-        o.push({ix,sfxmsg,endmsg})
-    } 
+        const endmsg = [msg]
+        o.push({ ix, sfxmsg, endmsg })
+    }
     return o
 }
 const bkyExcessBkIXLNER = msg => bky => {
@@ -55,15 +59,15 @@ const bkyExcessBkIXLNER = msg => bky => {
 const gpGpy = sep => gp => {
     const o = []
     let buf = []
-    for([ix,lin] of gp) {
-        if(hasPfx(sep)(lin)) {
-            if(buf.length!==0) 
+    for ([ix, lin] of gp) {
+        if (x.hasPfx(sep)(lin)) {
+            if (buf.length !== 0)
                 o.push(buf)
             buf = []
-        } else 
-            buf.push([ix,lin])
+        } else
+            buf.push([ix, lin])
     }
-    if(buf.length!==0)
+    if (buf.length !== 0)
         o.push(buf)
     return o
 }
@@ -73,60 +77,59 @@ const gpRmvRmkLin = gp => {
 const gpyRmvRmkLin = gpy => itrMap(gpRmvRmkLin)(gpy)
 const lyPfxCnt = pfx => ly => {
     let o = 0
-    const p = hasPfx(pfx)
-    for(i of ly) 
-        if(p(i)) o++
+    const p = x.hasPfx(pfx)
+    for (i of ly)
+        if (p(i)) o++
     return o
 }
 const assertAyIsEqLen = ay1 => ay2 => {
-    if(ay1.length!==ay2.length) 
-        throw new Error({msg:'two ay are diff len',ay1,ay2})
+    if (ay1.length !== ay2.length)
+        throw new Error({ msg: 'two ay are diff len', ay1, ay2 })
 }
 const ayZip = ay1 => ay2 => {
     assertAyIsEqLen(ay1)(ay2)
-    const o=[]
+    const o = []
     const l = ay1.length
-    for(let i=0;i<l;i++)
-        o.push([ay1[i],ay2[i]])
+    for (let i = 0; i < l; i++)
+        o.push([ay1[i], ay2[i]])
     return o
 }
-
-const lyHasMajPfx = pfx => ly => lyPfxCnt(pfx)(ly) > (ly.length/2)
-const isRmLy = ly => itrIsAllTrue(isRmkLin)(ly)
+const lyHasMajPfx = pfx => ly => lyPfxCnt(pfx)(ly) > (ly.length / 2)
+const isRmLy = ly => x.itrPredIsAllTrue(x.isRmkLin)(ly)
 const isPmLy = ly => lyHasMajPfx("%")(ly)
 const isSwLy = ly => lyHasMajPfx("?")(ly)
-const isSqLy = ly => rmvPfx(lyFstNonRmkLin(ly),"?")
-const gpLy = gp => itrMap(aySnd)(gp)
+const isSqLy = ly => rmvPfx(lyFstNonRmkLin(ly), "?")
+const gpLy = gp => x.map(x.aySnd)(gp)
 const gpyBky = gpy => {
-    const lyy = itrMap(gpLy)(gpy)
-    const bktyy = itrMap(lyBkty)(lyy)
+    const lyy = x.map(gpLy)(gpy)
+    const bktyy = x.map(lyBkty)(lyy)
     const z = ayZip(bktyy)(gpy)
-    const o = itrMap(([bkty,gp])=>{return{bkty,gp}})(z)
+    const o = itrMap(([bkty, gp]) => { return { bkty, gp } })(z)
     return o
 }
-const gpBk = gp => {gpty:gpBkty(gp),gp}
-const Bkty = {rm:1,pm:2,sw:3,sq:4,er:5}
+const gpBk = gp => { gpty: gpBkty(gp), gp }
+const Bkty = { rm: 1, pm: 2, sw: 3, sq: 4, er: 5 }
 const isBkEqBkty = bkty => bk => bk.bkty === bkty
 const isErBk = isBkEqBkty(Bkty.er)
 const isSwBk = isBkEqBkty(Bkty.sw)
 const isPmBk = isBkEqBkty(Bkty.pm)
 const isSqBk = isBkEqBkty(Bkty.sq)
-const lyBkty = ly => 
-    isRmLy(ly)? Bkty.rm : 
-    isPmLy(ly)? Bkty.pm :
-    isSwLy(ly)? Bkty.sw :
-    isSqLy(ly)? Bkty.sq : Gpty.er
+const lyBkty = ly =>
+    isRmLy(ly) ? Bkty.rm :
+        isPmLy(ly) ? Bkty.pm :
+            isSwLy(ly) ? Bkty.sw :
+                isSqLy(ly) ? Bkty.sq : Gpty.er
 const linShift = lin => {
     const o = lin.trim()
     const a = o.match(/(\S*)\s*(.*)/)
-    return[a[1]||"",a[2]||""]
+    return [a[1] || "", a[2] || ""]
 }
 const linFstTerm = lin => linShift(lin)[0]
 const lyMap = ly => {
     const o = new Map()
-    for(lin of ly) {
-        const [k,v] = linShift(lin)
-        o.set(k,v)
+    for (lin of ly) {
+        const [k, v] = linShift(lin)
+        o.set(k, v)
     }
     return o
 }
@@ -134,8 +137,8 @@ const lyFstTermAy = ly => itrMap(linFstTerm)(ly)
 const itrDupSet = itr => {
     const a = new Set()
     const o = new Set()
-    for(i of itr) {
-        if(a.has(i))
+    for (i of itr) {
+        if (a.has(i))
             o.add(i)
         else
             a.add(i)
@@ -146,31 +149,31 @@ const lyFstTermDupSet = ly => {
     const a = itrMap(linFstTerm)(ly)
     return itrDupSet(a)
 }
-const Er = class { constructor(ix,sfxmsg,endmsg) {this.ix=ix,this.sfxmsg=sfxmsg,this.endmsg=endmsg}}
+const Er = class { constructor(ix, sfxmsg, endmsg) { this.ix = ix, this.sfxmsg = sfxmsg, this.endmsg = endmsg } }
 const gpDupFstTermEr = gp => {
     const dup = lyFstTermDupSet(gpLy(gp))
-    const o=[]
-    for([ix,lin] of gp) {
+    const o = []
+    for ([ix, lin] of gp) {
         let fst = linFstTerm(lin)
-        if(dup.has(fst)) {
-            const er = new Er(ix,[`"duplicate(${fst})`],[])
+        if (dup.has(fst)) {
+            const er = new Er(ix, [`"duplicate(${fst})`], [])
             o.push(er)
         }
     }
     return o
 }
-const bkPm = bk => { 
-    if(bk===undefined) return[new Map(),[]]
+const bkPm = bk => {
+    if (bk === undefined) return [new Map(), []]
     const er = gpDupFstTermEr(bk.gp)
     const ly = gpLy(bk.gp)
     const pm = lyMap(ly)
-    return[pm,er]
+    return [pm, er]
 }
-const vdt = ([itmErPred, itmErMap]) => ([ery,itr]) => {
-    const[erItr,remainingItr] = itrBrkForTrueFalse(itmErPred)(itr)
+const vdt = ([itmErPred, itmErMap]) => ([ery, itr]) => {
+    const [erItr, remainingItr] = itrBrkForTrueFalse(itmErPred)(itr)
     const ery1 = itrMap(itmErMap)(erItr)
     const ery2 = ery.concat(ery1)
-    return[ery2,remainingItr]
+    return [ery2, remainingItr]
 }
 const linTermAy = lin => lin.trim().split(/\s+/)
 const linFmT3DupTermSet = lin => {
@@ -185,64 +188,65 @@ const linTermPosAy = lin => {
     let j = 0
     let pos = 0
     do {
-        if((j++)>100)
+        if ((j++) > 100)
             throw new Error('looping too much')
-        let [x,a1,a2,a3] = a.match(/(\s*)(\S+)(.*)/)
-        if(a1!=="") {
+        let [x, a1, a2, a3] = a.match(/(\s*)(\S+)(.*)/)
+        if (a1 !== "") {
             pos = pos + a1.length
             o.push(pos)
             pos = pos + a2.length
         } else {
-            if(a3!=="")
+            if (a3 !== "")
                 throw new Error('impossible')
         }
         a = a3
-    } while (a.trim()!=="");
+    } while (a.trim() !== "");
     return o
 }
 //const xx  = linTermPosAy(" sdf lk fdf d  ")
-const linAddMrk = (lin,pos,len) => {
+const linAddMrk = (lin, pos, len) => {
     const s = spc(pos - lin.length)
     const m = '^'.repeat(len)
     return lin + s + m
-} 
+}
 const spc = n => " ".repeat(n)
 const linFmT3DupTermMrk = lin => {
     const dup = linFmT3DupTermSet(lin)
     const termPosAy = linTermPosAy(lin)
     const termAy = linTermAy(lin)
     let o = ""
-    for(let j=2;j<termAy.length;j++) {
+    for (let j = 2; j < termAy.length; j++) {
         let term = termAy[j]
-        if(dup.has(term)) {
+        if (dup.has(term)) {
             const pos = termPosAy[j]
             const len = term.length
-            o = linAddMrk(o,pos,len)
+            o = linAddMrk(o, pos, len)
         }
     }
     return o
 }
 const SwEr = {}
 SwEr.FmT3Dup = {}
-SwEr.FmT3Dup.gpErPred = (ix,lin) => linFmT3DupTermSet(lin).size>0
-SwEr.FmT3Dup.gpEr = (ix,lin) => new Er(ix,[linFmT3DupTermMrk(lin)],[])
-const gperVdt = vdtItm => (gp,er) => {
+SwEr.FmT3Dup.gpErPred = (ix, lin) => linFmT3DupTermSet(lin).size > 0
+SwEr.FmT3Dup.gpEr = (ix, lin) => new Er(ix, [linFmT3DupTermMrk(lin)], [])
+const gperVdt = vdtItm => (gp, er) => {
     const p = vdtItm.hasEr
     const m = vdtItm.erFun
-    const [erGp,remainingGp] = gpSplitForErAndRemain(p)(gp)
-        const e1 = itrMap(m)(erGp)
-    return[]
-    const bkSw_process_SwEr = (gp,er,SwEr) => {}
-const bkSw = pm => bk => {
-    if(bk===undefined) return[new Map(),[]]
-    let er = gpDupFstTermEr(bk.gp)
-    let gp = bk.gp
-    for(let swErItm of oPrpAy(SwEr)) {
-        [e,gp] = gperVdt(gp, er)(swErItm)
-        er = er.concat(e)
+    const [erGp, remainingGp] = gpSplitForErAndRemain(p)(gp)
+    const e1 = itrMap(m)(erGp)
+    return []
+    const bkSw_process_SwEr = (gp, er, SwEr) => { }
+    const bkSw = pm => bk => {
+        if (bk === undefined) return [new Map(), []]
+        let er = gpDupFstTermEr(bk.gp)
+        let gp = bk.gp
+        for (let swErItm of oPrpAy(SwEr)) {
+            [e, gp] = gperVdt(gp, er)(swErItm)
+            er = er.concat(e)
+        }
+        const sw = lySw(gpLy(gp))
+        return [sw, er]
     }
-    const sw = lySw(gpLy(gp))
-    return[sw,er]
 }
 //=====================================================
 const sqtp = `-- Rmk: -- is remark
@@ -383,4 +387,3 @@ $Qty    Sum(Qty)
 $Amt    Sum(Amt)
 ============================================`
 console.log(sqtprslt(sqtp))
-}

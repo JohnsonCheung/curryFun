@@ -110,7 +110,7 @@ namespace curryfun {
     const sbsRevPos = (sbs: sOrRe) => (s: s) => s.search(sbs)
     const cmlNm = (nm: s) => cmlNy(nm).reverse().join(' ') // @eg cmlNm(relItmNy) === 'Ny Itm rel'
     const cmlNy = (nm: s) => {
-        const o = []
+        const o:ay= []
         if (nm.trim() === '')
             return o
         let j = 0
@@ -123,7 +123,7 @@ namespace curryfun {
             else
                 o.push(i.trim())
         }
-        return
+        return o
         function pseg() {
             let o = pchr()
             let j = 0
@@ -262,8 +262,8 @@ namespace curryfun {
 
     })
     //-----------------------------------------------------------------------
-    const where = p => itr => { const o = []; for (let i of itr) if (p(i)) o.push(i); return o }
-    const map = (f: f) => itr => { const o = []; for (let i of itr) o.push(f(i)); return o }
+    const where = p => itr => { const o:ay = []; for (let i of itr) if (p(i)) o.push(i); return o }
+    const map = (f: f) => itr => { const o:ay = []; for (let i of itr) o.push(f(i)); return o }
     const each = f => itr => { for (let i of itr) f(i) }
     const fold = f => cum => itr => { for (let i of itr) cum = f(cum)(i); return cum }
     const reduce = f => itr => fold(f)(itrFst(itr))(itr)
@@ -277,9 +277,9 @@ namespace curryfun {
     const mapKset = mp => new Set(mp.keys())
     const $map = { mapKy, mapVy, mapKvy, mapKset }
     //---------------------------------------------------------------------------
-    const setAy = set => { const o = []; for (let i of set) o.push(i); return o }
+    const setAy = set => { const o:ay = []; for (let i of set) o.push(i); return o }
     const setWhere = p => set => {
-        const z = new Set
+        const z = new Set()
         for (let i of set)
             if (p(i))
                 z.add(i)
@@ -288,7 +288,7 @@ namespace curryfun {
     const setAdd = x => set => { for (let i of x) set.add(i); return set }
     const setMinus = x => set => { for (let i of x) set.delete(i); return set }
     const setAft_ = (incl, a, set) => {
-        const z = new Set
+        const z = new Set()
         let found = false
         for (let i of set)
             if (found)
@@ -305,8 +305,8 @@ namespace curryfun {
     const setAft = a => set => setAft_(false, a, set)
     const setAftIncl = a => set => setAft_(true, a, set)
     const setClone = set => itrSet(set)
-    const itrSet = itr => { const o = new Set; for (let i of itr) o.add(i); return o }
-    const setMap = f => set => { const o = new Set; for (let i of set) o.add(f(i)); return o }
+    const itrSet = itr => { const o = new Set(); for (let i of itr) o.add(i); return o }
+    const setMap = f => set => { const o = new Set(); for (let i of set) o.add(f(i)); return o }
     const $set = { setAft, setAftIncl, setMinus, setAdd, setAy, setWhere, setMap, setClone }
     //---------------------------------------------------------------------------
     const lyReDry = re => ly => map(matchDr)(lyMatchAy(re)(ly))
@@ -353,8 +353,8 @@ namespace curryfun {
     const itrPredIsAllFalse = pred => itr => { for (let i of itr) if (pred(i)) return false; return true }
     const itrPredIsSomeFalse = pred => itr => { for (let i of itr) if (!pred(i)) return true; return false }
     const itrPredIsSomeTrue = pred => itr => { for (let i of itr) if (pred(i)) return true; return false }
-    const itrBrkForTrueFalse = pred => itr => { const t = [], f = []; for (let i of itr) pred(i) ? t.push(i) : f.push(i); return [t, f] }
-    const itrAy = itr => { const o = []; for (let i of itr) o.push(i); return o }
+    const itrBrkForTrueFalse = pred => itr => { const t:ay = [], f:ay = []; for (let i of itr) pred(i) ? t.push(i) : f.push(i); return [t, f] }
+    const itrAy = itr => { const o:ay = []; for (let i of itr) o.push(i); return o }
     const itrFst = itr => { for (let i of itr) return i }
     const itrAddPfxSfx = (pfx, sfx) => itr => map(addPfxSfx(pfx, sfx))(itr)
     const itrAddPfx = pfx => itr => map(addPfx(pfx))(itr)
@@ -461,8 +461,8 @@ namespace curryfun {
     const drySrt = fun_of_dr_to_key => dry => dry.sort((dr_A, dr_B) => compare(fun_of_dr_to_key(dr_A), fun_of_dr_to_key(dr_B)))
     const $dry = { drySrt, dryTfmCell, dryTfmCol, dryColWdt, dryCol, dryColCnt, dryColWdtAy }
     //-----------------------------------------------------------------------
-    const oyPrpCol = prpNm => oy => { const oo = []; for (let o of oy) oo.push(o[prpNm]); return oo }
-    const oyPrpDry = prpNy => oy => { const oo = []; for (let o of oy) oo.push(oPrpAy(prpNy)(o)); return oo }
+    const oyPrpCol = prpNm => oy => { const oo:ay = []; for (let o of oy) oo.push(o[prpNm]); return oo }
+    const oyPrpDry = prpNy => oy => { const oo:ay = []; for (let o of oy) oo.push(oPrpAy(prpNy)(o)); return oo }
     const $oy = { oyPrpCol, oyPrpDry }
     //-------------------------------------
     const pipe = v => (...f) => { let o = v; for (let ff of f) o = ff(o); return o }
