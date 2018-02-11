@@ -1,64 +1,83 @@
 /// <reference path="./typings/node/node.d.ts"/>
-declare type pred<a> = (a: a) => boolean
+declare type pmErLy = Promise<{ er, ly }> 
+declare type p = (a:any) => boolean
 declare type ay = Array<any>
-declare type arr<a> = Array<a>
 declare type s = string
-declare type int = number
+declare type map = Map<any, any>
+declare type itr = Iterable<any>
+declare type pth = s
 declare type f = (a: any) => any
-declare type p = (a: any) => boolean
+declare type cummulator = (cum: any) => (itm: any) => any
 declare type re = RegExp
-declare type brk = (sep: sOrRe) => (s: s) => s1s2
-declare type tak = (sep: sOrRe) => (s: s) => s
+declare type brk = (sep: s) => (s: s) => s1s2
+declare type tak = (sep: s) => (s: s) => s
 declare type sTfm = (s: s) => s
 declare type sOrRe = (s | re)
 declare type sOrSy = (s | s[])
 declare type ensSy = (sOrSy: sOrSy) => void
 declare type ensRe = (sOrRe: sOrRe) => void
-declare type n = int
+declare type n = number
 declare type split = (s: s) => s[]
-declare const er1: (msg: s) => (...v: any[]) => void
 interface s1s2 { s1: string, s2: string }
 interface erRslt { er: any, rslt: any }
-interface path { sep: s }
-interface module { exports: any }
-declare const module: module
+//---------------------------------------
 const fs = require('fs')
-const path: path = require('path')
+const path = require('path')
 const os = require('os')
+const strictEqual = require('assert').strictEqual
+const eq = act => exp => { try { strictEqual(act, exp) } catch (e) { debugger } }
 //---------------------------------------
 const vEQ = a => v => a === v
 const vNE = a => v => a !== v
 const vGT = a => v => v > a
-const vIN = (itr: Iterable<any>) => v => { for (let i of itr) if (i === v) return true; return false }
-const vNIN = itr => v => !vIN(itr)(v)
+const vIN = (itr: itr) => v => { for (let i of itr) if (i === v) return true; return false }
+const vNIN = (itr: itr) => v => !vIN(itr)(v)
 const vLT = a => v => v < a
 const vGE = a => v => v >= a
 const vLE = a => v => v <= a
 const vBET = (a, b) => v => a <= v && v <= b
 const vNBET = (a, b) => v => !vBET(a, b)(v)
 const vIsInstanceOf = x => v => v instanceof x
-//----------------------------------
 const ensSy: ensSy = sOrSy => {
     if (isSy(sOrSy)) return sOrSy
-    if (isStr(sOrSy)) {
+    if (typeof sOrSy === 'string') {
         let s: string = sOrSy
         return splitSpc(sOrSy)
     }
     er('Given [syOrStr] is neither str nor sy', sOrSy)
 }
 const ensRe: ensRe = sOrRe => isRe(sOrRe) ? sOrRe : new RegExp(sOrRe)
+//-------------------------------------
+const pipe = v => (...f:f[]) => { let o = v; for (let ff of f) o = ff(o); return o }
+const apply = v => (f:f) => f(v)
+const swap = (f:f) => a => b => f(b)(a)
+const compose = (...f:f[]) => v => pipe(v)(...f)
 //----------------------------------
 const dmp = global.console.log
+const funDmp = f => dmp(f.toString())
 const halt = () => { throw new Error() }
-const er = (msg: string, ...v) => {
-    debuglog(`\n-- error[${msg}] ------------------------\n`)
+const sEscLf = (s:s) => s.replace('\n','\\n')
+const sEscCr = (s:s) => s.replace('\r','\\r')
+const sEscTab = (s:s) => s.replace('\t','\\t')
+const sEsc = compose(sEscLf,sEscCr,sEscTab)
+const sBox =(s:s) => { const b = "== " + sEsc(s) + " ==", a = "=".repeat(b.length); return [a,b,a].join("\r\n") }
+const stack = () => { try { throw new Error() } catch(e) { return e.stack } }
+const er = (msg: s, ...v) => {
+    let a = stack()
+    let b = a.split(/\n/)
+    let c = b[3]
+    let d = c.split(/\s+/)
+    let breakingFunNm = d[2]
+    let hdr = sBox(breakingFunNm)
+    dmp(hdr)
+    dmp(`error[${msg}] ------------------------\n`)
     each(dmp)(v)
-    let isDbg = true
-    if (isDbg)
-        debugger
-    halt()
+    dmp(a)
+    dmp('------------------------------------------------')
+    let dbg = true
+    debugger
+    if(dbg) halt()
 }
-
 //-----------------------------------------------------------------------
 const split = (sep: sOrRe) => (s: s) => s.split(sep)
 const splitCrLf = split('\r\n')
@@ -66,16 +85,18 @@ const splitLf = split('\n')
 const splitSpc = split(/\s+/)
 const splitCommaSpc = split(/,\s*/)
 //-----------------------------------------------------------------------
-const ayFindIx = (p: p) => ay => { for (let i in ay) if (p(ay[i])) return i; return null }
+const dft = dft => v => v === null ? dft : v
+const ayFindIx = (p: p) => (ay: ay) => { for (let i in ay) if (p(ay[i])) return Number(i); return null }
+const ayFindIxOrDft = (dftIx: n) => (p: p) => (ay: ay) => { let n: n = dft(dftIx)(ayFindIx(p)(ay)); return n }
 const ayFst = (ay: ay) => ay[0]
 const aySnd = (ay: ay) => ay[1]
 const ayLas = (ay: ay) => ay[len(ay) - 1]
 const ayEle = (ix: n) => (ay: ay) => ay[ix]
 const ayTfm = (f: f) => (ay: ay) => { for (let i in ay) ay[i] = f(ay[i]) }
-const aySetEle: (ix: n) => (v: any) => (ay: ay) => void = (ix: n) => v => (ay: ay) => ay[ix] = v
+const aySetEle = (ix: n) => v => (ay: ay) => ay[ix] = v
 const ayTfmEle = (ix: n) => (f: f) => (ay: ay) => ay[ix] = f(ay[ix])
 //-----------------------------------------------------------------------
-const jn = sep => ay => ay.join(sep)
+const jn = (sep?: s) => (ay: ay) => ay.join(sep)
 const jnCrLf = jn('\r\n')
 const jnLf = jn('\n')
 const jnSpc = jn(' ')
@@ -98,6 +119,12 @@ const right = (n: n) => (s: s) => {
     if (0 >= n) return ''
     return s.substr(-n)
 }
+const padZero = (dig: n) => (n: n) => {
+    const s = String(n)
+    const nZer = dig - s.length
+    const z = nZer > 0 ? "0".repeat(nZer) : ""
+    return z + s
+}
 const alignL = (w: n) => (s: s) => {
     const l = len(s)
     if (l > w) return s
@@ -109,8 +136,16 @@ const alignR = w => s => {
     return ' '.repeat(w - l) + s
 }
 const sWrt = ft => s => fs.writeFileSync(ft, s)
-const sbsPos = (sbs: sOrRe) => (s: s) => s.search(sbs)
-const sbsRevPos = (sbs: sOrRe) => (s: s) => s.search(sbs)
+const sbsPos = (sbs: s) => (s: s) => { const l = sbs.length; for (let j = 0; j < s.length - l + 1; j++) if (sbs === s.substr(j, l)) return j; return -1 }
+//strictEqual(sbsPos('aabb')('123aabb'),3)
+const sbsRevPos = (sbs: s) => (s: s) => {
+    const sbsLen = sbs.length
+    for (let j = s.length - sbsLen + 1; j > 0; j--) {
+        if (sbs === s.substr(j, sbsLen)) return j
+    }
+    return -1
+}
+//strictEqual(sbsRevPos('a')('0123aabb'),5)
 const cmlNm = (nm: s) => cmlNy(nm).reverse().join(' ') // @eg cmlNm(relItmNy) === 'Ny Itm rel'
 const cmlNy = (nm: s) => {
     const o: s[] = []
@@ -178,6 +213,19 @@ const brkAt: (at: n, len: n) => (s: s) => s1s2 = (at, len) => s => {
 const brk1: brk = sep => s => { const at = sbsPos(sep)(s); return at === -1 ? { s1: trim(s), s2: '' } : brkAt(at, len(sep))(s) }
 const brk2: brk = sep => s => { const at = sbsPos(sep)(s); return at === -1 ? { s1: '', s2: trim(s) } : brkAt(at, len(sep))(s) }
 const brk: brk = sep => s => { const at = sbsPos(sep)(s); return brkAt(at, len(sep))(s) }
+const brkQuote = (quote: s) => {
+    const l = len(quote)
+    if (l === 1) return { q1: quote, q2: quote }
+    if (l === 2) return { q1: quote.substr(0, 1), q2: quote.substr(1) }
+    let p = sbsPos("*")(quote)
+    if (p === -1) return null
+    let { s1: q1, s2: q2 } = brkAt(p, 1)(quote)
+    return { q1, q2 }
+}
+const quote = q => s => {
+    let a = brkQuote(q);
+    if (a === null) return s; else { let { q1, q2 } = a; return q1 + s + q2 };
+}
 //-----------------------------------------------------------------------
 const takBef: tak = sep => s => revBrk2(sep)(s).s1
 const takAft: tak = sep => s => revBrk1(sep)(s).s2
@@ -190,15 +238,18 @@ const revTakAft: tak = sep => s => revBrk1(sep)(s).s2
 //-----------------------------------------------------------------------
 const rmvFstChr: sTfm = mid(1)
 const rmvLasChr: sTfm = s => left(len(s) - 1)(s)
+const rmvLasNChr = (n: n) => (s: s) => left(len(s) - n)(s)
 const rmvSubStr = (sbs: s) => (s: s) => { const re = new RegExp(sbs, 'g'); return s.replace(re, '') }
 const rmvColon = rmvSubStr(":")
 //-----------------------------------------------------------
 const pthSep = path.sep
 //-----------------------------------------------------------------------
-const ffnPth = (ffn: s) => { const at = sbsPos(pthSep)(ffn); return at === -1 ? "" : left(at + 1)(ffn) }
-const ffnFn = (ffn: s) => { const at = sbsPos(pthSep)(ffn); return at === -1 ? ffn : mid(at + 1)(ffn) }
-const ffnExt = (ffn: s) => { const at = sbsPos('.')(ffn); return at === -1 ? '' : mid(at)(ffn) }
+const ffnPth = (ffn: s) => { const at = sbsRevPos(pthSep)(ffn); return at === -1 ? '' : left(at + 1)(ffn) }
+const ffnFn = (ffn: s) => { const at = sbsRevPos(pthSep)(ffn); return at === -1 ? ffn : mid(at + 1)(ffn) }
+const ffnExt = (ffn: s) => { const at = sbsRevPos('.')(ffn); return at === -1 ? '' : mid(at)(ffn) }
+const ffnAddFnSfx = (sfx: s) => (ffn: s) => ffnFfnn(ffn) + sfx + ffnExt(ffn)
 const rmvExt = (ffn: s) => { const at = sbsPos('.')(ffn); return at === -1 ? ffn : left(at)(ffn) }
+const ffnFfnn = rmvExt
 const ffnFnn = (ffn: s) => ffnFn(rmvExt(ffn))
 //-----------------------------------------------------------------------
 const ftLines: (ft: s) => s = ft => (fs.readFileSync(ft).toString())
@@ -225,31 +276,43 @@ const tmpFilFm = fm => {
  * @param {...any} p 
  * @see
  */
-const pm = (f, ...p) => new Promise(
+const pm = (f, ...p) => new Promise<any>(
     (rs, rj) => {
-        f(...p, (er, rslt) => {
-            // debugger
-            rs({ er, rslt })
+        f(...p, (e, rslt) => {
+            e ? rj(e) : rs(rslt)
         })
     }
 )
-const ftLinesPm = async (ft: s) => await pm(fs.readFile, ft).then(({ er, rslt }) => { let lines: s = rslt.toString(); return { er, lines } })
-const ftLyPm = async (ft: s) => await ftLinesPm(ft).then(({ er, lines }) => { return { er, ly: splitCrLf(lines) } })
-ftLyPm(__filename).then(s => {
-    debugger
-
-})
+const ftLinesPm = (ft: s) => pm(fs.readFile, ft).then(rslt => rslt.toString())
+const ftLyPm = (ft: s) => ftLinesPm(ft).then(lines =>splitCrLf(lines))
+const pthEns = (a:pth) => { if (!fs.existsSync(a)) fs.mkdirSync(a) }
+const isPthExist = (a:pth) => fs.existsSync(a)
+const assertIsPthExist = (a: pth) => { if (!isPthExist(a)) er(`path does not exist [${a}]`) }
+const pthEnsSfxSep = (a: pth) => lasChr(a) === pthSep ? a : a + pthSep
+const pthEnsSubFdr = (subFdr: s) => (pth: s) => { 
+    assertIsPthExist(pth)
+    let b = subFdr.split(/[\\\/]/)
+    let c = itrRmvEmp(b)
+    let d = pthEnsSfxSep(pth)
+    let e:ay = []
+    for(let seg of c) {
+        d += seg + '\\';
+        e.push(d)
+    }
+    each(pthEns)(e)
+}
 //-----------------------------------------------------------------------
-const where = (p: p) => itr => { const o: ay = []; for (let i of itr) if (p(i)) o.push(i); return o }
-const map = (f: f) => itr => { const o: ay = []; for (let i of itr) o.push(f(i)); return o }
-const each = f => itr => { for (let i of itr) f(i) }
-const fold = f => cum => itr => { for (let i of itr) cum = f(cum)(i); return cum }
-const reduce = f => itr => fold(f)(itrFst(itr))(itr)
+const where = (p: p) => (a: itr) => { const o: ay = []; for (let i of a) if (p(i)) o.push(i); return o }
+const exclude = (p: p) => (a: itr) => { const o: ay = []; for (let i of a) if (!p(i)) o.push(i); return o }
+const map = (f: f) => (a: itr) => { const o: ay = []; for (let i of a) o.push(f(i)); return o }
+const each = (f: f) => (a: itr) => { for (let i of a) f(i) }
+const fold = (f: cummulator) => cum => (a: itr) => { for (let i of a) cum = f(cum)(i); return cum }
+const reduce = f => (a: itr) => fold(f)(itrFst(a))(a)
 //---------------------------------------------------------------------------
-const mapKy = mp => map(mp.keys())
-const mapVy = mp => itrAy(mp.values())
-const mapKvy = mp => itrAy(mp.entries())
-const mapKset = mp => new Set(mp.keys())
+const mapKy = (a: map) => a.keys()
+const mapVy = (a: map) => a.values()
+const mapKvy = (a: map) => a.entries()
+const mapKset = (a: map) => new Set(a.keys())
 //---------------------------------------------------------------------------
 const setAy = set => { const o: ay = []; for (let i of set) o.push(i); return o }
 const setWhere = p => set => {
@@ -261,7 +324,7 @@ const setWhere = p => set => {
 }
 const setAdd = x => set => { for (let i of x) set.add(i); return set }
 const setMinus = x => set => { for (let i of x) set.delete(i); return set }
-const setAft_ = (incl, a, set) => {
+const _setAft = (incl, a, set) => {
     const z = new Set
     let found = false
     for (let i of set)
@@ -276,8 +339,8 @@ const setAft_ = (incl, a, set) => {
         }
     return z
 }
-const setAft = a => set => setAft_(false, a, set)
-const setAftIncl = a => set => setAft_(true, a, set)
+const setAft = a => set => _setAft(false, a, set)
+const setAftIncl = a => set => _setAft(true, a, set)
 const setClone = set => itrSet(set)
 const itrSet = itr => { const o = new Set; for (let i of itr) o.add(i); return o }
 const setMap = f => set => { const o = new Set; for (let i of set) o.add(f(i)); return o }
@@ -309,35 +372,57 @@ const isRe = v => vIsInstanceOf(RegExp)
 const isNonNull = v => v !== null
 const isNull = v => v === null
 const isUndefined = v => v === undefined
-const isTrue = v => !!v
-const isFalse = v => !!v
-const isEmp = isFalse
-const isNonEmp = isTrue
+const isTrue = v => !!v;
+const isFalse = v => !v;
+const isEmp = v => v?false:true
+const isNonEmp = v => v?true:false
 const isOdd = n => n % 2 === 1
 const isEven = n => n % 2 === 0
 //----------------------------------------------------------------------------
-const itrIsAllTrue = itr => { for (let i of itr) if (isFalse(i)) return false; return true }
-const itrIsAllFalse = itr => { for (let i of itr) if (isTrue(i)) return false; return true }
-const itrIsSomeTrue = itr => { for (let i of itr) if (isTrue(i)) return true; return false }
-const itrIsSomeFalse = itr => { for (let i of itr) if (isFalse(i)) return true; return false }
-const itrPredIsAllTrue = pred => itr => { for (let i of itr) if (!pred(i)) return false; return true }
-const itrPredIsAllFalse = pred => itr => { for (let i of itr) if (pred(i)) return false; return true }
-const itrPredIsSomeFalse = pred => itr => { for (let i of itr) if (!pred(i)) return true; return false }
-const itrPredIsSomeTrue = pred => itr => { for (let i of itr) if (pred(i)) return true; return false }
-const itrBrkForTrueFalse = (p: p) => itr => { const t: ay = [], f: ay = []; for (let i of itr) p(i) ? t.push(i) : f.push(i); return [t, f] }
-const itrAy = itr => { const o: ay = []; for (let i of itr) o.push(i); return o }
-const itrFst = itr => { for (let i of itr) return i }
-const itrAddPfxSfx = (pfx, sfx) => itr => map(addPfxSfx(pfx, sfx))(itr)
-const itrAddPfx = pfx => itr => map(addPfx(pfx))(itr)
-const itrAddSfx = sfx => itr => map(addSfx(sfx))(itr)
-const itrWdt = itr => pipe(map(len)(itr))(itrMax)
-const itrAlignL = itr => map(alignL(itrWdt(itr)))(itr)
-const itrClone = itr => map(i => i)(itr)
-const itrFind = pred => itr => { for (let i of itr) if (pred(i)) return i }
-const itrHasDup = itr => { const set = new Set(); for (let i of itr) if (set.has(i)) { return true } else set.add(i); return false }
-const itrMax = itr => { let o = itrFst(itr); for (let i of itr) if (i > o) o = i; return o }
-const itrMin = itr => { let o = itrFst(itr); for (let i of itr) if (i < o) o = i; return o }
-const itrRmvEmp = itr => where(isNonEmp)(itr)
+const sSearch = (re: RegExp) => (s: s) => s.search(re)
+const sBrkP123 = (quote: s) => (s: s) => {
+    const a = brkQuote(quote)
+    if (a === null) return null
+    else {
+        const { q1, q2 } = a
+        const l = s.length
+        const q1pos = s.indexOf(q1);
+        const q2pos = s.indexOf(q2, q1pos + 1);
+        const len1 = q1pos
+        const pos2 = q1pos + q1.length
+        const pos3 = q2pos + q2.length
+        const len2 = pos3 - pos2 - 1
+        const p1 = s.substr(0, len1)
+        const p2 = s.substr(pos2, len2)
+        const p3 = s.substr(pos3)
+        return { p1, p2, p3 }
+    }
+}
+//let a = sBrkP123("(backup-*)")("slkdfjlsdjf(backup-123).exe");debugger
+//----------------------------------------------------------------------------
+const itrIsAllTrue = (a: itr) => { for (let i of a) if (isFalse(i)) return false; return true }
+const itrIsAllFalse = (a: itr) => { for (let i of a) if (isTrue(i)) return false; return true }
+const itrIsSomeTrue = (a: itr) => { for (let i of a) if (isTrue(i)) return true; return false }
+const itrIsSomeFalse = (a: itr) => { for (let i of a) if (isFalse(i)) return true; return false }
+const itrPredIsAllTrue = (p: p) => (a: itr) => { for (let i of a) if (!p(i)) return false; return true }
+const itrPredIsAllFalse = (p: p) => (a: itr) => { for (let i of a) if (p(i)) return false; return true }
+const itrPredIsSomeFalse = (p: p) => (a: itr) => { for (let i of a) if (!p(i)) return true; return false }
+const itrPredIsSomeTrue = (p: p) => (a: itr) => { for (let i of a) if (p(i)) return true; return false }
+const itrBrkForTrueFalse = (p: p) => (a: itr) => { const t: ay = [], f: ay = []; for (let i of a) p(i) ? t.push(i) : f.push(i); return [t, f] }
+const itrAy = (a: itr) => { const o: ay = []; for (let i of a) o.push(i); return o }
+const itrFst = (a: itr) => { for (let i of a) return i; return null }
+const itrAddPfxSfx = (pfx, sfx) => (a: itr) => map(addPfxSfx(pfx, sfx))(a)
+const itrAddPfx = pfx => (a: itr) => map(addPfx(pfx))(a)
+const itrAddSfx = sfx => (a: itr) => map(addSfx(sfx))(a)
+const itrWdt = (a: itr) => Number(pipe(map(len)(a))(itrMax))
+const itrAlignL = (a: itr) => map(alignL(itrWdt(a)))(a)
+const itrClone = (a: itr) => map(i => i)(a)
+const itrFind = (p: p) => (a: itr) => { for (let i of a) if (p(i)) return i; return null }
+const itrHasDup = (a: itr) => { const set = new Set(); for (let i of a) if (set.has(i)) { return true } else set.add(i); return false }
+const itrDupSet = (a: itr) => { const set = new Set(), o = new Set(); for (let i in a) if (set.has(i)) { o.add(i) } else set.add(i); return o }
+const itrMax = (a: itr) => { let o = itrFst(a); for (let i of a) if (i > o) o = i; return o }
+const itrMin = (a: itr) => { let o = itrFst(a); for (let i of a) if (i < o) o = i; return o }
+const itrRmvEmp = (a: itr) => where(isNonEmp)(a)
 //-----------------------------------------------------------------------------------------
 const must = (p, t) => v => { if (!p(v)) er(`given v must be [${t}]`, { v }) }
 const mnon = (p, t) => v => { if (p(v)) er(`given v must be non-[${t}]`, { v }) }
@@ -393,8 +478,8 @@ const oHasCtorNm = nm => o => oCtorNm(o) === nm
  * const a = {b: {c:{1}}
  * require('assert').equal(prp('b.c')(o), 1) 
  */
-const oPrp = prpPth => o => { for (let nm of prpPth.split('.')) if (!(o = o[nm])) return undefined; return o }
-const oPrpAy = prpNy => o => map(nm => oPrp(nm)(o))(prpNy)
+const oPrp = (prpPth: s) => (o: object) => { for (let nm of prpPth.split('.')) if (!(o = o[nm])) return undefined; return o }
+const oPrpAy = (prpNy: s[]) => (o: object) => map(nm => oPrp(nm)(o))(prpNy)
 const oPrpNy = o => Object.getOwnPropertyNames(o)
 const oHasPrp = prpNm => o => { try { return o[prpNm] !== undefined } catch (e) { return false } }
 const oHasLen = oHasPrp('length')
@@ -407,10 +492,7 @@ const oCmlObj = o => {
 // ----------------------------------------------
 const dryColWdt = colIx => dry => itrWdt(dryCol(colIx)(dry))
 const dryColWdtAy = dry => map(i => dryColWdt(i)(dry))(nItr(dryColCnt(dry)))
-const dryCol = colIx => dry => {
-    debugger
-    map(ayEle(colIx))(dry)
-}
+const dryCol = colIx => dry => map(ayEle(colIx))(dry)
 const dryColCnt = dry => itrMax(map(len)(dry))
 const dryTfmCell = f => dry => { each(ayTfm(f))(dry) }
 const dryClone = dry => map(dr => itrClone(dr))(dry)
@@ -419,60 +501,104 @@ const drySrt = fun_of_dr_to_key => dry => dry.sort((dr_A, dr_B) => compare(fun_o
 //-----------------------------------------------------------------------
 const oyPrpCol = prpNm => oy => { const oo: ay = []; for (let o of oy) oo.push(o[prpNm]); return oo }
 const oyPrpDry = prpNy => oy => { const oo: ay = []; for (let o of oy) oo.push(oPrpAy(prpNy)(o)); return oo }
-//-------------------------------------
-const pipe = v => (...f) => { let o = v; for (let ff of f) o = ff(o); return o }
-const apply = o => f => f(o)
-const swap = f => a => b => f(b)(a)
-const compose = (...f) => v => pipe(v)(...f)
+//---------------------------------------
+const _isEsc = i => { for (let spec of "()[]{}/|.+") if (i === spec) return true }
+const _escSpec = lik => { const o: ay = []; for (let i of lik) o.push(i === '\\' ? '\\\\' : (_isEsc(i) ? '\\' + i : i)); return o.join('') }//; const xxx = _escSpec("abc?dd"); debugger
+const _escStar = lik => { const o: ay = []; for (let i of lik) o.push(i === '*' ? '.*' : i); return o.join('') }
+const _escQ = lik => { const o: ay = []; for (let i of lik) o.push(i === '?' ? '.' : i); return o.join('') }
+const _esc = lik => "^" + pipe(lik)(_escSpec, _escStar, _escQ) + "$"
+const _likRe = lik => new RegExp(_esc(lik))
+const sLik = (lik: s) => (s: s) =>  {
+    let a = _likRe(s)
+    let o = a.test(s)
+    return o
+}// strictEqual(sLik("abc?dd")("abcxdd"), true); debugger
+//---------------------------------------
+const pthFnAy = (pth: s, lik?: s) => {
+    if(!fs.existsSync(pth)) return null
+    const isFil = entry => fs.statSync(path.join(pth, entry)).isFile();
+    let entries = fs.readdirSync(pth)
+    entries = (lik === undefined) ? entries : where(sLik(lik))(entries)
+    let o: s[] = where(isFil)(entries)
+    return o
+}; // const xxx = pthFnAy("c:\\users\\user\\", "sdfdf*.*"); debugger;
+const ayZip = (a:ay,b:ay) => map(i=>[a[i],b[i]])(nItr(a.length))
+const pthFnAyPm = async (pth: s, lik?: s) => {
+    const entries = await pm(fs.readdir, pth)
+    const stat = entry => pm(fs.stat, path.join(pth, entry))
+    let a = (lik === undefined) ? entries : where(sLik(lik))(entries)
+    let b = await Promise.all(map(stat)(a))
+    let c: s[] = pipe(nItr(entries.length))(where(i => b[i].isFile()), map(i=>entries[i]))
+    debugger
+    return c
+}
 //---------------------------------------
 const multiply = a => b => a * b
 const divide = a => b => b / a
 const add = a => b => a + b
 const minus = a => b => b - a
-const nDecr = minus(1)
-const nIncr = add(1)
+const decr = minus(1)
+const incr = add(1)
 const nItr = function* (n) { for (let j = 0; j < n; j++) yield j }
-// -------------------------------------------------------------
+// --------------------------------------------------------------------------
 const compare = (a, b) => a === b ? 0 : a > b ? 1 : -1
-//---------------------------------------------------------------------------
 const lazy = vf => { let v, done = false; return () => { if (!done) { v = vf(); done = true }; return v } }
 //---------------------------------------------------------------------------
-const _maxBackupNm = ffn => {
+const optMap = (f: f) => a => a === null ? f(a) : a
+const ffnMakBackup = (ffn: s) => {
+    const ext = ffnExt(ffn)
+    const ffnn = rmvExt(ffn)
+    const pth = ffnPth(ffn)
+    let a = right(12)(ffnn)
+    const isBackupFfn = (hasPfx("(backup-")(a)) && (hasSfx(")")(a))
+    const fn = ffnFn(ffn)
+    const backupSubFdr = `.backup\\${fn}\\`
+    const backupPth = pth + backupSubFdr 
 
+    if (ext === '.backup') er("given [ext] cannot be '.backup", { ext, ffnn })
+    if (isBackupFfn) er("ffn cannot be a backup file name", { ffn })
+
+    let b = pthFnAy(backupPth, ffnn + '(backup-???)' + ext)
+    let nxtBackupNNN =
+        b === null || isEmp(b) ? '000' :
+            pipe(b)(itrMax, rmvExt, rmvLasChr, right(3), Number.parseInt, incr, padZero(3))
+    const backupFfn = backupPth +  ffnAddFnSfx(`(backup-${nxtBackupNNN})`)(fn)
+    pthEnsSubFdr(backupSubFdr)(pth); fs.copyFileSync(ffn, backupFfn)
 }
-const _ens_BackupFdr = ffn => {
-
+const lyExpStmt = ly => {
+    let ny = lyConstNy(ly)
+    ny = where(predNot(hasPfx("_")))(ny).sort()
+    const x = jnComma(ny)
+    const stmt = "module.exports = {" + x + "}"
+    return stmt
 }
-const _num_backup = ffn => {
+const curExpStmt = () => pipe(__filename)(ftLy, lyExpStmt)
+// dmp(curExpStmt); debugger
+const fjsRplExpStmt = fjs => {
+    const oldLy = ftLy(fjs)
+    const newLin = lyExpStmt(oldLy)
 
-}
-const ffnNxtBackupNm = ffn => {
-    _ens_BackupFdr(ffn)
-    _num_backup
-}
-const ffnRenToBackup = ffn => fs.renameSync(ffn, ffnNxtBackup(ffn))
-const fjsRplExportStmt = fjs => {
-    const oldCxtLy = ftLy(fjs)
-    const newLin = lyImpStmt(oldCxtLy)
-    const hasNewLin = isNonNull(oldLinIx)
+    let oldIx = ayFindIx(predsAnd(hasPfx("module.exports = {"), hasSfx("}")))(oldLy)
+    const oldLin = oldIx === null ? null : oldLy[oldIx]
 
-    const oldLinIx = ayFindIx(predsAnd(hasPfx("module.exports = {"), hasSfx("}")))(oldCxtLy)
-    const hasOldLin = isNonNull(oldLinIx)
-    const oldLin = hasOldLin ? oldCxtLy[oldLinIx] : null
-
-    const newCxt = () => {
+    const newLines = () => {
+        const hasNewLin = newLin !== null
+        const hasOldLin = oldLin != null
         switch (true) {
-            case (hasNewLin && hasOldLin): oldCxtLy[oldLinIx] = newLin; break
-            case (hasNewLin && !hasOldLin): oldCxtLy.concat(newLin); break
-            case (hasOldLin): oldCxtLy.splice(oldLinIx, 1); break
+            case (hasNewLin && hasOldLin): 
+                if(oldIx!==null) { oldLy[oldIx] = newLin; return jnCrLf(oldLy) } else { er("impossible"); halt() }
+            case (hasNewLin && !hasOldLin): 
+                return jnCrLf(oldLy.concat(newLin))
+            case (hasOldLin): 
+                if(oldIx === null) { er("impossible") } else { oldLy.splice(oldIx, 1); return jnCrLf(oldLy) }
             default:
+                er("impossible"); halt()
         }
-        return jnCrLf(oldCxtLy)
+        return jnCrLf(oldLy)
     }
-    const needupd = oldLin !== newLin
-    let write = () => { ffnRenToBackup(fjs); sWrt(fjs)(newCxt()) }
-    if (needUpd) write()
+    let a = newLines()
+    debugger
+    if (oldLin !== newLin) { debugger; ffnMakBackup(fjs); sWrt(fjs)(newLines()) }
 }
-//---------------------------------------------------------------------------
-//pipe(__filename)(ftConstDollarNy,dmp)
-export { map, where }
+
+fjsRplExpStmt(__filename)

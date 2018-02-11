@@ -10,7 +10,7 @@
             "request": "launch",
             "name": "Launch the Program",
             "program": "${file}",
-            "console": "internalConsole",
+//            "console": "internalConsole",
 //            "runtimeArgs": [
 //                "--experimental-modules"
 //            ]

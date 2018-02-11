@@ -326,6 +326,7 @@ const pthEnsSubFdr = (subFdr) => (pth) => {
         d += seg + '\\';
         e.push(d);
     }
+    debugger;
     each(pthEns)(e);
 };
 //-----------------------------------------------------------------------
@@ -646,16 +647,16 @@ const optMap = (f) => a => a === null ? f(a) : a;
 const ffnMakBackup = (ffn) => {
     const ext = ffnExt(ffn);
     const ffnn = rmvExt(ffn);
+    if (ext === '.backup')
+        er("given [ext] cannot be '.backup", { ext, ffnn });
     const pth = ffnPth(ffn);
     let a = right(12)(ffnn);
     const isBackupFfn = (hasPfx("(backup-")(a)) && (hasSfx(")")(a));
+    if (isBackupFfn)
+        er("ffn cannot be a backup file name", { ffn });
     const fn = ffnFn(ffn);
     const backupSubFdr = `.backup\\${fn}\\`;
     const backupPth = pth + backupSubFdr;
-    if (ext === '.backup')
-        er("given [ext] cannot be '.backup", { ext, ffnn });
-    if (isBackupFfn)
-        er("ffn cannot be a backup file name", { ffn });
     let b = pthFnAy(backupPth, ffnn + '(backup-???)' + ext);
     let nxtBackupNNN = b === null || isEmp(b) ? '000' :
         pipe(b)(itrMax, rmvExt, rmvLasChr, right(3), Number.parseInt, incr, padZero(3));
@@ -682,37 +683,22 @@ const fjsRplExpStmt = fjs => {
         const hasOldLin = oldLin != null;
         switch (true) {
             case (hasNewLin && hasOldLin):
-                if (oldIx !== null) {
-                    oldLy[oldIx] = newLin;
-                    return jnCrLf(oldLy);
-                }
-                else {
-                    er("impossible");
-                    halt();
-                }
+                oldLy[dft(-1)(oldIx)] = newLin;
+                break;
             case (hasNewLin && !hasOldLin):
-                return jnCrLf(oldLy.concat(newLin));
+                oldLy.concat(newLin);
+                break;
             case (hasOldLin):
-                if (oldIx === null) {
-                    er("impossible");
-                }
-                else {
-                    oldLy.splice(oldIx, 1);
-                    return jnCrLf(oldLy);
-                }
+                oldIx === null ? null : oldLy.splice(oldIx, 1);
+                break;
             default:
-                er("impossible");
-                halt();
         }
         return jnCrLf(oldLy);
     };
-    let a = newLines();
+    debugger;
     if (oldLin !== newLin) {
-        debugger;
         ffnMakBackup(fjs);
         sWrt(fjs)(newLines());
     }
 };
-fjsRplExpStmt(__filename);
-
-module.exports = {add,addPfx,addPfxSfx,addSfx,alignL,alignR,apply,assertIsPthExist,ayEle,ayFindIx,ayFindIxOrDft,ayFst,ayLas,aySetEle,aySnd,ayTfm,ayTfmEle,ayZip,brk,brk1,brk2,brkAt,brkQuote,cmlNm,cmlNy,compare,compose,curExpStmt,decr,dft,divide,dmp,dryClone,dryCol,dryColCnt,dryColWdt,dryColWdtAy,drySrt,dryTfmCell,dryTfmCol,each,ensRe,ensSy,eq,er,exclude,ffnAddFnSfx,ffnExt,ffnFfnn,ffnFn,ffnFnn,ffnMakBackup,ffnPth,fjsRplExpStmt,fold,fs,fstChr,ftConstDollarNy,ftConstNy,ftLines,ftLinesPm,ftLy,ftLyPm,funDmp,halt,hasPfx,hasSfx,incr,isAy,isBool,isDte,isEmp,isEven,isFalse,isFun,isNonEmp,isNonNull,isNonRmkLin,isNull,isNum,isObj,isOdd,isPthExist,isRe,isRmkLin,isStr,isSy,isTrue,isUndefined,itrAddPfx,itrAddPfxSfx,itrAddSfx,itrAlignL,itrAy,itrBrkForTrueFalse,itrClone,itrDupSet,itrFind,itrFst,itrHasDup,itrIsAllFalse,itrIsAllTrue,itrIsSomeFalse,itrIsSomeTrue,itrMax,itrMin,itrPredIsAllFalse,itrPredIsAllTrue,itrPredIsSomeFalse,itrPredIsSomeTrue,itrRmvEmp,itrSet,itrWdt,jn,jnComma,jnCommaSpc,jnCrLf,jnLf,jnSpc,lasChr,lazy,left,len,linRmvMsg,lyConstDollarNy,lyConstNy,lyExpStmt,lyMatchAy,lyReCol,lyReDry,map,mapKset,mapKvy,mapKy,mapVy,match,matchAyDry,matchAyFstCol,matchDr,mid,midN,minus,mnon,mnonEmp,multiply,musAy,musDte,musFun,musNum,musObj,musStr,must,nItr,notMatch,oBringUpDollarPrp,oCmlDry,oCmlObj,oCtorNm,oHasCtorNm,oHasLen,oHasPrp,oIsInstance,oPrp,oPrpAy,oPrpNy,optMap,os,oyPrpCol,oyPrpDry,padZero,path,pipe,pm,predNot,predsAnd,predsOr,pthEns,pthEnsSfxSep,pthEnsSubFdr,pthFnAy,pthFnAyPm,pthSep,quote,reduce,revBrk,revBrk1,revBrk2,revTakAft,revTakBef,right,rmvColon,rmvExt,rmvFstChr,rmvLasChr,rmvLasNChr,rmvPfx,rmvSfx,rmvSubStr,sBox,sBrkP123,sEsc,sEscCr,sEscLf,sEscTab,sLik,sSearch,sWrt,sbsPos,sbsRevPos,setAdd,setAft,setAftIncl,setAy,setClone,setMap,setMinus,setWhere,split,splitCommaSpc,splitCrLf,splitLf,splitSpc,stack,strictEqual,swap,takAft,takBef,tmpFfn,tmpFilFm,tmpFt,tmpNm,tmpPth,trim,vBET,vEQ,vGE,vGT,vIN,vIsInstanceOf,vLE,vLT,vNBET,vNE,vNIN,where}
+ffnMakBackup(__filename);
