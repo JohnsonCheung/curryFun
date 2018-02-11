@@ -4,17 +4,21 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "Launch the Program",
-            "program": "${file}",
-//            "console": "internalConsole",
-//            "runtimeArgs": [
-//                "--experimental-modules"
-//            ]
-        },
-    ]
-
+{
+    "type": "node",
+    "request": "launch",
+    "name": "Launch sqtp",
+    "program": "${workspaceFolder}/scripts/sqtp.js"
+},
+{
+    "type": "node",
+    "request": "launch",
+    "name": "Launch the Program",
+    "program": "${file}",
+    //            "console": "internalConsole",
+    //            "runtimeArgs": [
+    //                "--experimental-modules"
+    //            ]
+},
+]
 }
