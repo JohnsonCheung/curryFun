@@ -63,7 +63,7 @@ const sq05 = ({ bky, sw, pm, er }) => {
     let vtp = "", sq = "";
     return { vtp, sq };
 };
-const rm01 = bky => where(bk => bk.bkty !== 0 /* RM */)(bky);
+const rm01 = bky => where(bk => bk.bkty !== Bkty.RM)(bky);
 const er02 = bky => {
     let er = [][er, bky] = itrBrkForTrueFalse(isErBk)(bky);
     return { bky, er };

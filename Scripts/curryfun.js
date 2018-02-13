@@ -5,9 +5,9 @@ const path = require("path");
 const os = require("os");
 const child_process = require("child_process");
 //---------------------------------------
-exports.strictEqual = require('assert').strictEqual;
+const strictEqual = require('assert').strictEqual;
 const eq = act => exp => { try {
-    exports.strictEqual(act, exp);
+    strictEqual(act, exp);
 }
 catch (e) {
     debugger;
@@ -82,6 +82,7 @@ const splitSpc = split(/\s+/);
 const splitCommaSpc = split(/,\s*/);
 //-----------------------------------------------------------------------
 const dft = (dft) => (v) => v === null || v === undefined ? dft : v;
+const dftStr = dft("");
 const dftUpper = (a, b) => (v) => v === null || v === undefined || a > v || v > b ? b : v;
 const dftLoower = (a, b) => (v) => v === null || v === undefined || a > v || v > b ? a : v;
 const ayFindIx = (p) => (ay) => { for (let i in ay)
@@ -711,6 +712,8 @@ const ffnMakBackup = (ffn) => {
 const lyExpStmt = ly => {
     let ny = lyConstNy(ly);
     ny = where(predNot(hasPfx("_")))(ny).sort();
+    if (isEmp(ny))
+        return null;
     const x = jnAsLines(", ", 4, 120)(ny);
     const stmt = "module.exports = {\r\n" + x + "\r\n}";
     return stmt;
@@ -733,11 +736,11 @@ const fjsRplExpStmt = fjs => {
     const oldLin = (oldBegIx === null || oldEndIx === null) ? null : oldLy.slice(oldBegIx, oldEndIx);
     const newLines = () => {
         const hasNewLin = newLin !== null;
-        const hasOldLin = oldLin != null;
+        const hasOldLin = oldLin !== null;
         switch (true) {
             case (hasNewLin && hasOldLin):
                 if (oldBegIx !== null) {
-                    oldLy.splice(oldBegIx, oldEndIx, newLin);
+                    oldLy.splice(oldBegIx, oldEndIx, dftStr(newLin));
                     return jnCrLf(oldLy);
                 }
                 else {
@@ -745,7 +748,7 @@ const fjsRplExpStmt = fjs => {
                     halt();
                 }
             case (hasNewLin && !hasOldLin):
-                return jnCrLf(oldLy.concat(newLin));
+                return jnCrLf(oldLy.concat(dftStr(newLin)));
             case (hasOldLin):
                 if (oldBegIx === null) {
                     er("impossible");
@@ -761,9 +764,11 @@ const fjsRplExpStmt = fjs => {
         return jnCrLf(oldLy);
     };
     let a = newLines();
-    /*
-    if (oldLin !== newLin) { debugger; ffnMakBackup(fjs); sWrt(fjs)(newLines()) }
-    */
+    if (oldLin !== newLin) {
+        debugger;
+        ffnMakBackup(fjs);
+        sWrt(fjs)(newLines());
+    }
 };
 const vTee = f => a => { f(a); return a; };
 const ftWrt = (s) => (ft) => fs.writeFileSync(ft, s);
@@ -771,7 +776,26 @@ const cmdShell = (a) => child_process.exec(a);
 const ftBrw = (a) => cmdShell(`code.cmd "${a}"`);
 const sBrw = s => pipe(tmpFt())(vTee(ftWrt(s)), ftBrw);
 const oLines = o => JSON.stringify(o);
-sBrw(curExpStmt());
-//fjsRplExpStmt(ffnRplExt(".ts")(__filename))
-module.exports = { add, addPfx, addPfxSfx, addSfx, alignL, alignR, apply, assertIsPthExist, ayEle, ayFindIx, ayFindIxOrDft, ayFst, ayLas, aySetEle, aySnd, ayTfm, ayTfmEle, ayZip, brkQuote, cmdShell, cmlNm, cmlNy, compare, compose, curExpStmt, decr, dft, divide, dmp, dryClone, dryCol, dryColCnt, dryColWdt, dryColWdtAy, drySrt, dryTfmCell, dryTfmCol, each, eq, er, exclude, ffnAddFnSfx, ffnExt, ffnFfnn, ffnFn, ffnFnn, ffnMakBackup, ffnPth, ffnRplExt, fjsRplExpStmt, fold, fstChr, ftBrw, ftConstDollarNy, ftConstNy, ftLinesPm, ftLyPm, ftWrt, funDmp, halt, hasPfx, hasSfx, incr, isAy, isBool, isDte, isEmp, isEven, isFalse, isFun, isNonEmp, isNonNull, isNonRmkLin, isNull, isNum, isObj, isOdd, isPthExist, isRe, isRmkLin, isStr, isSy, isTrue, isUndefined, itrAddPfx, itrAddPfxSfx, itrAddSfx, itrAlignL, itrAy, itrBrkForTrueFalse, itrClone, itrDupSet, itrFind, itrFst, itrHasDup, itrIsAllFalse, itrIsAllTrue, itrIsSomeFalse, itrIsSomeTrue, itrMax, itrMin, itrPredIsAllFalse, itrPredIsAllTrue, itrPredIsSomeFalse, itrPredIsSomeTrue, itrRmvEmp, itrSet, itrWdt, jn, jnComma, jnCommaSpc, jnCrLf, jnLf, jnSpc, lasChr, lazy, left, len, linRmvMsg, lyConstDollarNy, lyConstNy, lyExpStmt, lyMatchAy, lyReCol, lyReDry, map, mapKset, mapKvy, mapKy, mapVy, match, matchAyDry, matchAyFstCol, matchDr, mid, midN, minus, mnon, mnonEmp, multiply, musAy, musDte, musFun, musNum, musObj, musStr, must, nItr, notMatch, oBringUpDollarPrp, oCmlDry, oCmlObj, oCtorNm, oHasCtorNm, oHasLen, oHasPrp, oIsInstance, oLines, oPrp, oPrpAy, oPrpNy, optMap, oyPrpCol, oyPrpDry, padZero, pipe, pm, predNot, predsAnd, predsOr, pthEns, pthEnsSfxSep, pthEnsSubFdr, pthFnAy, pthFnAyPm, pthSep, quote, reduce, right, rmvColon, rmvExt, rmvLasNChr, rmvPfx, rmvSfx, rmvSubStr, sBox, sBrkP123, sBrw, sEsc, sEscCr, sEscLf, sEscTab, sLik, sSearch, sWrt, sbsPos, sbsRevPos, setAdd, setAft, setAftIncl, setAy, setClone, setMap, setMinus, setWhere, split, splitCommaSpc, splitCrLf, splitLf, splitSpc, stack, strictEqual: exports.strictEqual, swap, tmpFfn, tmpFilFm, tmpFt, tmpNm, tmpPth, trim, vBET, vEQ, vGE, vGT, vIN, vIsInstanceOf, vLE, vLT, vNBET, vNE, vNIN, vTee, where };
+fjsRplExpStmt(ffnRplExt(".ts")(__filename));
+module.exports = {
+    add, addPfx, addPfxSfx, addSfx, alignL, alignR, apply, assertIsPthExist, ayClone, ayEle, ayFindIx, ayFindIxOrDft,
+    ayFst, ayLas, aySetEle, aySnd, ayTfm, ayTfmEle, ayZip, brkQuote, cmdShell, cmlNm, cmlNy, compare, compose, curExpStmt,
+    decr, dft, dftLoower, dftStr, dftUpper, divide, dmp, dryClone, dryCol, dryColCnt, dryColWdt, dryColWdtAy, drySrt,
+    dryTfmCell, dryTfmCol, each, eq, er, exclude, ffnAddFnSfx, ffnExt, ffnFfnn, ffnFn, ffnFnn, ffnMakBackup, ffnPth,
+    ffnRplExt, fjsRplExpStmt, fold, fstChr, ftBrw, ftConstDollarNy, ftConstNy, ftLinesPm, ftLyPm, ftWrt, funDmp, halt,
+    hasPfx, hasSbs, hasSfx, incr, isAy, isBool, isDte, isEmp, isEven, isFalse, isFun, isNonEmp, isNonNull, isNonRmkLin,
+    isNull, isNum, isObj, isOdd, isPthExist, isRe, isRmkLin, isStr, isSy, isTrue, isUndefined, itrAddPfx, itrAddPfxSfx,
+    itrAddSfx, itrAlignL, itrAy, itrBrkForTrueFalse, itrClone, itrDupSet, itrFind, itrFst, itrHasDup, itrIsAllFalse,
+    itrIsAllTrue, itrIsSomeFalse, itrIsSomeTrue, itrMax, itrMin, itrPredIsAllFalse, itrPredIsAllTrue, itrPredIsSomeFalse,
+    itrPredIsSomeTrue, itrRmvEmp, itrSet, itrWdt, jn, jnAsLines, jnComma, jnCommaSpc, jnCrLf, jnLf, jnSpc, lasChr, lazy,
+    left, len, linRmvMsg, lyConstDollarNy, lyConstNy, lyExpStmt, map, mapKset, mapKvy, mapKy, mapVy, match, matchAyDry,
+    matchAyFstCol, matchDr, mid, midN, minus, mnon, mnonEmp, multiply, musAy, musDte, musFun, musNum, musObj, musStr, must,
+    nItr, notMatch, oBringUpDollarPrp, oCmlDry, oCmlObj, oCtorNm, oHasCtorNm, oHasLen, oHasPrp, oIsInstance, oLines, oPrp,
+    oPrpAy, oPrpNy, optMap, oyPrpCol, oyPrpDry, padZero, pipe, pm, predNot, predsAnd, predsOr, pthEns, pthEnsSfxSep,
+    pthEnsSubFdr, pthFnAy, pthFnAyPm, pthSep, quote, reduce, right, rmvColon, rmvExt, rmvLasNChr, rmvPfx, rmvSfx,
+    rmvSubStr, sBox, sBrkP123, sBrw, sEsc, sEscCr, sEscLf, sEscTab, sLik, sSearch, sWrt, sbsPos, sbsRevPos, setAdd, setAft,
+    setAftIncl, setAy, setClone, setMap, setMinus, setWhere, spc, split, splitCommaSpc, splitCrLf, splitLf, splitSpc,
+    stack, strictEqual, swap, tmpFfn, tmpFilFm, tmpFt, tmpNm, tmpPth, trim, vBET, vEQ, vGE, vGT, vIN, vIsInstanceOf, vLE,
+    vLT, vNBET, vNE, vNIN, where,
+};
 //# sourceMappingURL=curryfun.js.map

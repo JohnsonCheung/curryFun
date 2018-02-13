@@ -1,10 +1,7 @@
-const { $$, $, end, eq, t, f } = require("../$tstConst.js")(__filename)
-const {er} = $$
-debugger
-er("sdfdf")()
-const { tmpFilFm, tmpPth, tmpFt, tmpNm } = $
+const x = require("../../curryfun")
+const { tmpFilFm, tmpPth, tmpFt, tmpNm } = x
 if(Object.getOwnPropertyNames($).length!==4)
-    er('aa')
+    x.er('aa')
 const x = s => {
     const v = eval(s)
     console.log(s, v)
