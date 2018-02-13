@@ -104,29 +104,29 @@ const jnLf = jn('\n')
 const jnSpc = jn(' ')
 const jnComma = jn(',')
 const jnCommaSpc = jn(', ')
-const spc = (n:n) => ' '.repeat(n)
+const spc = (n: n) => ' '.repeat(n)
 const jnAsLines = (sep0?: s, tab0?: n, wdt0?: n) => (sy: s[]) => {
     let wdt = dftUpper(20, 120)(wdt0)
     let sep = dft('')(sep0)
     let slen = sep.length
     let pfx = spc(dft(0)(tab0))
-    let a = (() => {
+    let a = (()=> {
+        debugger
         const oo: ay = []
         let o: ay = []
         let ww = 0
         for (let s of sy) {
             let l = len(s) + slen
             if (ww + l > wdt) {
-                let a = itrAddSfx(sep)(o).join(sep)
-                oo.push(pfx+a)
-                o = []
+                oo.push(pfx + itrAddSfx(sep)(o).join(""))
+                o = []  
+                ww = 0
             }
             o.push(s)
-            ww =+ l
-        }
+            ww += l
+        } 
         if (o.length > 0) {
-            let a = itrAddSfx(sep)(o).join(sep)
-            oo.push(pfx + a)
+            oo.push(pfx + itrAddSfx(sep)(o).join(""))
         }
         return oo
     })()
@@ -619,7 +619,7 @@ const lyExpStmt = ly => {
     let ny = lyConstNy(ly)
     ny = where(predNot(hasPfx("_")))(ny).sort()
     const x = jnAsLines(", ", 4, 120)(ny)
-    const stmt = "module.exports = {" + x + "}"
+    const stmt = "module.exports = {\r\n" + x + "\r\n}"
     return stmt
 }
 const curExpStmt = () => pipe(__filename)(ftLy, lyExpStmt)
@@ -669,6 +669,6 @@ const cmdShell = (a: s) => child_process.exec(a)
 const ftBrw = (a: s) => cmdShell(`code.cmd "${a}"`)
 const sBrw = s => pipe(tmpFt())(vTee(ftWrt(s)), ftBrw)
 const oLines = o => JSON.stringify(o)
-dmp(curExpStmt())
+sBrw(curExpStmt())
 //fjsRplExpStmt(ffnRplExt(".ts")(__filename))
 module.exports = { add, addPfx, addPfxSfx, addSfx, alignL, alignR, apply, assertIsPthExist, ayEle, ayFindIx, ayFindIxOrDft, ayFst, ayLas, aySetEle, aySnd, ayTfm, ayTfmEle, ayZip, brkQuote, cmdShell, cmlNm, cmlNy, compare, compose, curExpStmt, decr, dft, divide, dmp, dryClone, dryCol, dryColCnt, dryColWdt, dryColWdtAy, drySrt, dryTfmCell, dryTfmCol, each, eq, er, exclude, ffnAddFnSfx, ffnExt, ffnFfnn, ffnFn, ffnFnn, ffnMakBackup, ffnPth, ffnRplExt, fjsRplExpStmt, fold, fstChr, ftBrw, ftConstDollarNy, ftConstNy, ftLinesPm, ftLyPm, ftWrt, funDmp, halt, hasPfx, hasSfx, incr, isAy, isBool, isDte, isEmp, isEven, isFalse, isFun, isNonEmp, isNonNull, isNonRmkLin, isNull, isNum, isObj, isOdd, isPthExist, isRe, isRmkLin, isStr, isSy, isTrue, isUndefined, itrAddPfx, itrAddPfxSfx, itrAddSfx, itrAlignL, itrAy, itrBrkForTrueFalse, itrClone, itrDupSet, itrFind, itrFst, itrHasDup, itrIsAllFalse, itrIsAllTrue, itrIsSomeFalse, itrIsSomeTrue, itrMax, itrMin, itrPredIsAllFalse, itrPredIsAllTrue, itrPredIsSomeFalse, itrPredIsSomeTrue, itrRmvEmp, itrSet, itrWdt, jn, jnComma, jnCommaSpc, jnCrLf, jnLf, jnSpc, lasChr, lazy, left, len, linRmvMsg, lyConstDollarNy, lyConstNy, lyExpStmt, lyMatchAy, lyReCol, lyReDry, map, mapKset, mapKvy, mapKy, mapVy, match, matchAyDry, matchAyFstCol, matchDr, mid, midN, minus, mnon, mnonEmp, multiply, musAy, musDte, musFun, musNum, musObj, musStr, must, nItr, notMatch, oBringUpDollarPrp, oCmlDry, oCmlObj, oCtorNm, oHasCtorNm, oHasLen, oHasPrp, oIsInstance, oLines, oPrp, oPrpAy, oPrpNy, optMap, oyPrpCol, oyPrpDry, padZero, pipe, pm, predNot, predsAnd, predsOr, pthEns, pthEnsSfxSep, pthEnsSubFdr, pthFnAy, pthFnAyPm, pthSep, quote, reduce, right, rmvColon, rmvExt, rmvLasNChr, rmvPfx, rmvSfx, rmvSubStr, sBox, sBrkP123, sBrw, sEsc, sEscCr, sEscLf, sEscTab, sLik, sSearch, sWrt, sbsPos, sbsRevPos, setAdd, setAft, setAftIncl, setAy, setClone, setMap, setMinus, setWhere, split, splitCommaSpc, splitCrLf, splitLf, splitSpc, stack, strictEqual, swap, tmpFfn, tmpFilFm, tmpFt, tmpNm, tmpPth, trim, vBET, vEQ, vGE, vGT, vIN, vIsInstanceOf, vLE, vLT, vNBET, vNE, vNIN, vTee, where }

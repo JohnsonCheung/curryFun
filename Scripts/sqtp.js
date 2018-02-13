@@ -218,7 +218,6 @@ const linAddMrk = (lin, pos, len) => {
     const m = '^'.repeat(len);
     return lin + s + m;
 };
-const spc = n => " ".repeat(n);
 const linFmT3DupTermMrk = lin => {
     const dup = linFmT3DupTermSet(lin);
     const termPosAy = linTermPosAy(lin);
