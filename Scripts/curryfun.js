@@ -1,12 +1,14 @@
 "use strict";
-/// <reference path="./typings/node/node.d.ts"/>
+Object.defineProperty(exports, "__esModule", { value: true });
+const fs = require("fs");
+const path = require("path");
+const os = require("os");
+const child_process = require("child_process");
 //---------------------------------------
-const fs = require('fs');
-const path = require('path');
-const os = require('os');
-const strictEqual = require('assert').strictEqual;
+exports.strictEqual = require('assert').strictEqual;
+const yy = 1;
 const eq = act => exp => { try {
-    strictEqual(act, exp);
+    exports.strictEqual(act, exp);
 }
 catch (e) {
     debugger;
@@ -80,7 +82,9 @@ const splitLf = split('\n');
 const splitSpc = split(/\s+/);
 const splitCommaSpc = split(/,\s*/);
 //-----------------------------------------------------------------------
-const dft = dft => v => v === null ? dft : v;
+const dft = (dft) => (v) => v === null || v === undefined ? dft : v;
+const dftUpper = (a, b) => (v) => v === null || v === undefined || a > v || v > b ? b : v;
+const dftLoower = (a, b) => (v) => v === null || v === undefined || a > v || v > b ? a : v;
 const ayFindIx = (p) => (ay) => { for (let i in ay)
     if (p(ay[i]))
         return Number(i); return null; };
@@ -100,6 +104,35 @@ const jnLf = jn('\n');
 const jnSpc = jn(' ');
 const jnComma = jn(',');
 const jnCommaSpc = jn(', ');
+dft;
+const jnAsLines = (sep0, tab0, wdt0) => (sy) => {
+    let wdt = dftUpper(20, 120)(wdt0);
+    let sep = dft('')(sep0);
+    let slen = sep.length;
+    let pfx = spc(dft(0)(tab0));
+    let a = (() => {
+        const oo = [];
+        let o = [];
+        let ww = 0;
+        for (let s of sy) {
+            let l = len(s) + slen;
+            if (ww + l > wdt) {
+                let a = itrAddSfx(sep)(o).join(sep);
+                oo.push(pfx + a);
+                o = [];
+            }
+            o.push(s);
+            ww = +l;
+        }
+        if (o.length > 0) {
+            let a = itrAddSfx(sep)(o).join(sep);
+            oo.push(pfx + a);
+        }
+        return oo;
+    })();
+    let b = jnCrLf(a);
+    return b;
+};
 //-----------------------------------------------------------------------
 const fstChr = (s) => s[0];
 const lasChr = (s) => s[s.length - 1];
@@ -191,9 +224,9 @@ const cmlNy = (nm) => {
         return o;
     }
 };
-const hasPfx = (pfx) => (s) => s.substr(0, pfx.length) === pfx;
+const hasPfx = (pfx) => (s) => s.startsWith(pfx);
 const rmvPfx = (pfx) => (s) => hasPfx(s) ? s.substr(pfx.length) : s;
-const hasSfx = (sfx) => (s) => right(sfx.length)(s) === sfx;
+const hasSfx = (sfx) => (s) => s.endsWith(sfx);
 const rmvSfx = (sfx) => (s) => hasSfx(s) ? s.substr(0, s.length - sfx.length) : s;
 const match = re => s => s.match(re);
 const notMatch = re => s => !(match(re)(s));
@@ -336,6 +369,7 @@ const exclude = (p) => (a) => { const o = []; for (let i of a)
         o.push(i); return o; };
 const map = (f) => (a) => { const o = []; for (let i of a)
     o.push(f(i)); return o; };
+const mapSy = map;
 const each = (f) => (a) => { for (let i of a)
     f(i); };
 const fold = (f) => cum => (a) => { for (let i of a)
@@ -375,20 +409,19 @@ const _setAft = (incl, a, set) => {
         }
     return z;
 };
-const setAft = a => set => _setAft(false, a, set);
+const setAft = aft => a => _setAft(false, aft, a);
 const setAftIncl = a => set => _setAft(true, a, set);
 const setClone = set => itrSet(set);
 const itrSet = itr => { const o = new Set; for (let i of itr)
     o.add(i); return o; };
 const setMap = f => set => { const o = new Set; for (let i of set)
     o.add(f(i)); return o; };
-//---------------------------------------------------------------------------
 const lyReDry = re => ly => map(matchDr)(lyMatchAy(re)(ly));
 const lyReCol = re => ly => matchAyFstCol(lyMatchAy(re)(ly)).sort();
 const matchAyDry = matchAy => map(matchDr)(matchAy);
-const matchAyFstCol = matchAy => map(ayEle(1))(matchAy);
+const matchAyFstCol = matchAy => mapSy(ayEle(1))(matchAy);
 const lyMatchAy = re => ly => itrRmvEmp(map(match(re))(ly));
-const matchDr = match => [...match].splice(1);
+const matchDr = (a) => [...a].splice(1);
 const lyConstNy = lyReCol(/^const\s+([$\w][$0-9\w_]*) /);
 const lyConstDollarNy = lyReCol(/^const (\$[$0-0\w_]*) /);
 const ftConstNy = ft => pipe(ft)(ftLy, lyConstNy);
@@ -575,6 +608,8 @@ const oCmlObj = o => {
     return oo;
 };
 // ----------------------------------------------
+const ayClone = (ay) => ay.slice(0, ay.length);
+// ----------------------------------------------
 const dryColWdt = colIx => dry => itrWdt(dryCol(colIx)(dry));
 const dryColWdtAy = dry => map(i => dryColWdt(i)(dry))(nItr(dryColCnt(dry)));
 const dryCol = colIx => dry => map(ayEle(colIx))(dry);
@@ -605,6 +640,18 @@ const sLik = (lik) => (s) => {
     let o = a.test(s);
     return o;
 }; // strictEqual(sLik("abc?dd")("abcxdd"), true); debugger
+const _isEscSbs = i => { for (let spec of "()[]{}/|.+?*")
+    if (i === spec)
+        return true; };
+const hasSbs = (sbs) => (s) => {
+    const ay = [];
+    for (let i of sbs)
+        ay.push(i === '\\' ? '\\\\' : (_isEscSbs(i) ? '\\' + i : i));
+    const _escSpec = ay.join('');
+    const _sbsRe = new RegExp(_escSpec);
+    let o = _sbsRe.test(s);
+    return o;
+};
 //---------------------------------------
 const pthFnAy = (pth, lik) => {
     if (!fs.existsSync(pth))
@@ -665,7 +712,7 @@ const ffnMakBackup = (ffn) => {
 const lyExpStmt = ly => {
     let ny = lyConstNy(ly);
     ny = where(predNot(hasPfx("_")))(ny).sort();
-    const x = jnComma(ny);
+    const x = jnAsLines(", ", 4, 120)(ny);
     const stmt = "module.exports = {" + x + "}";
     return stmt;
 };
@@ -674,15 +721,24 @@ const curExpStmt = () => pipe(__filename)(ftLy, lyExpStmt);
 const fjsRplExpStmt = fjs => {
     const oldLy = ftLy(fjs);
     const newLin = lyExpStmt(oldLy);
-    let oldIx = ayFindIx(predsAnd(hasPfx("module.exports = {"), hasSfx("}")))(oldLy);
-    const oldLin = oldIx === null ? null : oldLy[oldIx];
+    let oldBegIx = ayFindIx(hasPfx("module.exports = {"))(oldLy);
+    let oldEndIx = (() => {
+        if (oldBegIx !== null) {
+            for (let i = oldBegIx; i < oldLy.length; i++) {
+                if (/\}/.test(oldLy[i]))
+                    return i++;
+            }
+        }
+        return 0;
+    })();
+    const oldLin = (oldBegIx === null || oldEndIx === null) ? null : oldLy.slice(oldBegIx, oldEndIx);
     const newLines = () => {
         const hasNewLin = newLin !== null;
         const hasOldLin = oldLin != null;
         switch (true) {
             case (hasNewLin && hasOldLin):
-                if (oldIx !== null) {
-                    oldLy[oldIx] = newLin;
+                if (oldBegIx !== null) {
+                    oldLy.splice(oldBegIx, oldEndIx, newLin);
                     return jnCrLf(oldLy);
                 }
                 else {
@@ -692,11 +748,11 @@ const fjsRplExpStmt = fjs => {
             case (hasNewLin && !hasOldLin):
                 return jnCrLf(oldLy.concat(newLin));
             case (hasOldLin):
-                if (oldIx === null) {
+                if (oldBegIx === null) {
                     er("impossible");
                 }
                 else {
-                    oldLy.splice(oldIx, 1);
+                    oldLy.splice(oldBegIx, oldEndIx);
                     return jnCrLf(oldLy);
                 }
             default:
@@ -706,13 +762,17 @@ const fjsRplExpStmt = fjs => {
         return jnCrLf(oldLy);
     };
     let a = newLines();
-    debugger;
-    if (oldLin !== newLin) {
-        debugger;
-        ffnMakBackup(fjs);
-        sWrt(fjs)(newLines());
-    }
+    /*
+    if (oldLin !== newLin) { debugger; ffnMakBackup(fjs); sWrt(fjs)(newLines()) }
+    */
 };
+const vTee = f => a => { f(a); return a; };
+const ftWrt = (s) => (ft) => fs.writeFileSync(ft, s);
+const cmdShell = (a) => child_process.exec(a);
+const ftBrw = (a) => cmdShell(`code.cmd "${a}"`);
+const sBrw = s => pipe(tmpFt())(vTee(ftWrt(s)), ftBrw);
+const oLines = o => JSON.stringify(o);
+dmp(curExpStmt());
 //fjsRplExpStmt(ffnRplExt(".ts")(__filename))
-module.exports = { add, addPfx, addPfxSfx, addSfx, alignL, alignR, apply, assertIsPthExist, ayEle, ayFindIx, ayFindIxOrDft, ayFst, ayLas, aySetEle, aySnd, ayTfm, ayTfmEle, ayZip, brkQuote, cmlNm, cmlNy, compare, compose, curExpStmt, decr, dft, divide, dmp, dryClone, dryCol, dryColCnt, dryColWdt, dryColWdtAy, drySrt, dryTfmCell, dryTfmCol, each, eq, er, exclude, ffnAddFnSfx, ffnExt, ffnFfnn, ffnFn, ffnFnn, ffnMakBackup, ffnPth, ffnRplExt, fjsRplExpStmt, fold, fs, fstChr, ftConstDollarNy, ftConstNy, ftLinesPm, ftLyPm, funDmp, halt, hasPfx, hasSfx, incr, isAy, isBool, isDte, isEmp, isEven, isFalse, isFun, isNonEmp, isNonNull, isNonRmkLin, isNull, isNum, isObj, isOdd, isPthExist, isRe, isRmkLin, isStr, isSy, isTrue, isUndefined, itrAddPfx, itrAddPfxSfx, itrAddSfx, itrAlignL, itrAy, itrBrkForTrueFalse, itrClone, itrDupSet, itrFind, itrFst, itrHasDup, itrIsAllFalse, itrIsAllTrue, itrIsSomeFalse, itrIsSomeTrue, itrMax, itrMin, itrPredIsAllFalse, itrPredIsAllTrue, itrPredIsSomeFalse, itrPredIsSomeTrue, itrRmvEmp, itrSet, itrWdt, jn, jnComma, jnCommaSpc, jnCrLf, jnLf, jnSpc, lasChr, lazy, left, len, linRmvMsg, lyConstDollarNy, lyConstNy, lyExpStmt, lyMatchAy, lyReCol, lyReDry, map, mapKset, mapKvy, mapKy, mapVy, match, matchAyDry, matchAyFstCol, matchDr, mid, midN, minus, mnon, mnonEmp, multiply, musAy, musDte, musFun, musNum, musObj, musStr, must, nItr, notMatch, oBringUpDollarPrp, oCmlDry, oCmlObj, oCtorNm, oHasCtorNm, oHasLen, oHasPrp, oIsInstance, oPrp, oPrpAy, oPrpNy, optMap, os, oyPrpCol, oyPrpDry, padZero, path, pipe, pm, predNot, predsAnd, predsOr, pthEns, pthEnsSfxSep, pthEnsSubFdr, pthFnAy, pthFnAyPm, pthSep, quote, reduce, right, rmvColon, rmvExt, rmvLasNChr, rmvPfx, rmvSfx, rmvSubStr, sBox, sBrkP123, sEsc, sEscCr, sEscLf, sEscTab, sLik, sSearch, sWrt, sbsPos, sbsRevPos, setAdd, setAft, setAftIncl, setAy, setClone, setMap, setMinus, setWhere, split, splitCommaSpc, splitCrLf, splitLf, splitSpc, stack, strictEqual, swap, tmpFfn, tmpFilFm, tmpFt, tmpNm, tmpPth, trim, vBET, vEQ, vGE, vGT, vIN, vIsInstanceOf, vLE, vLT, vNBET, vNE, vNIN, where };
+module.exports = { add, addPfx, addPfxSfx, addSfx, alignL, alignR, apply, assertIsPthExist, ayEle, ayFindIx, ayFindIxOrDft, ayFst, ayLas, aySetEle, aySnd, ayTfm, ayTfmEle, ayZip, brkQuote, cmdShell, cmlNm, cmlNy, compare, compose, curExpStmt, decr, dft, divide, dmp, dryClone, dryCol, dryColCnt, dryColWdt, dryColWdtAy, drySrt, dryTfmCell, dryTfmCol, each, eq, er, exclude, ffnAddFnSfx, ffnExt, ffnFfnn, ffnFn, ffnFnn, ffnMakBackup, ffnPth, ffnRplExt, fjsRplExpStmt, fold, fstChr, ftBrw, ftConstDollarNy, ftConstNy, ftLinesPm, ftLyPm, ftWrt, funDmp, halt, hasPfx, hasSfx, incr, isAy, isBool, isDte, isEmp, isEven, isFalse, isFun, isNonEmp, isNonNull, isNonRmkLin, isNull, isNum, isObj, isOdd, isPthExist, isRe, isRmkLin, isStr, isSy, isTrue, isUndefined, itrAddPfx, itrAddPfxSfx, itrAddSfx, itrAlignL, itrAy, itrBrkForTrueFalse, itrClone, itrDupSet, itrFind, itrFst, itrHasDup, itrIsAllFalse, itrIsAllTrue, itrIsSomeFalse, itrIsSomeTrue, itrMax, itrMin, itrPredIsAllFalse, itrPredIsAllTrue, itrPredIsSomeFalse, itrPredIsSomeTrue, itrRmvEmp, itrSet, itrWdt, jn, jnComma, jnCommaSpc, jnCrLf, jnLf, jnSpc, lasChr, lazy, left, len, linRmvMsg, lyConstDollarNy, lyConstNy, lyExpStmt, lyMatchAy, lyReCol, lyReDry, map, mapKset, mapKvy, mapKy, mapVy, match, matchAyDry, matchAyFstCol, matchDr, mid, midN, minus, mnon, mnonEmp, multiply, musAy, musDte, musFun, musNum, musObj, musStr, must, nItr, notMatch, oBringUpDollarPrp, oCmlDry, oCmlObj, oCtorNm, oHasCtorNm, oHasLen, oHasPrp, oIsInstance, oLines, oPrp, oPrpAy, oPrpNy, optMap, oyPrpCol, oyPrpDry, padZero, pipe, pm, predNot, predsAnd, predsOr, pthEns, pthEnsSfxSep, pthEnsSubFdr, pthFnAy, pthFnAyPm, pthSep, quote, reduce, right, rmvColon, rmvExt, rmvLasNChr, rmvPfx, rmvSfx, rmvSubStr, sBox, sBrkP123, sBrw, sEsc, sEscCr, sEscLf, sEscTab, sLik, sSearch, sWrt, sbsPos, sbsRevPos, setAdd, setAft, setAftIncl, setAy, setClone, setMap, setMinus, setWhere, split, splitCommaSpc, splitCrLf, splitLf, splitSpc, stack, strictEqual: exports.strictEqual, swap, tmpFfn, tmpFilFm, tmpFt, tmpNm, tmpPth, trim, vBET, vEQ, vGE, vGT, vIN, vIsInstanceOf, vLE, vLT, vNBET, vNE, vNIN, vTee, where };
 //# sourceMappingURL=curryfun.js.map

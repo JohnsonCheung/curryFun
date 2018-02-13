@@ -17,6 +17,6 @@
             "problemMatcher": [
                 "$tsc-watch"
             ]
-        }
+        },
     ]
 }

@@ -1,22 +1,19 @@
-import * as fs from 'fs'
-import * as path from 'path'
-import * as os from 'os'
-import * as child_process from 'child_process'
 /// <reference path="./typings/node/node.d.ts"/>
+declare type pmErLy = Promise<{ er, ly }> 
+declare type p = (a:any) => boolean
 declare type ay = Array<any>
 declare type s = string
 declare type map = Map<any, any>
 declare type itr = Iterable<any>
 declare type pth = s
-declare type p = (a: any) => boolean
 declare type f = (a: any) => any
 declare type cummulator = (cum: any) => (itm: any) => any
 declare type re = RegExp
 declare type brk = (sep: s) => (s: s) => s1s2
 declare type tak = (sep: s) => (s: s) => s
 declare type sTfm = (s: s) => s
-declare type sOrRe = s | re
-declare type sOrSy = s | s[]
+declare type sOrRe = (s | re)
+declare type sOrSy = (s | s[])
 declare type ensSy = (sOrSy: sOrSy) => void
 declare type ensRe = (sOrRe: sOrRe) => void
 declare type n = number
@@ -24,7 +21,10 @@ declare type split = (s: s) => s[]
 interface s1s2 { s1: string, s2: string }
 interface erRslt { er: any, rslt: any }
 //---------------------------------------
-export const strictEqual = require('assert').strictEqual
+import * as fs from 'fs'
+import * as path from 'path'
+import * as os from 'os'
+const strictEqual = require('assert').strictEqual
 const eq = act => exp => { try { strictEqual(act, exp) } catch (e) { debugger } }
 //---------------------------------------
 const vEQ = a => v => a === v
@@ -48,20 +48,20 @@ const ensSy: ensSy = sOrSy => {
 }
 const ensRe: ensRe = sOrRe => isRe(sOrRe) ? sOrRe : new RegExp(sOrRe)
 //-------------------------------------
-const pipe = v => (...f: f[]) => { let o = v; for (let ff of f) o = ff(o); return o }
-const apply = v => (f: f) => f(v)
-const swap = (f: f) => a => b => f(b)(a)
-const compose = (...f: f[]) => v => pipe(v)(...f)
+const pipe = v => (...f:f[]) => { let o = v; for (let ff of f) o = ff(o); return o }
+const apply = v => (f:f) => f(v)
+const swap = (f:f) => a => b => f(b)(a)
+const compose = (...f:f[]) => v => pipe(v)(...f)
 //----------------------------------
 const dmp = global.console.log
 const funDmp = f => dmp(f.toString())
 const halt = () => { throw new Error() }
-const sEscLf = (s: s) => s.replace('\n', '\\n')
-const sEscCr = (s: s) => s.replace('\r', '\\r')
-const sEscTab = (s: s) => s.replace('\t', '\\t')
-const sEsc = compose(sEscLf, sEscCr, sEscTab)
-const sBox = (s: s) => { const b = "== " + sEsc(s) + " ==", a = "=".repeat(b.length); return [a, b, a].join("\r\n") }
-const stack = () => { try { throw new Error() } catch (e) { return e.stack } }
+const sEscLf = (s:s) => s.replace('\n','\\n')
+const sEscCr = (s:s) => s.replace('\r','\\r')
+const sEscTab = (s:s) => s.replace('\t','\\t')
+const sEsc = compose(sEscLf,sEscCr,sEscTab)
+const sBox =(s:s) => { const b = "== " + sEsc(s) + " ==", a = "=".repeat(b.length); return [a,b,a].join("\r\n") }
+const stack = () => { try { throw new Error() } catch(e) { return e.stack } }
 const er = (msg: s, ...v) => {
     let a = stack()
     let b = a.split(/\n/)
@@ -76,7 +76,7 @@ const er = (msg: s, ...v) => {
     dmp('------------------------------------------------')
     let dbg = true
     debugger
-    if (dbg) halt()
+    if(dbg) halt()
 }
 //-----------------------------------------------------------------------
 const split = (sep: sOrRe) => (s: s) => s.split(sep)
@@ -85,9 +85,7 @@ const splitLf = split('\n')
 const splitSpc = split(/\s+/)
 const splitCommaSpc = split(/,\s*/)
 //-----------------------------------------------------------------------
-const dft = <a>(dft: a) => (v: a | undefined | null) => v === null || v === undefined ? dft : v
-const dftUpper = <a>(a: a, b: a) => (v: a | undefined | null) => v === null || v === undefined || a > v || v > b ? b : v
-const dftLoower = <a>(a: a, b: a) => (v: a | undefined | null) => v === null || v === undefined || a > v || v > b ? a : v
+const dft = dft => v => v === null ? dft : v
 const ayFindIx = (p: p) => (ay: ay) => { for (let i in ay) if (p(ay[i])) return Number(i); return null }
 const ayFindIxOrDft = (dftIx: n) => (p: p) => (ay: ay) => { let n: n = dft(dftIx)(ayFindIx(p)(ay)); return n }
 const ayFst = (ay: ay) => ay[0]
@@ -104,35 +102,6 @@ const jnLf = jn('\n')
 const jnSpc = jn(' ')
 const jnComma = jn(',')
 const jnCommaSpc = jn(', ')
-const spc = (n:n) => ' '.repeat(n)
-const jnAsLines = (sep0?: s, tab0?: n, wdt0?: n) => (sy: s[]) => {
-    let wdt = dftUpper(20, 120)(wdt0)
-    let sep = dft('')(sep0)
-    let slen = sep.length
-    let pfx = spc(dft(0)(tab0))
-    let a = (() => {
-        const oo: ay = []
-        let o: ay = []
-        let ww = 0
-        for (let s of sy) {
-            let l = len(s) + slen
-            if (ww + l > wdt) {
-                let a = itrAddSfx(sep)(o).join(sep)
-                oo.push(pfx+a)
-                o = []
-            }
-            o.push(s)
-            ww =+ l
-        }
-        if (o.length > 0) {
-            let a = itrAddSfx(sep)(o).join(sep)
-            oo.push(pfx + a)
-        }
-        return oo
-    })()
-    let b = jnCrLf(a)
-    return b
-}
 //-----------------------------------------------------------------------
 const fstChr = (s: s) => s[0]
 const lasChr = (s: s) => s[s.length - 1]
@@ -159,12 +128,12 @@ const padZero = (dig: n) => (n: n) => {
 const alignL = (w: n) => (s: s) => {
     const l = len(s)
     if (l > w) return s
-    return s + spc(w - l)
+    return s + ' '.repeat(w - l)
 }
 const alignR = w => s => {
     const l = len(s)
     if (l > w) return s
-    return spc(w - l) + s
+    return ' '.repeat(w - l) + s
 }
 const sWrt = ft => s => fs.writeFileSync(ft, s)
 const sbsPos = (sbs: s) => (s: s) => { const l = sbs.length; for (let j = 0; j < s.length - l + 1; j++) if (sbs === s.substr(j, l)) return j; return -1 }
@@ -211,9 +180,9 @@ const cmlNy = (nm: s) => {
         return o
     }
 }
-const hasPfx = (pfx: s) => (s: s) => s.startsWith(pfx)
+const hasPfx = (pfx: s) => (s: s) => s.substr(0, pfx.length) === pfx
 const rmvPfx = (pfx: s) => (s: s) => hasPfx(s) ? s.substr(pfx.length) : s
-const hasSfx = (sfx: s) => (s: s) => s.endsWith(sfx)
+const hasSfx = (sfx: s) => (s: s) => right(sfx.length)(s) === sfx
 const rmvSfx = (sfx: s) => (s: s) => hasSfx(s) ? s.substr(0, s.length - sfx.length) : s
 const match = re => s => s.match(re)
 const notMatch = re => s => !(match(re)(s))
@@ -314,18 +283,18 @@ const pm = (f, ...p) => new Promise<any>(
     }
 )
 const ftLinesPm = (ft: s) => pm(fs.readFile, ft).then(rslt => rslt.toString())
-const ftLyPm = (ft: s) => ftLinesPm(ft).then(lines => splitCrLf(lines))
-const pthEns = (a: pth) => { if (!fs.existsSync(a)) fs.mkdirSync(a) }
-const isPthExist = (a: pth) => fs.existsSync(a)
+const ftLyPm = (ft: s) => ftLinesPm(ft).then(lines =>splitCrLf(lines))
+const pthEns = (a:pth) => { if (!fs.existsSync(a)) fs.mkdirSync(a) }
+const isPthExist = (a:pth) => fs.existsSync(a)
 const assertIsPthExist = (a: pth) => { if (!isPthExist(a)) er(`path does not exist [${a}]`) }
 const pthEnsSfxSep = (a: pth) => lasChr(a) === pthSep ? a : a + pthSep
-const pthEnsSubFdr = (subFdr: s) => (pth: s) => {
+const pthEnsSubFdr = (subFdr: s) => (pth: s) => { 
     assertIsPthExist(pth)
     let b = subFdr.split(/[\\\/]/)
     let c = itrRmvEmp(b)
     let d = pthEnsSfxSep(pth)
-    let e: ay = []
-    for (let seg of c) {
+    let e:ay = []
+    for(let seg of c) {
         d += seg + '\\';
         e.push(d)
     }
@@ -335,8 +304,6 @@ const pthEnsSubFdr = (subFdr: s) => (pth: s) => {
 const where = (p: p) => (a: itr) => { const o: ay = []; for (let i of a) if (p(i)) o.push(i); return o }
 const exclude = (p: p) => (a: itr) => { const o: ay = []; for (let i of a) if (!p(i)) o.push(i); return o }
 const map = (f: f) => (a: itr) => { const o: ay = []; for (let i of a) o.push(f(i)); return o }
-type mapSy = (f: f) => (a: itr) => s[]
-const mapSy: mapSy = map
 const each = (f: f) => (a: itr) => { for (let i of a) f(i) }
 const fold = (f: cummulator) => cum => (a: itr) => { for (let i of a) cum = f(cum)(i); return cum }
 const reduce = f => (a: itr) => fold(f)(itrFst(a))(a)
@@ -371,25 +338,18 @@ const _setAft = (incl, a, set) => {
         }
     return z
 }
-const setAft = aft => a => _setAft(false, aft, a)
+const setAft = a => set => _setAft(false, a, set)
 const setAftIncl = a => set => _setAft(true, a, set)
 const setClone = set => itrSet(set)
 const itrSet = itr => { const o = new Set; for (let i of itr) o.add(i); return o }
 const setMap = f => set => { const o = new Set; for (let i of set) o.add(f(i)); return o }
 //---------------------------------------------------------------------------
-type ly = s[]
-type col = s[]
-type sy = s[]
-type lyMatchAy = (re: RegExp) => (ly: s[]) => RegExpMatchArray
-type lyReCol = (re: re) => (ly: ly) => col
-type Sdry = s[][]
-type lyReSdry = (re: re) => (ly: ly) => Sdry
-const lyReDry: lyReSdry = re => ly => map(matchDr)(lyMatchAy(re)(ly))
-const lyReCol: lyReCol = re => ly => matchAyFstCol(lyMatchAy(re)(ly)).sort()
+const lyReDry = re => ly => map(matchDr)(lyMatchAy(re)(ly))
+const lyReCol = re => ly => matchAyFstCol(lyMatchAy(re)(ly)).sort()
 const matchAyDry = matchAy => map(matchDr)(matchAy)
-const matchAyFstCol = matchAy => mapSy(ayEle(1))(matchAy)
-const lyMatchAy: lyMatchAy = re => ly => itrRmvEmp(map(match(re))(ly))
-const matchDr = (a: RegExpMatchArray) => [...a].splice(1)
+const matchAyFstCol = matchAy => map(ayEle(1))(matchAy)
+const lyMatchAy = re => ly => itrRmvEmp(map(match(re))(ly))
+const matchDr = match => [...match].splice(1)
 const lyConstNy = lyReCol(/^const\s+([$\w][$0-9\w_]*) /)
 const lyConstDollarNy = lyReCol(/^const (\$[$0-0\w_]*) /)
 const ftConstNy = ft => pipe(ft)(ftLy, lyConstNy)
@@ -413,8 +373,8 @@ const isNull = v => v === null
 const isUndefined = v => v === undefined
 const isTrue = v => !!v;
 const isFalse = v => !v;
-const isEmp = v => v ? false : true
-const isNonEmp = v => v ? true : false
+const isEmp = v => v?false:true
+const isNonEmp = v => v?true:false
 const isOdd = n => n % 2 === 1
 const isEven = n => n % 2 === 0
 //----------------------------------------------------------------------------
@@ -529,8 +489,6 @@ const oCmlObj = o => {
     return oo
 }
 // ----------------------------------------------
-const ayClone = (ay: ay) => ay.slice(0, ay.length)
-// ----------------------------------------------
 const dryColWdt = colIx => dry => itrWdt(dryCol(colIx)(dry))
 const dryColWdtAy = dry => map(i => dryColWdt(i)(dry))(nItr(dryColCnt(dry)))
 const dryCol = colIx => dry => map(ayEle(colIx))(dry)
@@ -549,36 +507,27 @@ const _escStar = lik => { const o: ay = []; for (let i of lik) o.push(i === '*' 
 const _escQ = lik => { const o: ay = []; for (let i of lik) o.push(i === '?' ? '.' : i); return o.join('') }
 const _esc = lik => "^" + pipe(lik)(_escSpec, _escStar, _escQ) + "$"
 const _likRe = lik => new RegExp(_esc(lik))
-const sLik = (lik: s) => (s: s) => {
+const sLik = (lik: s) => (s: s) =>  {
     let a = _likRe(s)
     let o = a.test(s)
     return o
 }// strictEqual(sLik("abc?dd")("abcxdd"), true); debugger
-const _isEscSbs = i => { for (let spec of "()[]{}/|.+?*") if (i === spec) return true }
-const hasSbs = (sbs: s) => (s: s) => {
-    const ay: ay = []
-    for (let i of sbs) ay.push(i === '\\' ? '\\\\' : (_isEscSbs(i) ? '\\' + i : i));
-    const _escSpec = ay.join('')
-    const _sbsRe = new RegExp(_escSpec)
-    let o = _sbsRe.test(s)
-    return o
-}
 //---------------------------------------
 const pthFnAy = (pth: s, lik?: s) => {
-    if (!fs.existsSync(pth)) return null
+    if(!fs.existsSync(pth)) return null
     const isFil = entry => fs.statSync(path.join(pth, entry)).isFile();
     let entries = fs.readdirSync(pth)
     entries = (lik === undefined) ? entries : where(sLik(lik))(entries)
     let o: s[] = where(isFil)(entries)
     return o
 }; // const xxx = pthFnAy("c:\\users\\user\\", "sdfdf*.*"); debugger;
-const ayZip = (a: ay, b: ay) => map(i => [a[i], b[i]])(nItr(a.length))
+const ayZip = (a:ay,b:ay) => map(i=>[a[i],b[i]])(nItr(a.length))
 const pthFnAyPm = async (pth: s, lik?: s) => {
     const entries = await pm(fs.readdir, pth)
     const stat = entry => pm(fs.stat, path.join(pth, entry))
     let a = (lik === undefined) ? entries : where(sLik(lik))(entries)
     let b = await Promise.all(map(stat)(a))
-    let c: s[] = pipe(nItr(entries.length))(where(i => b[i].isFile()), map(i => entries[i]))
+    let c: s[] = pipe(nItr(entries.length))(where(i => b[i].isFile()), map(i=>entries[i]))
     debugger
     return c
 }
@@ -603,7 +552,7 @@ const ffnMakBackup = (ffn: s) => {
     const isBackupFfn = (hasPfx("(backup-")(a)) && (hasSfx(")")(a))
     const fn = ffnFn(ffn)
     const backupSubFdr = `.backup\\${fn}\\`
-    const backupPth = pth + backupSubFdr
+    const backupPth = pth + backupSubFdr 
 
     if (ext === '.backup') er("given [ext] cannot be '.backup", { ext, ffnn })
     if (isBackupFfn) er("ffn cannot be a backup file name", { ffn })
@@ -612,13 +561,13 @@ const ffnMakBackup = (ffn: s) => {
     let nxtBackupNNN =
         b === null || isEmp(b) ? '000' :
             pipe(b)(itrMax, rmvExt, rmvLasChr, right(3), Number.parseInt, incr, padZero(3))
-    const backupFfn = backupPth + ffnAddFnSfx(`(backup-${nxtBackupNNN})`)(fn)
+    const backupFfn = backupPth +  ffnAddFnSfx(`(backup-${nxtBackupNNN})`)(fn)
     pthEnsSubFdr(backupSubFdr)(pth); fs.copyFileSync(ffn, backupFfn)
 }
 const lyExpStmt = ly => {
     let ny = lyConstNy(ly)
     ny = where(predNot(hasPfx("_")))(ny).sort()
-    const x = jnAsLines(", ", 4, 120)(ny)
+    const x = jnComma(ny)
     const stmt = "module.exports = {" + x + "}"
     return stmt
 }
@@ -628,47 +577,41 @@ const fjsRplExpStmt = fjs => {
     const oldLy = ftLy(fjs)
     const newLin = lyExpStmt(oldLy)
 
-    let oldBegIx = ayFindIx(hasPfx("module.exports = {"))(oldLy)
-    let oldEndIx: n = (() => {
-        if (oldBegIx !== null) {
-            for (let i: n = oldBegIx; i < oldLy.length; i++) {
-                if (/\}/.test(oldLy[i])) return i++
-            }
-        }
-        return 0
-    })()
-    const oldLin = (oldBegIx === null || oldEndIx === null) ? null : oldLy.slice(oldBegIx, oldEndIx)
+    let oldIx = ayFindIx(predsAnd(hasPfx("module.exports = {"), hasSfx("}")))(oldLy)
+    const oldLin = oldIx === null ? null : oldLy[oldIx]
 
     const newLines = () => {
         const hasNewLin = newLin !== null
         const hasOldLin = oldLin != null
         switch (true) {
-            case (hasNewLin && hasOldLin):
-                if (oldBegIx !== null) { oldLy.splice(oldBegIx, oldEndIx, newLin); return jnCrLf(oldLy) }
-                else { er("impossible"); halt() }
-            case (hasNewLin && !hasOldLin):
+            case (hasNewLin && hasOldLin): 
+                if(oldIx!==null) { oldLy[oldIx] = newLin; return jnCrLf(oldLy) } else { er("impossible"); halt() }
+            case (hasNewLin && !hasOldLin): 
                 return jnCrLf(oldLy.concat(newLin))
-            case (hasOldLin):
-                if (oldBegIx === null) {
-                    er("impossible")
-                } else { oldLy.splice(oldBegIx, oldEndIx); return jnCrLf(oldLy) }
+            case (hasOldLin): 
+                if(oldIx === null) { er("impossible") } else { oldLy.splice(oldIx, 1); return jnCrLf(oldLy) }
             default:
                 er("impossible"); halt()
         }
         return jnCrLf(oldLy)
     }
     let a = newLines()
-    /*
+    debugger
     if (oldLin !== newLin) { debugger; ffnMakBackup(fjs); sWrt(fjs)(newLines()) }
-    */
 }
-type vTee = (f: f) => (v: any) => any
-const vTee: vTee = f => a => { f(a); return a }
-const ftWrt = (s: s) => (ft: s) => fs.writeFileSync(ft, s)
-const cmdShell = (a: s) => child_process.exec(a)
-const ftBrw = (a: s) => cmdShell(`code.cmd "${a}"`)
-const sBrw = s => pipe(tmpFt())(vTee(ftWrt(s)), ftBrw)
+const vTee = f => a => { f(a); return a}
+const ftWrt = (s:s) => (ft:s) => fs.writeFileSync(ft,s)
+import * as child_process from 'child_process' 
+const cmdShell = (a:s) => child_process.exec(a)
+const ftBrw = (a:s) => cmdShell(`code.cmd "${a}"`)
+const sBrw = s => pipe(tmpFt())(vTee(ftWrt(s)),ftBrw)
+
+const a = "sdsdf"
+const t = tmpFt()
+sWrt(t)(a)
+const b = ftLines(t)
+if(a!==b) debugger
+ftBrw(t)
 const oLines = o => JSON.stringify(o)
-dmp(curExpStmt())
-//fjsRplExpStmt(ffnRplExt(".ts")(__filename))
-module.exports = { add, addPfx, addPfxSfx, addSfx, alignL, alignR, apply, assertIsPthExist, ayEle, ayFindIx, ayFindIxOrDft, ayFst, ayLas, aySetEle, aySnd, ayTfm, ayTfmEle, ayZip, brkQuote, cmdShell, cmlNm, cmlNy, compare, compose, curExpStmt, decr, dft, divide, dmp, dryClone, dryCol, dryColCnt, dryColWdt, dryColWdtAy, drySrt, dryTfmCell, dryTfmCol, each, eq, er, exclude, ffnAddFnSfx, ffnExt, ffnFfnn, ffnFn, ffnFnn, ffnMakBackup, ffnPth, ffnRplExt, fjsRplExpStmt, fold, fstChr, ftBrw, ftConstDollarNy, ftConstNy, ftLinesPm, ftLyPm, ftWrt, funDmp, halt, hasPfx, hasSfx, incr, isAy, isBool, isDte, isEmp, isEven, isFalse, isFun, isNonEmp, isNonNull, isNonRmkLin, isNull, isNum, isObj, isOdd, isPthExist, isRe, isRmkLin, isStr, isSy, isTrue, isUndefined, itrAddPfx, itrAddPfxSfx, itrAddSfx, itrAlignL, itrAy, itrBrkForTrueFalse, itrClone, itrDupSet, itrFind, itrFst, itrHasDup, itrIsAllFalse, itrIsAllTrue, itrIsSomeFalse, itrIsSomeTrue, itrMax, itrMin, itrPredIsAllFalse, itrPredIsAllTrue, itrPredIsSomeFalse, itrPredIsSomeTrue, itrRmvEmp, itrSet, itrWdt, jn, jnComma, jnCommaSpc, jnCrLf, jnLf, jnSpc, lasChr, lazy, left, len, linRmvMsg, lyConstDollarNy, lyConstNy, lyExpStmt, lyMatchAy, lyReCol, lyReDry, map, mapKset, mapKvy, mapKy, mapVy, match, matchAyDry, matchAyFstCol, matchDr, mid, midN, minus, mnon, mnonEmp, multiply, musAy, musDte, musFun, musNum, musObj, musStr, must, nItr, notMatch, oBringUpDollarPrp, oCmlDry, oCmlObj, oCtorNm, oHasCtorNm, oHasLen, oHasPrp, oIsInstance, oLines, oPrp, oPrpAy, oPrpNy, optMap, oyPrpCol, oyPrpDry, padZero, pipe, pm, predNot, predsAnd, predsOr, pthEns, pthEnsSfxSep, pthEnsSubFdr, pthFnAy, pthFnAyPm, pthSep, quote, reduce, right, rmvColon, rmvExt, rmvLasNChr, rmvPfx, rmvSfx, rmvSubStr, sBox, sBrkP123, sBrw, sEsc, sEscCr, sEscLf, sEscTab, sLik, sSearch, sWrt, sbsPos, sbsRevPos, setAdd, setAft, setAftIncl, setAy, setClone, setMap, setMinus, setWhere, split, splitCommaSpc, splitCrLf, splitLf, splitSpc, stack, strictEqual, swap, tmpFfn, tmpFilFm, tmpFt, tmpNm, tmpPth, trim, vBET, vEQ, vGE, vGT, vIN, vIsInstanceOf, vLE, vLT, vNBET, vNE, vNIN, vTee, where }
+fjsRplExpStmt(ffnRplExt(".ts")(__filename))
+module.exports = { add, addPfx, addPfxSfx, addSfx, alignL, alignR, apply, assertIsPthExist, ayEle, ayFindIx, ayFindIxOrDft, ayFst, ayLas, aySetEle, aySnd, ayTfm, ayTfmEle, ayZip, brkQuote, cmlNm, cmlNy, compare, compose, curExpStmt, decr, dft, divide, dmp, dryClone, dryCol, dryColCnt, dryColWdt, dryColWdtAy, drySrt, dryTfmCell, dryTfmCol, each, eq, er, exclude, ffnAddFnSfx, ffnExt, ffnFfnn, ffnFn, ffnFnn, ffnMakBackup, ffnPth, ffnRplExt, fjsRplExpStmt, fold, fs, fstChr, ftConstDollarNy, ftConstNy, ftLinesPm, ftLyPm, funDmp, halt, hasPfx, hasSfx, incr, isAy, isBool, isDte, isEmp, isEven, isFalse, isFun, isNonEmp, isNonNull, isNonRmkLin, isNull, isNum, isObj, isOdd, isPthExist, isRe, isRmkLin, isStr, isSy, isTrue, isUndefined, itrAddPfx, itrAddPfxSfx, itrAddSfx, itrAlignL, itrAy, itrBrkForTrueFalse, itrClone, itrDupSet, itrFind, itrFst, itrHasDup, itrIsAllFalse, itrIsAllTrue, itrIsSomeFalse, itrIsSomeTrue, itrMax, itrMin, itrPredIsAllFalse, itrPredIsAllTrue, itrPredIsSomeFalse, itrPredIsSomeTrue, itrRmvEmp, itrSet, itrWdt, jn, jnComma, jnCommaSpc, jnCrLf, jnLf, jnSpc, lasChr, lazy, left, len, linRmvMsg, lyConstDollarNy, lyConstNy, lyExpStmt, lyMatchAy, lyReCol, lyReDry, map, mapKset, mapKvy, mapKy, mapVy, match, matchAyDry, matchAyFstCol, matchDr, mid, midN, minus, mnon, mnonEmp, multiply, musAy, musDte, musFun, musNum, musObj, musStr, must, nItr, notMatch, oBringUpDollarPrp, oCmlDry, oCmlObj, oCtorNm, oHasCtorNm, oHasLen, oHasPrp, oIsInstance, oPrp, oPrpAy, oPrpNy, optMap, os, oyPrpCol, oyPrpDry, padZero, path, pipe, pm, predNot, predsAnd, predsOr, pthEns, pthEnsSfxSep, pthEnsSubFdr, pthFnAy, pthFnAyPm, pthSep, quote, reduce, right, rmvColon, rmvExt, rmvLasNChr, rmvPfx, rmvSfx, rmvSubStr, sBox, sBrkP123, sEsc, sEscCr, sEscLf, sEscTab, sLik, sSearch, sWrt, sbsPos, sbsRevPos, setAdd, setAft, setAftIncl, setAy, setClone, setMap, setMinus, setWhere, split, splitCommaSpc, splitCrLf, splitLf, splitSpc, stack, strictEqual, swap, tmpFfn, tmpFilFm, tmpFt, tmpNm, tmpPth, trim, vBET, vEQ, vGE, vGT, vIN, vIsInstanceOf, vLE, vLT, vNBET, vNE, vNIN, where }

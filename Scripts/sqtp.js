@@ -1,5 +1,25 @@
-import { aySnd, ayZip, er, hasPfx, isNonRmkLin, isRmkLin, itrBrkForTrueFalse, itrClone, itrDupSet, itrPredIsAllTrue, itrRmvEmp, linRmvMsg, map, oPrpAy, pipe, rmvPfx, splitLf, where } from './curryfun.js';
-const lyFstNonRmkLin = ly => {
+"use strict";
+/*
+import {
+    add, addPfx, addPfxSfx, addSfx, alignL, alignR, apply, assertIsPthExist, ayEle, ayFindIx, ayFindIxOrDft, ayFst, ayLas, aySetEle, aySnd, ayTfm,
+    ayTfmEle, ayZip, brk, brk1, brk2, brkAt, brkQuote, cmlNm, cmlNy, compare, compose, curExpStmt, decr, dft, divide, dmp, dryClone, dryCol, dryColCnt,
+    dryColWdt, dryColWdtAy, drySrt, dryTfmCell, dryTfmCol, each, ensRe, ensSy, eq, er, exclude, ffnAddFnSfx, ffnExt, ffnFfnn,
+    ffnFn, ffnFnn, ffnMakBackup, ffnPth, fjsRplExpStmt, fold, fs, fstChr, ftConstDollarNy, ftConstNy, ftLines, ftLinesPm, ftLy, ftLyPm, funDmp, halt,
+    hasPfx, hasSfx, incr, isAy, isBool, isDte, isEmp, isEven, isFalse, isFun, isNonEmp, isNonNull, isNonRmkLin, isNull, isNum, isObj, isOdd, isPthExist,
+    isRe, isRmkLin, isStr, isSy, isTrue, isUndefined, itrAddPfx, itrAddPfxSfx, itrAddSfx, itrAlignL, itrAy, itrBrkForTrueFalse, itrClone, itrDupSet, itrFind,
+    itrFst, itrHasDup, itrIsAllFalse, itrIsAllTrue, itrIsSomeFalse, itrIsSomeTrue, itrMax, itrMin, itrPredIsAllFalse, itrPredIsAllTrue, itrPredIsSomeFalse,
+    itrPredIsSomeTrue, itrRmvEmp, itrSet, itrWdt, jn, jnComma, jnCommaSpc, jnCrLf, jnLf, jnSpc, lasChr, lazy, left, len, linRmvMsg, lyConstDollarNy,
+    lyConstNy, lyExpStmt, lyMatchAy, lyReCol, lyReDry, map, mapKset, mapKvy, mapKy, mapVy, match, matchAyDry, matchAyFstCol, matchDr, mid, midN, minus,
+    mnon, mnonEmp, multiply, musAy, musDte, musFun, musNum, musObj, musStr, must, nItr, notMatch, oBringUpDollarPrp, oCmlDry, oCmlObj, oCtorNm, oHasCtorNm,
+    oHasLen, oHasPrp, oIsInstance, oPrp, oPrpAy, oPrpNy, optMap, os, oyPrpCol, oyPrpDry, padZero, path, pipe, pm, predNot, predsAnd, predsOr, pthEns,
+    pthEnsSfxSep, pthEnsSubFdr, pthFnAy, pthFnAyPm, pthSep, quote, reduce, revBrk, revBrk1, revBrk2, revTakAft, revTakBef, right, rmvColon, rmvExt, rmvFstChr,
+    rmvLasChr, rmvLasNChr, rmvPfx, rmvSfx, rmvSubStr, sBox, sBrkP123, sEsc, sEscCr, sEscLf, sEscTab, sLik, sSearch, sWrt, sbsPos, sbsRevPos, setAdd, setAft,
+    setAftIncl, setAy, setClone, setMap, setMinus, setWhere, split, splitCommaSpc, splitCrLf, splitLf, splitSpc, stack, strictEqual, swap, takAft, takBef,
+    tmpFfn, tmpFilFm, tmpFt, tmpNm, tmpPth, trim, vBET, vEQ, vGE, vGT, vIN, vIsInstanceOf, vLE, vLT, vNBET, vNE, vNIN, where
+} from './curryfun.js'
+*/
+const lyFstNonRmkLin = (ly) => {
+    "";
 };
 const sqtprslt = sqtp => {
     let a1 = splitLf(sqtp);
