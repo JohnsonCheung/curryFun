@@ -726,20 +726,3 @@ export {
     setMinus, setWhere, spc, split, splitCommaSpc, splitCrLf, splitLf, splitSpc, strictEqual, swap, tmpFfn, tmpFilFm, 
     tmpFt, tmpNm, tmpPth, trim, where
 }
-export {
-    add, addPfx, addPfxSfx, addSfx, alignL, alignR, apply, assertIsPthExist, ayClone, ayFindIxOrDft, ayZip, brkQuote, 
-    cmlNm, cmlNy, compare, compose, decr, dftStr, divide, dmp, each, eq, exclude, ffnAddFnSfx, ffnExt, ffnFfnn, ffnFn, 
-    ffnFnn, ffnMakBackup, ffnPth, ffnRplExt, fold, fstChr, ftConstDollarNy, ftConstNy, ftLines, ftLinesPm, ftLy, ftLyPm, 
-    hasPfx, hasSfx, incr, isAy, isBool, isDte, isEmp, isEven, isFalse, isFun, isNonEmp, isNonNull, isNull, isNum, isObj, 
-    isOdd, isPthExist, isRe, isStr, isSy, isTrue, isUndefined, itrAddPfx, itrAddPfxSfx, itrAddSfx, itrAlignL, itrAy, 
-    itrClone, itrDupSet, itrFind, itrFst, itrHasDup, itrIsAllFalse, itrIsAllTrue, itrIsSomeFalse, itrIsSomeTrue, itrMax, 
-    itrMin, itrPredIsAllFalse, itrPredIsAllTrue, itrPredIsSomeFalse, itrPredIsSomeTrue, itrRmvEmp, itrSet, itrWdt, jn, 
-    jnAsLines, jnComma, jnCommaSpc, jnCrLf, jnLf, jnSpc, lasChr, lazy, left, len, lyConstDollarNy, lyConstNy, map, mapKset, 
-    mapKvy, mapKy, mapVy, match, matchAyDry, matchAyFstCol, matchDr, mid, midN, minus, mnon, mnonEmp, multiply, musAy, 
-    musDte, musFun, musNum, musObj, musStr, must, nItr, notMatch, oBringUpDollarPrp, oCmlDry, oCmlObj, oCtorNm, oHasCtorNm, 
-    oHasLen, oHasPrp, oIsInstance, oLines, oPrp, oPrpAy, oPrpNy, optMap, oyPrpCol, oyPrpDry, padZero, pm, predNot, pthEns, 
-    pthEnsSfxSep, pthEnsSubFdr, pthFnAy, pthFnAyPm, pthSep, quote, reduce, right, rmvColon, rmvExt, rmvLasNChr, rmvPfx, 
-    rmvSfx, rmvSubStr, sBrkP123, sSearch, sWrt, sbsPos, sbsRevPos, setAdd, setAft, setAftIncl, setAy, setClone, setMap, 
-    setMinus, setWhere, spc, split, splitCommaSpc, splitCrLf, splitLf, splitSpc, strictEqual, swap, tmpFfn, tmpFilFm, 
-    tmpFt, tmpNm, tmpPth, trim, where, 
-}

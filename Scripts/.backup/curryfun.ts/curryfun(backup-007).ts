@@ -153,6 +153,7 @@ const jnAsLines = (sep0?: s, tab0?: n, wdt0?: n) => (sy: s[]) => {
     let slen = sep.length
     let pfx = spc(dft(0)(tab0))
     let a = (() => {
+        debugger
         const oo: ay = []
         let o: ay = []
         let ww = 0
@@ -662,7 +663,7 @@ const lyExpStmt: lyStrOpt = ly => {
     ny = where(predNot(hasPfx("_")))(ny).sort()
     if (isEmp(ny)) return null
     const x = jnAsLines(", ", 4, 120)(ny)
-    const stmt = "export {\r\n" + x + "\r\n}"
+    const stmt = "module.exports = {\r\n" + x + "\r\n}"
     return stmt
 }
 const curExpStmt: mkStr = () => pipe(__filename)(ftLy, lyExpStmt)
@@ -709,37 +710,3 @@ const ftBrw: ftBrw = a => cmdShell(`code.cmd "${a}"`)
 const sBrw: sBrw = s => pipe(tmpFt())(vTee(ftWrt(s)), ftBrw)
 const oLines = o => JSON.stringify(o)
 fjsRplExpStmt(ffnRplExt(".ts")(__filename))
-export {
-    add, addPfx, addPfxSfx, addSfx, alignL, alignR, apply, assertIsPthExist, ayClone, ayFindIxOrDft, ayZip, brkQuote, 
-    cmlNm, cmlNy, compare, compose, decr, dftStr, divide, dmp, each, eq, exclude, ffnAddFnSfx, ffnExt, ffnFfnn, ffnFn, 
-    ffnFnn, ffnMakBackup, ffnPth, ffnRplExt, fold, fstChr, ftConstDollarNy, ftConstNy, ftLines, ftLinesPm, ftLy, ftLyPm, 
-    hasPfx, hasSfx, incr, isAy, isBool, isDte, isEmp, isEven, isFalse, isFun, isNonEmp, isNonNull, isNull, isNum, isObj, 
-    isOdd, isPthExist, isRe, isStr, isSy, isTrue, isUndefined, itrAddPfx, itrAddPfxSfx, itrAddSfx, itrAlignL, itrAy, 
-    itrClone, itrDupSet, itrFind, itrFst, itrHasDup, itrIsAllFalse, itrIsAllTrue, itrIsSomeFalse, itrIsSomeTrue, itrMax, 
-    itrMin, itrPredIsAllFalse, itrPredIsAllTrue, itrPredIsSomeFalse, itrPredIsSomeTrue, itrRmvEmp, itrSet, itrWdt, jn, 
-    jnAsLines, jnComma, jnCommaSpc, jnCrLf, jnLf, jnSpc, lasChr, lazy, left, len, lyConstDollarNy, lyConstNy, map, mapKset, 
-    mapKvy, mapKy, mapVy, match, matchAyDry, matchAyFstCol, matchDr, mid, midN, minus, mnon, mnonEmp, multiply, musAy, 
-    musDte, musFun, musNum, musObj, musStr, must, nItr, notMatch, oBringUpDollarPrp, oCmlDry, oCmlObj, oCtorNm, oHasCtorNm, 
-    oHasLen, oHasPrp, oIsInstance, oLines, oPrp, oPrpAy, oPrpNy, optMap, oyPrpCol, oyPrpDry, padZero, pm, predNot, pthEns, 
-    pthEnsSfxSep, pthEnsSubFdr, pthFnAy, pthFnAyPm, pthSep, quote, reduce, right, rmvColon, rmvExt, rmvLasNChr, rmvPfx, 
-    rmvSfx, rmvSubStr, sBrkP123, sSearch, sWrt, sbsPos, sbsRevPos, setAdd, setAft, setAftIncl, setAy, setClone, setMap, 
-    setMinus, setWhere, spc, split, splitCommaSpc, splitCrLf, splitLf, splitSpc, strictEqual, swap, tmpFfn, tmpFilFm, 
-    tmpFt, tmpNm, tmpPth, trim, where
-}
-export {
-    add, addPfx, addPfxSfx, addSfx, alignL, alignR, apply, assertIsPthExist, ayClone, ayFindIxOrDft, ayZip, brkQuote, 
-    cmlNm, cmlNy, compare, compose, decr, dftStr, divide, dmp, each, eq, exclude, ffnAddFnSfx, ffnExt, ffnFfnn, ffnFn, 
-    ffnFnn, ffnMakBackup, ffnPth, ffnRplExt, fold, fstChr, ftConstDollarNy, ftConstNy, ftLines, ftLinesPm, ftLy, ftLyPm, 
-    hasPfx, hasSfx, incr, isAy, isBool, isDte, isEmp, isEven, isFalse, isFun, isNonEmp, isNonNull, isNull, isNum, isObj, 
-    isOdd, isPthExist, isRe, isStr, isSy, isTrue, isUndefined, itrAddPfx, itrAddPfxSfx, itrAddSfx, itrAlignL, itrAy, 
-    itrClone, itrDupSet, itrFind, itrFst, itrHasDup, itrIsAllFalse, itrIsAllTrue, itrIsSomeFalse, itrIsSomeTrue, itrMax, 
-    itrMin, itrPredIsAllFalse, itrPredIsAllTrue, itrPredIsSomeFalse, itrPredIsSomeTrue, itrRmvEmp, itrSet, itrWdt, jn, 
-    jnAsLines, jnComma, jnCommaSpc, jnCrLf, jnLf, jnSpc, lasChr, lazy, left, len, lyConstDollarNy, lyConstNy, map, mapKset, 
-    mapKvy, mapKy, mapVy, match, matchAyDry, matchAyFstCol, matchDr, mid, midN, minus, mnon, mnonEmp, multiply, musAy, 
-    musDte, musFun, musNum, musObj, musStr, must, nItr, notMatch, oBringUpDollarPrp, oCmlDry, oCmlObj, oCtorNm, oHasCtorNm, 
-    oHasLen, oHasPrp, oIsInstance, oLines, oPrp, oPrpAy, oPrpNy, optMap, oyPrpCol, oyPrpDry, padZero, pm, predNot, pthEns, 
-    pthEnsSfxSep, pthEnsSubFdr, pthFnAy, pthFnAyPm, pthSep, quote, reduce, right, rmvColon, rmvExt, rmvLasNChr, rmvPfx, 
-    rmvSfx, rmvSubStr, sBrkP123, sSearch, sWrt, sbsPos, sbsRevPos, setAdd, setAft, setAftIncl, setAy, setClone, setMap, 
-    setMinus, setWhere, spc, split, splitCommaSpc, splitCrLf, splitLf, splitSpc, strictEqual, swap, tmpFfn, tmpFilFm, 
-    tmpFt, tmpNm, tmpPth, trim, where, 
-}
