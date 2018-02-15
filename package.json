@@ -4,7 +4,9 @@
   "description": "some javascript functions written in curry form",
   "main": "curryfun.js",
   "scripts": {
-    "test": "node curryfun.js"
+    "test": "jasmine",
+    "t-drs": "node --inspect-brk c:/users/user/appdata/roaming/npm/node_modules/jasmine/bin/jasmine.js ./scripts/spec/curryfun/drs_spec.js",
+    "t-is": "node --inspect-brk c:/users/user/appdata/roaming/npm/node_modules/jasmine/bin/jasmine.js ./scripts/spec/curryfun/isXXX_spec.js --inspect-brk"
   },
   "repository": {
     "type": "git",

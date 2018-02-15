@@ -1,60 +1,87 @@
-console.log(__filename)
-debugger
-const { $$, $, end, eq, t, f } = require("./$tstConst.js")(__filename)
-const dte = new Date()
-const aFun = () => { }
-const aStr = 'aaa'
-const aNum = 1
-const aNaN = NaN
-const aNul = null
-const aUnd = undefined
-const aAy = []
-const aObj = {}
-let $fun
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+/// <reference path="../../types/jasmine.d.ts"/>
+const x = require("../../Scripts/curryfun");
+const dte = new Date();
+const aFun = () => { };
+const aStr = 'aaa';
+const aNum = 1;
+const aNaN = NaN;
+const aNul = null;
+const aUnd = undefined;
+const aAy = [];
+const aObj = {};
+let $fun;
 //------------------------------
-$fun = $.isNum
-f($fun(aFun))
-f($fun(aStr))
-t($fun(aNum))
-f($fun(aNaN))
-f($fun(aUnd))
-f($fun(aAy))
-f($fun(aObj))
+describe('isNum', function () {
+    it('should be pass', function () {
+        let t = a => expect(x.isNum(a)).toBeTruthy();
+        let f = a => expect(x.isNum(a)).toBeFalsy();
+        $fun = x.isNum;
+        f(aFun);
+        f(aStr);
+        t(aNum);
+        t(aNaN);
+        f(aUnd);
+        f(aAy);
+        f(aObj);
+    });
+});
 //------------------------------
-$fun = $.isFun
-t($fun(aFun))
-t($fun(aStr))
-t($fun(aNum))
-t($fun(aNaN))
-t($fun(aUnd))
-t($fun(aAy))
-t($fun(aObj))
+describe('isFun', function () {
+    it('should be pass', function () {
+        let t = a => expect(a).toBeTruthy();
+        let f = a => expect(a).toBeFalsy();
+        $fun = x.isFun;
+        t($fun(aFun));
+        f($fun(aStr));
+        f($fun(aNum));
+        f($fun(aNaN));
+        f($fun(aUnd));
+        f($fun(aAy));
+        f($fun(aObj));
+    });
+});
 //------------------------------
-$fun = $.isFun
-t($fun(aFun))
-t($fun(aStr))
-t($fun(aNum))
-t($fun(aNaN))
-t($fun(aUnd))
-t($fun(aAy))
-t($fun(aObj))
-debugger
-// where
-act = where(isOdd)([1, 2, 3, 4, 5, 7, 9])
-assert.deepStrictEqual(act, [1, 3, 5, 7, 9])
-
-// select
-act = select('a b c')([{ a: 1, b: 2, c: 3, d: 4 }, { aa: 11, b: 22, c: 33, d: 44 }, { a: 111, bb: 222, cc: 333, d: 444 }])
-assert.deepStrictEqual(act, [[1, 2, 3], [undefined, 22, 33], [111, undefined, undefined]])
-
-// swap
-act = minus(1)(6);;;;;;; assert.strictEqual(act, 5)
-act = swap(minus)(1)(6); assert.strictEqual(act, -5)
-
-// hasPrp
-act = hasPrp('a')({ a: 1 }); assert.strictEqual(act, true)
-act = hasPrp('b')({ a: 1 }); assert.strictEqual(act, false)
-
+describe('isOdd', function () {
+    it('should pass', function () {
+        let act = x.itrWhere(x.isOdd)([1, 2, 3, 4, 5, 7, 9]);
+        require('assert').deepStrictEqual(act, [1, 3, 5, 7, 9]);
+    });
+});
+describe('oPrpAy', function () {
+    it('should pass', function () {
+        let act = x.oPrpAy(x.sSplitSpc('a b c'))([{ a: 1, b: 2, c: 3, d: 4 }, { aa: 11, b: 22, c: 33, d: 44 }, { a: 111, bb: 222, cc: 333, d: 444 }]);
+        expect(act).toEqual([[1, 2, 3], [undefined, 22, 33], [111, undefined, undefined]]);
+    });
+});
+describe('swap', function () {
+    it('should pass', function () {
+        let act;
+        act = x.nMinus(1)(6);
+        ;
+        ;
+        ;
+        ;
+        ;
+        ;
+        ;
+        ;
+        expect(act).toEqual(5);
+        act = x.swap(x.nMinus)(1)(6);
+        expect(act).toEqual(-5);
+    });
+});
+describe('swap', function () {
+    it('should pass', function () {
+        let act;
+        act = x.oHasPrp('a')({ a: 1 });
+        expect(act).toBeTruthy();
+        act = x.oHasPrp('b')({ a: 1 });
+        expect(act).toBeFalsy();
+    });
+});
+/*
 // hasLen
 act = hasLen({ a: 1 });; assert.strictEqual(act, false)
 act = hasLen(123);;;; assert.strictEqual(act, false)
@@ -163,17 +190,21 @@ assert.strictEqual(ffnPth(act), tmpPth)
 assert.strictEqual(ffnExt(act), '.txt')
 
 // brk
-assert.throws(() => brk('..')('aa.bb'))
-act = brk('.')('sss.bb');;;;;; assert.strictEqual(act, { s1: 'sss', s2: 'bb' })
-act = brk('.')(' sss . bb ');; assert.strictEqual(act, { s1: 'sss', s2: 'bb' })
-act = brk1('.')('sss.bb');;;;; assert.strictEqual(act, { s1: 'sss', s2: 'bb' })
-act = brk1('.')(' sss . bb '); assert.strictEqual(act, { s1: 'sss', s2: 'bb' })
-act = brk1('x')('sss.bb');;;;; assert.strictEqual(act, { s1: 'sss.bb', s2: '' })
-act = brk1('x')(' sss . bb '); assert.strictEqual(act, { s1: ' sss . bb ', s2: '' })
-act = brk2('.')('sss.bb');;;;; assert.strictEqual(act, { s1: 'sss', s2: 'bb' })
-act = brk2('.')(' sss . bb '); assert.strictEqual(act, { s1: 'sss', s2: 'bb' })
-act = brk2('x')('sss.bb');;;;; assert.strictEqual(act, { s2: 'sss.bb', s1: '' })
-act = brk2('x')(' sss . bb '); assert.strictEqual(act, { s2: ' sss . bb ', s1: '' })
+describe('brk', function() {
+    it('should pass', function() {
+        assert.throws(() => brk('..')('aa.bb'))
+        act = brk('.')('sss.bb');;;;;; assert.strictEqual(act, { s1: 'sss', s2: 'bb' })
+        act = brk('.')(' sss . bb ');; assert.strictEqual(act, { s1: 'sss', s2: 'bb' })
+        act = brk1('.')('sss.bb');;;;; assert.strictEqual(act, { s1: 'sss', s2: 'bb' })
+        act = brk1('.')(' sss . bb '); assert.strictEqual(act, { s1: 'sss', s2: 'bb' })
+        act = brk1('x')('sss.bb');;;;; assert.strictEqual(act, { s1: 'sss.bb', s2: '' })
+        act = brk1('x')(' sss . bb '); assert.strictEqual(act, { s1: ' sss . bb ', s2: '' })
+        act = brk2('.')('sss.bb');;;;; assert.strictEqual(act, { s1: 'sss', s2: 'bb' })
+        act = brk2('.')(' sss . bb '); assert.strictEqual(act, { s1: 'sss', s2: 'bb' })
+        act = brk2('x')('sss.bb');;;;; assert.strictEqual(act, { s2: 'sss.bb', s1: '' })
+        act = brk2('x')(' sss . bb '); assert.strictEqual(act, { s2: ' sss . bb ', s1: '' })
+    })
+})
 
 // tak
 act = takBef('.')('aaaa.bb'); assert.strictEqual(act, 'aaaa')
@@ -183,5 +214,5 @@ act = takAft('.')('aaaa.bb'); assert.strictEqual(act, 'bb')
 assert.throws(() => er('aabbcc')())
 assert.throws(() => er('aabbcc')({ a: 1, b: 2 }, 'aaaa'))
 // pmFfn2lines
-
-console.log('testing ok....')
+*/ 
+//# sourceMappingURL=isXXX_Spec.js.map

@@ -5,6 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const os = require("os");
 const child_process = require("child_process");
+const assert = require("assert");
 //---------------------------------------
 exports.strictEqual = require('assert').strictEqual;
 exports.eq = (exp, act) => { try {
@@ -88,6 +89,7 @@ exports.ayFindIxOrDft = dftIx => p => a => exports.vDft(dftIx)(exports.ayFindIx(
 exports.ayFst = a => a[0];
 exports.aySnd = a => a[1];
 exports.ayEle = ix => a => a[ix];
+exports.ayEleOrDft = dft => ix => a => exports.vDft(dft)(a[ix]);
 exports.ayLas = a => a[exports.vLen(a) - 1];
 exports.ayTfm = f => a => { exports.itrEach(i => a[i] = f(a[i]))(exports.nItr(a.length)); };
 exports.aySetEle = ix => v => a => a[ix] = v;
@@ -154,6 +156,8 @@ exports.nPadZero = dig => n => {
     return z + s;
 };
 exports.sAlignL = w => a => {
+    if (a === null || a === undefined)
+        return exports.nSpc(w);
     const l = exports.vLen(a);
     if (l > w)
         return a;
@@ -299,6 +303,7 @@ exports.tmpnm = () => exports.sRmvColon(new Date().toJSON());
 exports.tmppth = os.tmpdir + exports.pthsep;
 exports.tmpffn = (pfx = "", ext) => exports.tmppth + pfx + exports.tmpnm() + ext;
 exports.tmpft = () => exports.tmpffn("T", ".txt");
+exports.tmpjson = () => exports.tmpffn("T", ".json");
 exports.ffnTmp = a => {
     const o = exports.tmpffn(undefined, exports.ffnExt(a));
     fs.copyFileSync(a, o);
@@ -497,7 +502,8 @@ exports.itrFst = a => { for (let i of a)
 exports.itrAddPfxSfx = (pfx, sfx) => (a) => exports.itrMap(exports.sAddPfxSfx(pfx, sfx))(a);
 exports.itrAddPfx = pfx => (a) => exports.itrMap(exports.sAddPfx(pfx))(a);
 exports.itrAddSfx = sfx => (a) => exports.itrMap(exports.sAddSfx(sfx))(a);
-exports.itrWdt = a => Number(exports.pipe(exports.itrMap(exports.vLen)(a))(exports.itrMax));
+exports.itrWdt = a => exports.pipe(exports.itrMap(exports.vLen)(a))(exports.itrMax);
+exports.sitrWdt = a => exports.pipe(exports.itrMap(exports.sLen)(a))(exports.itrMax);
 exports.itrAlignL = a => exports.itrMap(exports.sAlignL(exports.itrWdt(a)))(a);
 exports.itrClone = a => exports.itrMap(i => i)(a);
 exports.itrFind = p => a => { for (let i of a)
@@ -554,7 +560,7 @@ exports.oBringUpDollarPrp = o => {
 exports.oCmlDry = o => {
     let oo = exports.itrMap(n => [exports.cmlNm(n), n])(exports.oPrpNy(o));
     exports.drySrt(exports.ayEle(0))(oo);
-    const w = exports.dryColWdt(0)(oo);
+    const w = exports.sdryColWdt(0)(oo);
     const a = exports.sAlignL(w);
     exports.dryColMdy(0)(a)(oo);
     return oo;
@@ -588,13 +594,38 @@ exports.oCmlObj = o => {
 // ----------------------------------------------
 exports.ayClone = (ay) => ay.slice(0, ay.length);
 // ----------------------------------------------
-exports.dryColWdt = colIx => a => exports.itrWdt(exports.dryCol(colIx)(a));
-exports.dryColWdtAy = a => exports.itrMap(i => exports.dryColWdt(i)(a))(exports.nItr(exports.dryColCnt(a)));
-exports.dryCol = colIx => a => exports.itrMap(exports.ayEle(colIx))(a);
+exports.sdryColWdt = colIx => a => exports.sitrWdt(exports.dryCol(colIx)(a));
+exports.sdryColWdtAy = a => exports.itrMap(i => exports.sdryColWdt(i)(a))(exports.nItr(exports.dryColCnt(a)));
+exports.dryCol = colIx => a => exports.itrMap(exports.ayEleOrDft('')(colIx))(a);
 exports.dryColCnt = a => exports.itrMax(exports.itrMap(exports.vLen)(a));
-exports.dryCellMdy = f => a => { exports.itrEach(exports.ayTfm(f))(a); };
+exports.dryCellTfm = f => a => { exports.itrEach(exports.ayTfm(f))(a); };
 exports.dryClone = a => exports.itrMap(dr => exports.itrClone(dr))(a);
 exports.dryColMdy = colIx => f => a => { exports.itrEach(exports.ayTfmEle(colIx)(f))(a); };
+exports.sdryLines = a => exports.sdryLy(a).join('\r\n');
+exports.wdtAyLin = w => "|-" + exports.itrMap(w => '-'.repeat(w))(w).join('-|-') + "-|";
+exports.sdrLin = w => a => {
+    let m = ([w, s]) => exports.sAlignL(w)(s);
+    let z = exports.ayZip(w, a);
+    let ay = exports.itrMap(m)(z);
+    let s = ay.join(' | ');
+    return "| " + s + " |";
+};
+exports.sdryLy = a => {
+    let w = exports.sdryColWdtAy(a);
+    let h = exports.wdtAyLin(w);
+    let o = [h].concat(exports.itrMap(exports.sdrLin(w))(a), h);
+    return o;
+};
+exports.aySy = a => exports.itrMap(String)(a);
+exports.drySdry = a => exports.itrMap(exports.aySy)(a);
+exports.dryLy = a => exports.sdryLy(exports.drySdry(a));
+exports.drsLy = ({ dry, fny }) => {
+    let b = [fny].concat(exports.drySdry(dry));
+    let c = exports.sdryLy(b);
+    let o = c.slice(0, 2).concat(c[0], c.slice(2));
+    return o;
+};
+exports.drsLines = a => exports.drsLy(a).join('\r\n');
 exports.drySrt = fun_of_dr_to_key => dry => dry.sort((dr_A, dr_B) => exports.vvCompare(fun_of_dr_to_key(dr_A), fun_of_dr_to_key(dr_B)));
 //-----------------------------------------------------------------------
 exports.oyPrpCol = prpNm => oy => { const oo = []; for (let o of oy)
@@ -745,7 +776,32 @@ exports.vTee = f => a => { f(a); return a; };
 exports.ftWrt = s => a => fs.writeFileSync(a, s);
 exports.cmdShell = a => child_process.exec(a);
 exports.ftBrw = a => exports.cmdShell(`code.cmd "${a}"`);
-exports.sBrw = s => exports.pipe(exports.tmpft())(exports.vTee(exports.ftWrt(s)), exports.ftBrw);
+exports.sBrw = a => exports.pipe(exports.tmpft())(exports.vTee(exports.ftWrt(a)), exports.ftBrw);
+exports.oBrw = a => exports.pipe(exports.tmpjson())(exports.vTee(exports.ftWrt(exports.oLines(a))), exports.ftBrw);
 exports.oLines = o => JSON.stringify(o);
+const acorn = require('acorn');
+const a = acorn.parse.toString();
+exports.sBrw(a);
+debugger;
+const o = acorn.parse(a);
+exports.oBrw(o);
+if (module.id = '.') {
+    const sdry = [['lskdfj', '12345678901'], ['123456789', 'dkfj']];
+    let act;
+    act = exports.sdryColWdt(0)(sdry);
+    assert.strictEqual(act, 9);
+    act = exports.sdryColWdt(1)(sdry);
+    assert.strictEqual(act, 11);
+    act = exports.sdryColWdtAy(sdry);
+    assert.deepStrictEqual(act, [9, 11]);
+    act = exports.sdryLy(sdry);
+}
+if (module.id === '.') {
+    const fny = exports.sSplitSpc('aa bb');
+    const dry = [[1233, '12345678901'], ['123456789', 'dkfj'], [new Date(), true, 1]];
+    const drs = { dry, fny };
+    const act = exports.drsLines(drs);
+    debugger;
+}
 //fjsRplExpStmt(ffnRplExt(".ts")(__filename))
 //# sourceMappingURL=curryfun.js.map

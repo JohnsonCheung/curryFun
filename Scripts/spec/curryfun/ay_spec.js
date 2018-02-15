@@ -1,11 +1,16 @@
-describe("curryfun", function() {
-  debugger
-  var curryfun = require('../../scripts/curryfun.js');
-  it("should be able to play a Song", function() {
-    curryfun.sBrw("lskdfjsdf")
-    //expect(player.currentlyPlayingSong).toEqual(song);
-  })
-})
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+/// <reference path="../../node_modules/@types/jasime.d.ts"/>
+/// <reference path="../../Scripts/curryfun.ts"/>
+const x = require("../../Scripts/curryfun");
+describe("curryfun", function () {
+    x.dryColMdy;
+    var curryfun = require('../../scripts/curryfun.js');
+    it("should be able to play a Song", function () {
+        expect(true).toEqual(false);
+        //player.currentlyPlayingSong).toEqual(song);
+    });
+});
 /*
 describe("Player", function() {
   var Player = require('../../lib/jasmine_examples/Player');
@@ -67,4 +72,5 @@ describe("Player", function() {
     });
   });
 });
-*/
+*/ 
+//# sourceMappingURL=ay_spec.js.map

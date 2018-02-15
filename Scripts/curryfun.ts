@@ -3,8 +3,8 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as os from 'os'
 import * as child_process from 'child_process'
-type abc = s
-type xyz = n
+import * as assert from 'assert'
+export interface drs { dry:dry; fny:fny}
 export interface s1s2 { s1: string, s2: string }
 export interface erRslt { er: any, rslt: any }
 export interface tf<T> { t: T[], f: T[] }
@@ -45,6 +45,9 @@ export type Sdry = s[][]
 export type sPred =  pred<s>
 export type pred<T> = (a: T) => b
 export type ay = Array<any>
+export type fny = nm[]
+export type sdry = s[][]
+export type sdr = s[]
 
 export type opt<T> = T | null
 export type fun<T> = (x: T) => any
@@ -59,6 +62,13 @@ export type sOrSy = s | s[]
 export type strOpt = string | null
 export type doFun = () => void
 
+export type _drsLines = (a:drs) => lines
+export type _dryLines = (a:dry) => lines
+export type _dryLy = (a:dry) => ly
+export type _drySdry = (a:dry) => sdry
+export type _aySy = (a:ay) => sy
+export type _wdtAyLin = (a:wdt[]) => lin
+export type _sdrLin = (w:wdt[]) => (a:sdr) => lin
 export type _lySdic = (a:ly) => sdic
 export type _linKs = (a:lin) => ks
 export type _itrFold = <T>(f: cummulator<T>) => (cum: T) => (a: Itr<T>) => T
@@ -107,8 +117,8 @@ export type _dryColMdy = (colIx: n) => (f: f) => (a: dry) => void
 export type _dryTfm = (a: dry) => dry
 export type _dryCellMdy = (f: f) => (a: dry) => void
 export type _dryCnt = (a: dry) => cnt
-export type _dryWdtAy = (a: dry) => wdt[]
-export type _dryWdt = (colIx: n) => (a: dry) => wdt
+export type _sdryWdtAy = (a: sdry) => wdt[]
+export type _sdryWdt = (colIx: n) => (a: sdry) => wdt
 export type _drySrt = (f: (a: dr) => s) => (a: dry) => void
 export type _sPred = (lik: s) => (s: s) => b
 export type _sSbsPred = (sbs: s) => (s: s) => b
@@ -118,6 +128,7 @@ export type _ayMdyEle = <T>(ix: n) => (f: fun<T>) => (a: T[]) => void
 export type _aySetEle = <T>(ix: n) => (v: T) => (a: T[]) => void
 export type _itrSy = (a: itr) => s[]
 export type _itrN = (a: itr) => n
+export type _sitrN = (a:Itr<s>) => n
 export type _lyMatchAy = (re: RegExp) => (a: ly) => RegExpMatchArray[]
 export type _lyReCol = (re: re) => (ly: ly) => col
 export type _lyReSdry = (re: re) => (ly: ly) => Sdry
@@ -137,6 +148,7 @@ export type _ayFindIx = (p: p) => (a: ay) => number | null
 export type _ayFindIxDft = (dftIx: n) => (p: p) => (a: ay) => number
 export type _ayItm = <T>(a: T[]) => T
 export type _ayEle = <T>(ix: n) => (a: T[]) => T
+export type _ayEleOrDft = <T>(dft: T) => (ix: n) => (a: T[]) => T
 export type _ayMdy = (f: f) => (a: ay) => void
 export type _sBrk = (sep: s) => (a: s) => s1s2
 export type _sLik = (slik: s) => (a: s) => b
@@ -219,6 +231,7 @@ export const ayFindIxOrDft = dftIx => p => a => vDft(dftIx)(ayFindIx(p)(a))
 export const ayFst: _ayItm = a => a[0]
 export const aySnd: _ayItm = a => a[1]
 export const ayEle: _ayEle = ix => a => a[ix]
+export const ayEleOrDft: _ayEleOrDft = dft => ix => a => vDft(dft)(a[ix])
 export const ayLas: _ayItm = a => a[vLen(a) - 1]
 export const ayTfm: _ayMdy = f => a => { itrEach(i => a[i] = f(a[i]))(nItr(a.length)) }
 export const aySetEle: _aySetEle = ix => v => a => a[ix] = v
@@ -283,6 +296,7 @@ export const nPadZero:_nPadZero = dig => n => {
     return z + s
 }
 export const sAlignL:_sAlign = w => a => {
+    if(a===null||a===undefined) return nSpc(w)
     const l = vLen(a)
     if (l > w) return a
     return a + nSpc(w - l)
@@ -406,6 +420,7 @@ export const tmpnm = () => sRmvColon(new Date().toJSON())
 export const tmppth = os.tmpdir + pthsep
 export const tmpffn = (pfx = "", ext) => tmppth + pfx + tmpnm() + ext
 export const tmpft = () => tmpffn("T", ".txt")
+export const tmpjson = () => tmpffn("T", ".json")
 export const ffnTmp:_sTfm = a => {
     const o = tmpffn(undefined, ffnExt(a))
     fs.copyFileSync(a, o)
@@ -575,9 +590,10 @@ export const itrFst:_itrItm = a => { for (let i of a) return i; return null }
 export const itrAddPfxSfx:_itrAddPfxSfx = (pfx, sfx) => (a: itr) => itrMap(sAddPfxSfx(pfx, sfx))(a)
 export const itrAddPfx = pfx => (a: itr) => itrMap(sAddPfx(pfx))(a)
 export const itrAddSfx = sfx => (a: itr) => itrMap(sAddSfx(sfx))(a)
-export const itrWdt:_itrN = a => Number(pipe(itrMap(vLen)(a))(itrMax))
-export const itrAlignL:_itrSy = a => itrMap(sAlignL(itrWdt(a)))(a)
-export const itrClone:_itrAy = a => itrMap(i => i)(a)
+export const itrWdt: _itrN = a => pipe(itrMap(vLen)(a))(itrMax)
+export const sitrWdt: _sitrN = a => pipe(itrMap(sLen)(a))(itrMax)
+export const itrAlignL: _itrSy = a => itrMap(sAlignL(itrWdt(a)))(a)
+export const itrClone: _itrAy = a => itrMap(i => i)(a)
 export const itrFind: _itrFind = p => a => { for (let i of a) if (p(i)) return i; return null }
 export const itrHasDup: _itrPred = a => { const set = new Set(); for (let i of a) if (set.has(i)) { return true } else set.add(i); return false }
 export const itrDupSet: _itrSet = a => { const set = new Set(), o = new Set(); for (let i in a) if (set.has(i)) { o.add(i) } else set.add(i); return o }
@@ -614,7 +630,7 @@ export const oBringUpDollarPrp = o => {
 export const oCmlDry:_oDry = o => {
     let oo = itrMap(n => [cmlNm(n), n])(oPrpNy(o))
     drySrt(ayEle(0))(oo)
-    const w = dryColWdt(0)(oo)
+    const w = sdryColWdt(0)(oo)
     const a = sAlignL(w)
     dryColMdy(0)(a)(oo)
     return oo
@@ -645,13 +661,39 @@ export const oCmlObj:_oCmlObj = o => {
 // ----------------------------------------------
 export const ayClone = (ay: ay) => ay.slice(0, ay.length)
 // ----------------------------------------------
-export const dryColWdt: _dryWdt = colIx => a => itrWdt(dryCol(colIx)(a))
-export const dryColWdtAy: _dryWdtAy = a => itrMap(i => dryColWdt(i)(a))(nItr(dryColCnt(a)))
-export const dryCol: _dryCol = colIx => a => itrMap(ayEle(colIx))(a)
+export const sdryColWdt: _sdryWdt = colIx => a => sitrWdt(dryCol(colIx)(a))
+export const sdryColWdtAy: _sdryWdtAy = a => itrMap(i => sdryColWdt(i)(a))(nItr(dryColCnt(a)))
+export const dryCol: _dryCol = colIx => a => itrMap(ayEleOrDft('')(colIx))(a)
 export const dryColCnt: _dryCnt = a => itrMax(itrMap(vLen)(a))
-export const dryCellMdy: _dryCellMdy = f => a => { itrEach(ayTfm(f))(a) }
+export const dryCellTfm: _dryCellMdy = f => a => { itrEach(ayTfm(f))(a) }
 export const dryClone: _dryTfm = a => itrMap(dr => itrClone(dr))(a)
 export const dryColMdy: _dryColMdy = colIx => f => a => { itrEach(ayTfmEle(colIx)(f))(a) }
+export const sdryLines: _dryLines = a => sdryLy(a).join('\r\n')
+export const wdtAyLin: _wdtAyLin = w => "|-" + itrMap(w => '-'.repeat(w))(w).join('-|-') + "-|"
+export const sdrLin: _sdrLin = w => a => {
+    let m = ([w, s]) => sAlignL(w)(s)
+    let z = ayZip(w,a)
+    let ay = itrMap(m)(z)
+    let s = ay.join(' | ')
+    return "| " + s + " |"
+}
+export const sdryLy: _dryLy = a => { 
+    let w = sdryColWdtAy(a)
+    let h = wdtAyLin(w)
+    let o = [h].concat(itrMap(sdrLin(w))(a), h) 
+    return o
+}
+export type _drsLy = (a:drs) => ly
+export const aySy: _aySy = a => itrMap(String)(a)
+export const drySdry: _drySdry = a => itrMap(aySy)(a)
+export const dryLy: _dryLy = a => sdryLy(drySdry(a))
+export const drsLy: _drsLy = ({ dry, fny }) => {
+    let b = [fny].concat(drySdry(dry))
+    let c = sdryLy(b)
+    let o = c.slice(0, 2).concat(c[0], c.slice(2))
+    return o
+}
+export const drsLines: _drsLines = a => drsLy(a).join('\r\n')
 export const drySrt: _drySrt = fun_of_dr_to_key => dry => dry.sort((dr_A, dr_B) => vvCompare(fun_of_dr_to_key(dr_A), fun_of_dr_to_key(dr_B)))
 //-----------------------------------------------------------------------
 export const oyPrpCol = prpNm => oy => { const oo: ay = []; for (let o of oy) oo.push(o[prpNm]); return oo }
@@ -774,6 +816,30 @@ export const vTee: _vTee = f => a => { f(a); return a }
 export const ftWrt: _ftWrt = s => a => fs.writeFileSync(a, s)
 export const cmdShell: _cmdDo = a => child_process.exec(a)
 export const ftBrw: _ftDo = a => cmdShell(`code.cmd "${a}"`)
-export const sBrw: _sDo = s => pipe(tmpft())(vTee(ftWrt(s)), ftBrw)
-export const oLines = o => JSON.stringify(o)
+export const sBrw: _sDo = a => pipe(tmpft())(vTee(ftWrt(a)), ftBrw)
+export const oBrw: _oDo = a => pipe(tmpjson())(vTee(ftWrt(oLines(a))), ftBrw)
+export type _oStr = (a: o) => s
+export type _oDo = (a: o) => void
+export const oLines:_oStr = o => JSON.stringify(o)
+const acorn = require('acorn')
+const a = acorn.parse.toString()
+sBrw(a)
+debugger
+const o = acorn.parse(a)
+oBrw(o)
+if(module.id='.') {
+    const sdry = [['lskdfj','12345678901'],['123456789','dkfj']]
+    let act
+    act = sdryColWdt(0)(sdry); assert.strictEqual(act, 9)
+    act = sdryColWdt(1)(sdry); assert.strictEqual(act, 11)
+    act = sdryColWdtAy(sdry); assert.deepStrictEqual(act, [9,11])
+    act = sdryLy(sdry)
+}
+if(module.id==='.') {
+    const fny = sSplitSpc('aa bb')
+    const dry = [[1233, '12345678901'], ['123456789', 'dkfj'], [new Date(),true, 1]]
+    const drs: drs = { dry, fny }
+    const act = drsLines(drs)
+    debugger
+}
 //fjsRplExpStmt(ffnRplExt(".ts")(__filename))
