@@ -2,6 +2,7 @@
 import * as assert from 'assert'
 import { ly, p, pfx, cnt, n, s, ay, lin, b } from './curryfun'
 import { Er, ErItm } from './sqtp'
+import * as x from './curryfun'
 const erZipAy = (a:Er) => {
     const getMsg = i => {
         let sfxMsg: s[] = []
@@ -44,20 +45,13 @@ export const lyAddErAsLines = (ly: ly, er: Er) => {
     }
     return o
 }
-const lyAyWdt = (a:ly[]) => {
+export const lyAyWdt = (a:ly[]) => {
     const b = x.itrMap(x.itrWdt)(a)
     return x.itrMax(b)
 }
-const lyAyAlignL = (a:ly[]) => {
+export const lyAyAlignL = (a:ly[]) => {
+    const w = lyAyWdt(a)
     const align = ly => x.itrMap(x.sAlignL(w))(ly)
     const o:ly[]= x.itrMap(align)(a)
     return o
-}
-const isMain = module.id==='.'
-if(isMain) {
-    const ly1 = ['012345','0123']
-    const ly2 = ['012345','0123','012345678']
-    const lyAy = [ly1,ly2]
-    const act = lyAyWdt(lyAy)
-    assert.strictEqual(act,9)
 }
