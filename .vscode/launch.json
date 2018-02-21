@@ -14,7 +14,14 @@
             "type": "node",
             "request": "launch",
             "name": "Launch sqtp",
-            "program": "${workspaceFolder}/scripts/sqtp.js"
+            "program": "${workspaceFolder}/scripts/sqtp.js",
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch jasmine xxx",
+            "program": "c:/users/user/appdata/roaming/npm/node_modules/jasmine/bin/jasmine.js",
+            "args": ["${workspaceFolder}/scripts/sqtp.js"]
         },
         {
             "type": "node",

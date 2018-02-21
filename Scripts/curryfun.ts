@@ -5,8 +5,8 @@ import * as os from 'os'
 import * as child_process from 'child_process'
 import * as assert from 'assert'
 export interface drs { dry:dry; fny:fny}
-export interface s1s2 { s1: string, s2: string }
-export interface erRslt { er: any, rslt: any }
+export interface p123 { p1:s, p2:s, p3:s }
+export interface s1s2 { s1: s, s2: s }
 export interface tf<T> { t: T[], f: T[] }
 export interface ks { k: s, s: s }
 export interface linShift { term: s, remainLin: s }
@@ -19,7 +19,6 @@ export type ft = s
 export type fn = s
 export type b = boolean
 export type dr = ay
-export type dry = Array<dr>
 export type lines = s
 export type o = object
 export type quoteStr = s
@@ -33,6 +32,12 @@ export type ix = n
 export type s = string
 export type pth = s
 
+export type cummulator<T> = (cum: T) => (itm) => T
+export type pred<T> = (a: T) => b
+export type opt<T> = T | null
+export type fun<T> = (x: T) => any
+export type Itr<T> = Iterable<T>
+export type dry = Array<dr>
 export type sdic = Map<s, s>
 export type set = Set<any>
 export type sset = Set<s>
@@ -43,33 +48,27 @@ export type scol = s[]
 export type sy = s[]
 export type Sdry = s[][]
 export type sPred =  pred<s>
-export type pred<T> = (a: T) => b
 export type ay = Array<any>
 export type fny = nm[]
 export type sdry = s[][]
 export type sdr = s[]
-
-export type opt<T> = T | null
-export type fun<T> = (x: T) => any
-export type Itr<T> = Iterable<T>
 export type itr = Itr<any>
 export type p = (a: any) => boolean
 export type f = (a: any) => any
-export type cummulator<T> = (cum: T) => (itm) => T
 export type sOrRe = s | re
 export type sOrSy = s | s[]
 
 export type strOpt = string | null
 export type doFun = () => void
 
-export type _drsLines = (a:drs) => lines
+export type _sP123 = (quoteStr:quoteStr) => (a:s) => p123 | null
+export type _drsLines = (a:drs) => lines 
 export type _dryLines = (a:dry) => lines
 export type _dryLy = (a:dry) => ly
 export type _drySdry = (a:dry) => sdry
 export type _aySy = (a:ay) => sy
 export type _wdtAyLin = (a:wdt[]) => lin
 export type _sdrLin = (w:wdt[]) => (a:sdr) => lin
-export type _lySdic = (a:ly) => sdic
 export type _linKs = (a:lin) => ks
 export type _itrFold = <T>(f: cummulator<T>) => (cum: T) => (a: Itr<T>) => T
 export type _oDry = (a:o) => dry
@@ -501,13 +500,13 @@ const _setAft = (incl, a, set) => {
         }
     return z
 }
-const linShift: _linShift = lin => {
+export const linShift: _linShift = lin => {
     const a = lin.trim()
     const b = a.match(/(\S*)\s*(.*)/)
     const o =
         b === null
             ? { term: "", remainLin: "" }
-            : { term: a[1], remainLin: a[2] }
+            : { term: b[1], remainLin: b[2] }
     return o
 }
 export const setAft = aft => a => _setAft(false, aft, a)
@@ -517,17 +516,23 @@ export const itrSet = itr => { const o = new Set; for (let i of itr) o.add(i); r
 export const itrTfmSet:_itrTfmSet = f => a => { const o = new Set; for (let i of a) o.add(f(i)); return o }
 //---------------------------------------------------------------------------
 export const empSdic =() => new Map<s,s>()
-export type _linSetSdic = (sdic:sdic) => (a:lin) => void
-export const linSetSdic:_linSetSdic = sdic => a => { let { k, s } = linKs(a); sdic.set(k, s) }
-export const linKs:_linKs = a => { let {term:k,remainLin:s} = linShift(a); return {k,s}}
-export const lySdic: _lySdic = a => { const o = empSdic(); itrEach(linSetSdic(o))(a); return o }
+export const lySdic = (a:ly) => { 
+    const o = empSdic()
+    const linKs = a => {
+        let { term: k, remainLin: s } = linShift(a)
+        return { k, s }
+    }
+    const x = lin => { let { k, s } = linKs(lin); o.set(k, s) }
+    itrEach(x)(a)
+    return o 
+};
 export const lyReDry: _lyReSdry = re => a => itrMap(matchDr)(lyMatchAy(re)(a))
 export const lyReCol: _lyReCol = re => a => matchAyFstCol(lyMatchAy(re)(a)).sort()
 export const matchAyDry:_matchAyDry = a => itrMap(matchDr)(a)
 export const matchFstItm:_matchFstItm = a => a[1]
 export const matchAyFstCol:_matchAyCol = a => itrMap(matchFstItm)(a)
 export const lyPfxCnt: _lyPfxCnt = pfx => a => { let o = 0; itrEach(lin => { if (sHasPfx(pfx)(lin)) o++ })(a); return o }
-export const lyHasMajPfx: _lyHasMajPfx = pfx => a => a.length >= 2 * lyPfxCnt(pfx)(a)
+export const lyHasMajPfx: _lyHasMajPfx = pfx => a => 2 * lyPfxCnt(pfx)(a) > a.length
 export const lyMatchAy: _lyMatchAy = re => a => itrRmvEmp(itrMap(sMatch(re))(a))
 export const matchDr = (a: match) => [...a].splice(1)
 export const lyConstNy:_tfm<ly> = lyReCol(/^const\s+([\$\w][\$0-9\w_]*)[\:\= ]/)
@@ -559,7 +564,7 @@ export const isOdd = n => n % 2 === 1
 export const isEven = n => n % 2 === 0
 //----------------------------------------------------------------------------
 export const sSearch = (re: RegExp) => (a: s) => a.search(re)
-export const sBrkP123 = (quoteStr: quoteStr) => (a: s) => {
+export const sBrkP123:_sP123 = quoteStr => a => {
     const { q1, q2 } = quoteStrBrk(quoteStr)
     if (q1 === "" || q2 === "") return null
     const l = a.length
@@ -817,17 +822,20 @@ export const ftWrt: _ftWrt = s => a => fs.writeFileSync(a, s)
 export const cmdShell: _cmdDo = a => child_process.exec(a)
 export const ftBrw: _ftDo = a => cmdShell(`code.cmd "${a}"`)
 export const sBrw: _sDo = a => pipe(tmpft())(vTee(ftWrt(a)), ftBrw)
-export const oBrw: _oDo = a => pipe(tmpjson())(vTee(ftWrt(oLines(a))), ftBrw)
+export const oBrw: _oDo = a => pipe(tmpjson())(vTee(ftWrt(oJsonLines(a))), ftBrw)
 export type _oStr = (a: o) => s
 export type _oDo = (a: o) => void
-export const oLines:_oStr = o => JSON.stringify(o)
-const acorn = require('acorn')
-const a = acorn.parse.toString()
-sBrw(a)
-debugger
-const o = acorn.parse(a)
-oBrw(o)
-if(module.id='.') {
+export const oJsonLines:_oStr = o => JSON.stringify(o)
+const isMain = module.id==='.'
+if(isMain) {
+    const acorn = require('acorn')
+    const a = acorn.parse.toString()
+    sBrw(a)
+    debugger
+    const o = acorn.parse(a)
+    oBrw(o)
+}
+if(isMain) {
     const sdry = [['lskdfj','12345678901'],['123456789','dkfj']]
     let act
     act = sdryColWdt(0)(sdry); assert.strictEqual(act, 9)
@@ -835,11 +843,14 @@ if(module.id='.') {
     act = sdryColWdtAy(sdry); assert.deepStrictEqual(act, [9,11])
     act = sdryLy(sdry)
 }
-if(module.id==='.') {
+if(isMain) {
     const fny = sSplitSpc('aa bb')
     const dry = [[1233, '12345678901'], ['123456789', 'dkfj'], [new Date(),true, 1]]
-    const drs: drs = { dry, fny }
+    const drs= { a:1, dry, fny }
     const act = drsLines(drs)
     debugger
+}
+if(isMain) {
+
 }
 //fjsRplExpStmt(ffnRplExt(".ts")(__filename))

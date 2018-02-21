@@ -390,12 +390,12 @@ const _setAft = (incl, a, set) => {
         }
     return z;
 };
-const linShift = lin => {
+exports.linShift = lin => {
     const a = lin.trim();
     const b = a.match(/(\S*)\s*(.*)/);
     const o = b === null
         ? { term: "", remainLin: "" }
-        : { term: a[1], remainLin: a[2] };
+        : { term: b[1], remainLin: b[2] };
     return o;
 };
 exports.setAft = aft => a => _setAft(false, aft, a);
@@ -407,9 +407,16 @@ exports.itrTfmSet = f => a => { const o = new Set; for (let i of a)
     o.add(f(i)); return o; };
 //---------------------------------------------------------------------------
 exports.empSdic = () => new Map();
-exports.linSetSdic = sdic => a => { let { k, s } = exports.linKs(a); sdic.set(k, s); };
-exports.linKs = a => { let { term: k, remainLin: s } = linShift(a); return { k, s }; };
-exports.lySdic = a => { const o = exports.empSdic(); exports.itrEach(exports.linSetSdic(o))(a); return o; };
+exports.lySdic = (a) => {
+    const o = exports.empSdic();
+    const linKs = a => {
+        let { term: k, remainLin: s } = exports.linShift(a);
+        return { k, s };
+    };
+    const x = lin => { let { k, s } = linKs(lin); o.set(k, s); };
+    exports.itrEach(x)(a);
+    return o;
+};
 exports.lyReDry = re => a => exports.itrMap(exports.matchDr)(exports.lyMatchAy(re)(a));
 exports.lyReCol = re => a => exports.matchAyFstCol(exports.lyMatchAy(re)(a)).sort();
 exports.matchAyDry = a => exports.itrMap(exports.matchDr)(a);
@@ -417,7 +424,7 @@ exports.matchFstItm = a => a[1];
 exports.matchAyFstCol = a => exports.itrMap(exports.matchFstItm)(a);
 exports.lyPfxCnt = pfx => a => { let o = 0; exports.itrEach(lin => { if (exports.sHasPfx(pfx)(lin))
     o++; })(a); return o; };
-exports.lyHasMajPfx = pfx => a => a.length >= 2 * exports.lyPfxCnt(pfx)(a);
+exports.lyHasMajPfx = pfx => a => 2 * exports.lyPfxCnt(pfx)(a) > a.length;
 exports.lyMatchAy = re => a => exports.itrRmvEmp(exports.itrMap(exports.sMatch(re))(a));
 exports.matchDr = (a) => [...a].splice(1);
 exports.lyConstNy = exports.lyReCol(/^const\s+([\$\w][\$0-9\w_]*)[\:\= ]/);
@@ -451,7 +458,7 @@ exports.isOdd = n => n % 2 === 1;
 exports.isEven = n => n % 2 === 0;
 //----------------------------------------------------------------------------
 exports.sSearch = (re) => (a) => a.search(re);
-exports.sBrkP123 = (quoteStr) => (a) => {
+exports.sBrkP123 = quoteStr => a => {
     const { q1, q2 } = exports.quoteStrBrk(quoteStr);
     if (q1 === "" || q2 === "")
         return null;
@@ -777,15 +784,18 @@ exports.ftWrt = s => a => fs.writeFileSync(a, s);
 exports.cmdShell = a => child_process.exec(a);
 exports.ftBrw = a => exports.cmdShell(`code.cmd "${a}"`);
 exports.sBrw = a => exports.pipe(exports.tmpft())(exports.vTee(exports.ftWrt(a)), exports.ftBrw);
-exports.oBrw = a => exports.pipe(exports.tmpjson())(exports.vTee(exports.ftWrt(exports.oLines(a))), exports.ftBrw);
-exports.oLines = o => JSON.stringify(o);
-const acorn = require('acorn');
-const a = acorn.parse.toString();
-exports.sBrw(a);
-debugger;
-const o = acorn.parse(a);
-exports.oBrw(o);
-if (module.id = '.') {
+exports.oBrw = a => exports.pipe(exports.tmpjson())(exports.vTee(exports.ftWrt(exports.oJsonLines(a))), exports.ftBrw);
+exports.oJsonLines = o => JSON.stringify(o);
+const isMain = module.id === '.';
+if (isMain) {
+    const acorn = require('acorn');
+    const a = acorn.parse.toString();
+    exports.sBrw(a);
+    debugger;
+    const o = acorn.parse(a);
+    exports.oBrw(o);
+}
+if (isMain) {
     const sdry = [['lskdfj', '12345678901'], ['123456789', 'dkfj']];
     let act;
     act = exports.sdryColWdt(0)(sdry);
@@ -796,12 +806,14 @@ if (module.id = '.') {
     assert.deepStrictEqual(act, [9, 11]);
     act = exports.sdryLy(sdry);
 }
-if (module.id === '.') {
+if (isMain) {
     const fny = exports.sSplitSpc('aa bb');
     const dry = [[1233, '12345678901'], ['123456789', 'dkfj'], [new Date(), true, 1]];
-    const drs = { dry, fny };
+    const drs = { a: 1, dry, fny };
     const act = exports.drsLines(drs);
     debugger;
+}
+if (isMain) {
 }
 //fjsRplExpStmt(ffnRplExt(".ts")(__filename))
 //# sourceMappingURL=curryfun.js.map
