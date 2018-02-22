@@ -390,6 +390,10 @@ const _setAft = (incl, a, set) => {
         }
     return z;
 };
+exports.linFstTerm = (a) => {
+    let { term, remainLin } = exports.linShift(a);
+    return term;
+};
 exports.linShift = lin => {
     const a = lin.trim();
     const b = a.match(/(\S*)\s*(.*)/);

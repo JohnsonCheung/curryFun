@@ -27,13 +27,21 @@ describe('lyAyAlignL', function () {
 describe('lyAddErAsLines', function () {
     it('should pass', function () {
         const er: Er = [
-            { ix: 1, endMsg: ['--^'], sfxMsg: [] },
-            { ix: 2, endMsg: ['--^xxx'], sfxMsg: ['---', '---'] },
+            { ix: 0, endMsg: ['--^'], sfxMsg: ['dd'] },
+            { ix: 1, endMsg: ['--^xxx'], sfxMsg: ['aa', 'bb'] },
             { ix: 2, endMsg: ['---'], sfxMsg: [] }
         ]
         const ly: x.ly = ['line1', 'line2', 'line3']
         const act = y.lyAddErAsLines(ly, er)
-        x.sBrw(x.ayJnCrLf(act))
+        const exp = x.sRmvFstChr(`
+line1  --- dd
+--^
+line2  --- aa
+--^xxx --- bb
+line3
+---`).replace(/\n/g,'\r\n')
+        //x.sBrw(act)
         debugger
+        expect(act).toEqual(exp)
     })
 })

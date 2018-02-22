@@ -500,6 +500,10 @@ const _setAft = (incl, a, set) => {
         }
     return z
 }
+export const linFstTerm = (a:lin) => {
+    let { term, remainLin} = linShift(a)
+    return term
+}
 export const linShift: _linShift = lin => {
     const a = lin.trim()
     const b = a.match(/(\S*)\s*(.*)/)

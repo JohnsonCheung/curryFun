@@ -5,8 +5,14 @@ export interface ErItm {
     sfxMsg: s[];
     endMsg: s[];
 }
+export interface termPos {
+    pos: n;
+    len: n;
+}
 export declare type Er = ErItm[];
-export declare const sqtprslt: (sqtp: any) => {
-    vtp: string[];
-    sql: any;
+export { sqtprslt };
+declare const sqtprslt: (a: string) => {
+    vtp: string;
+    sql: string;
 };
+export declare const _termPosAyRmkLin: (a: termPos[]) => string;

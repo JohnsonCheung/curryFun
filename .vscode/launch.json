@@ -28,7 +28,7 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch the Program",
+            "name": "Launch the editing Program",
             "program": "${file}",
             //  "runtimeArgs": [
             //      "--experimental-modules"

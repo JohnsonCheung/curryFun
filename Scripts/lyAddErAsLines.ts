@@ -36,26 +36,27 @@ const $right_lyAy = (ly: ly, er: Er) => {
     }
     return o
 }
+const sep = ' --- '
 const $mge = (left_ly: ly, right_ly: ly) => {
     const llen = left_ly.length
     const rlen = right_ly.length
     const o:ly = []
     const min = x.itrMin([llen,rlen])
     for (let i of x.nItr(min)) {
-        const m = left_ly[i] + ' ' + right_ly[i]
+        const m = left_ly[i] + sep + right_ly[i]
         o.push(m)
     }
     if (llen > rlen) {
         for (let i = rlen; i < llen; i++)
             o.push(left_ly[i].trim())
     } else if(llen < rlen) {
-        const s = x.nSpc(left_ly[0].length + 1)
+        const s = x.nSpc(left_ly[0].length)
         for (let i = llen; i < rlen; i++)
-            o.push(s + right_ly[i])
+            o.push(s + sep + right_ly[i])
     }
     return o
 }
-export const lyAddErAsLines = (ly: ly, er: Er) => {
+export const lyAddErAsLy = (ly: ly, er: Er) => {
     const left_lyAy = lyAyAlignL($left_lyAy(ly, er))
     const right_lyAy = $right_lyAy(ly, er)
     let o: ly = []
@@ -65,6 +66,7 @@ export const lyAddErAsLines = (ly: ly, er: Er) => {
     }
     return o
 }
+export const lyAddErAsLines = (ly: ly, er: Er) => x.ayJnCrLf(lyAddErAsLy(ly, er))
 export const lyAyWdt = (a: ly[]) => {
     const b = x.itrMap(x.itrWdt)(a)
     return x.itrMax(b)

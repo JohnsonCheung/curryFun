@@ -1,207 +1,215 @@
 /// <reference path="./curryfun.d.ts"/>
-import { _tfm, p, pfx, cnt, n, s, ay, lin, b } from './curryfun'
+import { ix, sset, sdic, p, pfx, cnt, n, s, ay, lin, b, ly } from './curryfun'
 import { lyAddErAsLines } from './lyAddErAsLines'
-interface ixlin { ix:n,  lin:lin }
-interface bk { bkty: Bkty, gp: gp }
-interface ixlinChkr { hasEr: ixlinPred, erFun: (a: ixlin) => Er }
-interface swChkr { FmT3Dup: ixlinChkr }
+import * as x from './curryfun'
 export interface ErItm { ix: n, sfxMsg: s[], endMsg: s[] }
+export interface termPos { pos: n, len: n }
+export type Er = ErItm[]
+export { sqtprslt }
+interface bk { bkty: Bkty, gp: gp }
+interface ixlinChkr { hasEr: (a:ixlin)=>b, erFun: (a: ixlin) => Er }
+interface ixlin { ix: n, lin: lin }
+interface gppass { er: Er, gp: gp }
 const enum Bkty { RM, PM, SW, SQ, ER }
-type ixlinPred = (a:ixlin) => b
+type gp = ixlin[]
 type Sw = Map<s, boolean>
 type Pm = Map<s, s>
-export type Er = ErItm[]
 type sql = s
-type ix = n
-type sdic = Map<s, s>
 type term = s
-type sset = Set<s>
-type gp = Array<ixlin>
-type ly = s[]
-type gppass = { er: Er, gp: gp }
-type rm01Inp = bk[]; type rm01Oup = bk[]
-type er02Inp = rm01Oup; type er02Oup = { er: Er, bky: bk[], }
-type pm03Inp = er02Oup; type pm03Oup = { er: Er, bky: bk[], pm: Pm }
-type sw04Inp = pm03Oup; type sw04Oup = { er: Er, bky: bk[], pm: Pm, sw: Sw }
-type sq05Inp = sw04Oup; 
-
-type _bkPred = (a:bk) => b
-type _gpBk = (a: gp) => bk
-type _bkPm = (bk: bk) => { er: Er, pm: Pm }
-type _gppassVdt = (chkr: ixlinChkr) => (a: gppass) => gppass
-type _bkSw = (pm: Pm) => (a: bk) => {er:Er, sw:Sw}
-type _lySw = (a: ly) => Sw
-
-type _bkyEr = (msg: s) => (a: bk[]) => Er
-type _bkIx = (a: bk) => ix
-type _bkAyExcessEr = (bkNm: s) => (a: bk[]) => Er
-type _splitGp = (sep:s) => (a:gp) => gp[]
-type _lyPred = (a: ly) => b
-type _lyStr = (a: ly) => s
-type _linTerm = (a: lin) => term
-type _lySdic = (a: ly) => sdic
-type _lySset = (a: ly) => sset
-type _lyTermAy = (a: ly) => term[]
-type _gpEr = (a: gp) => Er
-type _rm01 = (inp: bk[]) => bk[]
-type _er02 = (inp: er02Inp) => er02Oup
-type _pm03 = (inp: pm03Inp) => pm03Oup
-type _sw04 = (inp: sw04Inp) => sw04Oup
-type _sq05 = (inp: sq05Inp) => {sql, er}
-type _lyGp = (a: ly) => gp
-type _gpRmvRmk = (a: gp) => gp
-const lyFstNonRmkLin: _lyStr = a => x.itrFind(x.isNonEmp)(a)
-export const sqtprslt = sqtp => {
-    debugger
-    let ly = x.sSplitLf(sqtp)
+type sqtp = s
+const sqtprslt = (a: sqtp) => {
+    let ly = x.sSplitLf(a)
     let ly1 = lyRmvMsg(ly)
     let gp = lyGp(ly1)
     let gp1 = gpRmvRmk(gp)
-    let gpy = gpGpy('==')(gp1)
+    let gpy = gpGpy(gp1, '==')
     let bky = gpyBky(gpy)
-    let bky1 = rm01(bky) //bky may have remark; bky1 does not have remark
-    let a_er = er02(bky1)
-    let a_pm = pm03(a_er)
-    let a_sw = sw04(a_pm)
-    let { er, sql } = sq05(a_sw)
+    let bky_aftRm = x.itrWhere((bk: bk) => bk.bkty !== Bkty.RM)(bky)
+
+    let [er_er, bky_aftEr] = er02(bky_aftRm)
+    let [er_pm, bky_aftPm, pm] = pm03(bky_aftEr)
+    let [er_sw, bky_aftSw, sw] = sw04(bky_aftPm, pm)
+    let [er_sq, sql] = sq05(bky_aftSw, pm, sw)
+    let er = er_er.concat(er_pm, er_sw, er_sq)
     let vtp = lyAddErAsLines(ly1, er)
     return { vtp, sql }
 }
-const lyRmvMsg: _tfm<ly> = a => x.pipe(a)(x.itrMap(x.linRmvMsg), x.itrRmvEmp)
-const gpRmvRmk: _tfm<gp> = a => x.itrWhere(({ ix, lin }) => x.isNonRmkLin(lin))(a)
-const lyGp: _lyGp = a => {
-    const o: ixlin[] = []
-    let i = 0
-    for (let lin of a)
-        o.push({ ix: i++, lin })
-    return o
-}
-const pm03: _pm03 = ({ er, bky }) => {
-    const { t: pmBky, f: remainBky } = x.itrBrkForTrueFalse((a: bk) => a.bkty === Bkty.PM)(bky)
-    const e1 = bkAyExcessEr('parameter')(pmBky)
-    const { er: e2, pm } = bkPm(pmBky[0])
-    er = e1.concat(e2)
-    return { bky: remainBky, pm, er }
-}
-const sw04: _sw04 = ({ bky, pm, er }) => {
-    const { t: swBky, f: remainBky } = x.itrBrkForTrueFalse((a: bk) => a.bkty === Bkty.SW)(bky)
-    const e1 = bkAyExcessEr('switch')(swBky)
-    const { er: e2, sw } = bkSw(pm)(swBky[0])
-    const e = e1.concat(e2)
-    return { bky: remainBky, pm, sw, er: e }
-}
-const sq05: _sq05 = ({ bky, sw, pm, er }) => {
-    let sql = ""
-    return { er, sql }
-}
-const rm01: _tfm<bk[]> = bky => x.itrWhere((a: bk) => a.bkty !== Bkty.RM)(bky)
-const er02: _er02 = (a: bk[]) => {
-    let { t: er, f: bky } = x.itrBrkForTrueFalse((a: bk) => a.bkty === Bkty.RM)(a)
-    return { bky, er }
-}
-const bkLasIx: _bkIx = a => a.gp.length - 1
-const bkyEr: _bkyEr = msg => a => {
-    const o: Er = []
-    for (let bk of a) {
-        const ix = bkLasIx(bk)
-        const endMsg = []
-        const sfxMsg = [msg]
-        o.push({ ix, endMsg, sfxMsg })
-    }
-    return o
-}
-const bkAyExcessEr: _bkAyExcessEr = bkNm => a => bkyEr(`Three is already [${bkNm}] block.  This block is ignored`)(a.slice(1))
-import * as x from './curryfun'
-const gpGpy: _splitGp = sep => gp => {
-    let a = gp[0]
-    let {ix,lin} = a
-    const o: gp[] = []
-    let curGp: gp = []
-    for (let { ix, lin } of gp) {
-        if (x.sHasPfx(sep)(lin)) {
-            if (curGp.length !== 0)
-                o.push(curGp)
-            curGp = []
-        } else
-            curGp.push({ix, lin})
-    }
-    if (curGp.length !== 0)
-        o.push(curGp)
-    return o
+const linRmvMsg = (a:lin) => {
+    const b = a.match(/(.*)---/)
+    const c:lin = b === null ? lin : a[1]
+    if (x.sHasPfx("^")(c.trimLeft())) return ""
+    return c
 }
 
-const gpRmvRmkLin: _tfm<gp> = gp => gp
-const gpyRmvRmkLin: _tfm<gp[]> = x.itrMap(gpRmvRmkLin)
-const assertAyIsEqLen = a1 => a2 => {
-    if (a1.length !== a2.length)
-        x.er('two ay are diff len', { a1, a2 })
+const lyRmvMsg = (a:ly) => {
+    let z:ly = x.pipe(a)(x.itrMap(linRmvMsg), x.itrRmvEmp)
+    return z
 }
-type _gpLy = (a:gp) => ly
-const gpLy:_gpLy = a => x.itrMap(x.oPrp("lin"))(a)
-const gpyBky = (a:gp[]) => {
-    const lyy = x.itrMap(gpLy)(a)
-    const bktyy = x.itrMap(lyBkty)(lyy)
-    const z = x.ayZip(bktyy, a)
-    const o:bk[] = x.itrMap(([bkty, gp]) => { return { bkty, gp } })(z)
-    return o
+const gpRmvRmk = (a: gp) => {
+    let z: gp = x.itrWhere(({ ix, lin }) => x.isNonRmkLin(lin))(a)
+    return z
+}
+const lyGp = (a:ly) => {
+    const z: ixlin[] = []
+    let i = 0
+    for (let lin of a)
+        z.push({ ix: i++, lin })
+    return z
+}
+
+const pm03 = (a:bk[]) => {
+    const { t: pmBky, f: remainBky } = x.itrBrkForTrueFalse((a: bk) => a.bkty === Bkty.PM)(a)
+    const e1 = bkAyExcessEr(pmBky, 'parameter')
+    const [e2, pm] = bkPm(pmBky[0])
+    const er = e1.concat(e2)
+    let z:[Er,bk[],Pm] = [er, remainBky, pm]
+    return z
+}
+const sw04 = (a:bk[], pm:Pm) => {
+    const { t: swBky, f: remainBky } = x.itrBrkForTrueFalse((a: bk) => a.bkty === Bkty.SW)(a)
+    const e1 = bkAyExcessEr(swBky, 'switch')
+    const [e2, sw] = bkSw(swBky[0], pm)
+    const er = e1.concat(e2)
+    let z:[Er,bk[],Sw] = [er, remainBky, sw]
+    return z
+}
+
+const sq05 = (a: bk[], pm: Pm, sw: Sw) => {
+    let sql = ""
+    let z: [Er, sql] = [[], sql]
+    return z
+}
+
+const er02 = (a: bk[]) => {
+    let { t: er, f: bky } = x.itrBrkForTrueFalse((a: bk) => a.bkty === Bkty.RM)(a)
+    let z: [Er, bk[]] = [er, bky]
+    return z
+}
+
+const bkySfxMsgEr = (a: bk[], sfxMsgStr: s) => {
+    const z: Er = []
+    for (let bk of a) {
+        const ix = bk.gp.length
+        const endMsg = []
+        const sfxMsg = [sfxMsgStr]
+        z.push({ ix, endMsg, sfxMsg })
+    }
+    return z
+}
+
+const bkAyExcessEr = (a: bk[], bkNm: s) => bkySfxMsgEr(a.slice(1), `Three is already [${bkNm}] block.  This block is ignored`)
+
+const gpGpy = (a: gp, linPfxSep: s) => {
+    let { ix, lin } = a[0]
+    const z: gp[] = []
+    let curGp: gp = []
+    for (let { ix, lin } of a) {
+        if (x.sHasPfx(linPfxSep)(lin)) {
+            if (curGp.length !== 0)
+                z.push(curGp)
+            curGp = []
+        } else
+            curGp.push({ ix, lin })
+    }
+    if (curGp.length !== 0)
+        z.push(curGp)
+    return z
+}
+
+const gpRmvRmkLin = (a:gp) => {
+    let p = ({ ix, lin }) => !x.isRmkLin(lin)
+    let z:gp = x.itrWhere(p)(a)
+    return z
+}
+const gpyRmvRmkLin: (a: gp[]) => gp[] = x.itrMap(gpRmvRmkLin)
+const assertAyIsEqLen = (ay1: ay, ay2: ay) => {
+    if (ay1.length !== ay2.length)
+        x.er('two ay are diff len', { ay1, ay2 })
+}
+const gpLy = (a: gp) => {
+    const z: ly = x.itrMap(x.oPrp("lin"))(a);
+    return z
+}
+const gpBk = (a: gp) => {
+    const ly = gpLy(a)
+    const bkty = lyBkty(ly)
+    let z: bk = { bkty, gp: a }
+    return z
+}
+const gpyBky = (a: gp[]) => {
+    let z: bk[] = x.itrMap(gpBk)(a)
+    return z
 }
 const _x = x.sSplitSpc("drp upd sel dist")
-const isSqLy: _lyPred = a => x.vIN(_x)(x.sRmvPfx("?")(lyFstNonRmkLin(a)).toLowerCase())
-const isRmLy: _lyPred = a => x.itrPredIsAllTrue(x.isRmkLin)(a)
-const isPmLy: _lyPred = a => x.lyHasMajPfx("%")(a)
-const isSwLy: _lyPred = a => x.lyHasMajPfx("?")(a)
-const lyBkty = ly => {
-    let o:Bkty
-    switch(true) {
-        case (isRmLy(ly)):
+const isSqLy = (a: ly) => {
+    const fstNonRmkLin: lin = x.itrFind(x.isNonEmp)(a)
+    return x.vIN(_x)(x.sRmvPfx("?")(fstNonRmkLin).toLowerCase())
+}
+const isRmLy = (a: ly) => x.itrPredIsAllTrue(x.isRmkLin)(a)
+const isPmLy = (a: ly) => x.lyHasMajPfx("%")(a)
+const isSwLy = (a: ly) => x.lyHasMajPfx("?")(a)
+const lyBkty = (a: ly) => {
+    let o: Bkty
+    switch (true) {
+        case (isRmLy(a)):
             o = Bkty.RM
             break
-        case (isPmLy(ly)):
+        case (isPmLy(a)):
             o = Bkty.PM
             break
-        case (isSwLy(ly)):
+        case (isSwLy(a)):
             o = Bkty.SW
             break
-        case (isSqLy(ly)):
+        case (isSqLy(a)):
             o = Bkty.SQ
             break
         default:
             o = Bkty.ER
-    } 
-    return o
-}
-const gpBk: _gpBk = gp => { return { bkty: lyBkty(gpLy(gp)), gp } }
-const linFstTerm: _linTerm = a => x.linShift(a).term
-const lySdic: _lySdic = ly => {
-    const o = new Map()
-    for (let lin of ly) {
-        const { term: k, remainLin: s } = x.linShift(lin)
-        o.set(k, s)
     }
     return o
 }
-const lyFstTermAy: _lyTermAy = x.itrMap(linFstTerm)
-const lyFstTermDupSet: _lySset = x.compose(x.itrMap(linFstTerm), x.itrDupSet)
-const gpDupFstTermEr: _gpEr = a => {
+
+const lySdic = (a: ly) => {
+    const z: sdic = new Map()
+    for (let lin of a) {
+        const { term: k, remainLin: s } = x.linShift(lin)
+        z.set(k, s)
+    }
+    return z
+}
+const lyFstTermAy = (a: ly) => {
+    let z: ly = x.itrMap(x.linFstTerm)(a)
+    return z
+}
+const lyFstTermDupSet = (a: ly) => {
+    let z: sset = x.pipe(a)(x.itrMap(x.linFstTerm), x.itrDupSet)
+    return z
+}
+const gpDupFstTermEr = (a: gp) => {
     const dup = lyFstTermDupSet(gpLy(a))
-    const o: ay = []
+    const z: Er = []
     for (let { ix, lin } of a) {
-        let fst = linFstTerm(lin)
+        let fst = x.linFstTerm(lin)
         if (dup.has(fst)) {
             let sfxMsg = [`"duplicate(${fst})`]
             let endMsg = []
             const er = { ix, sfxMsg, endMsg }
-            o.push(er)
+            z.push(er)
         }
     }
-    return o
+    return z
 }
-const bkPm: _bkPm = bk => {
-    if (bk === undefined) return {er:[], pm:new Map<s, s>()}
-    const er = gpDupFstTermEr(bk.gp)
-    const ly = gpLy(bk.gp)
+const bkPm = (a: bk) => {
+    let z:[Er,Pm]
+    if (a === undefined) {
+        z =  [[], new Map<s, s>()]
+        return z
+    }
+    const er = gpDupFstTermEr(a.gp)
+    const ly = gpLy(a.gp)
     const pm = x.lySdic(ly)
-    return { er, pm }
+    z = [er, pm]
+    return z
 }
 const vdt = ([itmErPred, itmErMap]) => ([ery, itr]) => {
     const { t: er, f: remainingAy } = x.itrBrkForTrueFalse(itmErPred)(itr)
@@ -209,33 +217,53 @@ const vdt = ([itmErPred, itmErMap]) => ([ery, itr]) => {
     const ery2 = ery.concat(ery1)
     return [ery2, remainingAy]
 }
-const linTermAy = lin => lin.trim().split(/\s+/)
-const linFmT3DupTermSet = lin => {
-    let termAy = linTermAy(lin)
-    termAy.shift()
-    termAy.shift()
-    return x.itrDupSet(termAy)
+const linTermAy = (a: lin) => {
+    let z: s[] = a.trim().split(/\s+/)
+    return z
 }
-const linTermPosAy = lin => {
-    let a = lin
-    const o: ay = []
+const linFmT3DupTermSet = (a:lin) => {
+    let termAy = linTermAy(a)
+    termAy.shift()
+    termAy.shift()
+    let z:sset = x.itrDupSet(termAy)
+    return z
+}
+const linTermPosAy = (a: lin) => {
+    const z: termPos[] = []
     let j = 0
-    let pos = 0
+    let pos: n = 0
+    let len: n
+    let i_lin = a
+    xx:
     do {
         if ((j++) > 100)
             throw new Error('looping too much')
-        let [x, a1, a2, a3] = a.match(/(\s*)(\S+)(.*)/)
+        let m = i_lin.match(/(\s*)(\S+)(.*)/)
+        if (m === null) {
+            break xx
+        }
+        let [x, a1, a2, a3] = m
         if (a1 !== "") {
+            len = a1.length
             pos = pos + a1.length
-            o.push(pos)
+            z.push({ pos, len })
             pos = pos + a2.length
         } else {
             if (a3 !== "")
                 throw new Error('impossible')
         }
-        a = a3
+        i_lin = a3
     } while (a.trim() !== "");
-    return o
+    return z
+}
+export const _termPosAyRmkLin = (a: termPos[]) => {
+    let z: lin = ""
+    for (let { pos, len } of a) {
+        const n = 1
+        const s = x.nSpc(n)
+        z = z + s + '^'.repeat(len)
+    }
+    return z
 }
 //const xx  = linTermPosAy(" sdf lk fdf d  ")
 const linAddMrk = (lin, pos, len) => {
@@ -243,7 +271,7 @@ const linAddMrk = (lin, pos, len) => {
     const m = '^'.repeat(len)
     return lin + s + m
 }
-const linFmT3DupTermMrk = lin => {
+const linFmT3DupTermMrkLin = lin => {
     const dup = linFmT3DupTermSet(lin)
     const termPosAy = linTermPosAy(lin)
     const termAy = linTermAy(lin)
@@ -258,24 +286,27 @@ const linFmT3DupTermMrk = lin => {
     }
     return o
 }
-const swChkr: swChkr = (() => {
-    const FmT3Dup: any = {}
-    FmT3Dup.hasEr = a => linFmT3DupTermSet(a.lin).size > 0
-    FmT3Dup.erFun = a => [{ ix: a.ix, sfxMsg: [linFmT3DupTermMrk(a.lin)], endMsg: []}]
-    return { FmT3Dup }
-})()
-const gppassVdt: _gppassVdt = chkr => (a: gppass) => {
+const swChkr_FmT3Dup: ixlinChkr = {
+    hasEr: a => linFmT3DupTermSet(a.lin).size > 0,
+    erFun: a => [{ ix: a.ix, endMsg: [linFmT3DupTermMrkLin(a.lin)], sfxMsg: [] }]
+}
+const gppassVdt = (a: gppass, chkr: ixlinChkr) => {
     const p = chkr.hasEr
     const m = chkr.erFun
     const [erGp, remainingGp] = gpSplitForErAndRemain(p)(a.gp)
-    const e1 = x.itrMap(m)(erGp)
-    return { er: [], gp: a.gp }
+    const er: Er = x.itrMap(m)(erGp)
+    const z: gppass = { er, gp: a.gp }
+    return z
 }
 const bkSw_process_SwEr = (gp, er, SwEr) => { }
-const bkSw: _bkSw = pm => bk => {
-    if (bk === undefined) return { er: [], sw: new Map<s, boolean>() }
-    let er = gpDupFstTermEr(bk.gp)
-    let gp = bk.gp
+const bkSw = (a:bk, pm:Pm) => {
+    let z:[Er,Sw]
+    if (a === undefined) {
+        z = [[], new Map<s, boolean>()]
+        return z
+    }
+    let er = gpDupFstTermEr(a.gp)
+    let gp = a.gp
     let e: Er = []
     /*
     for (let ixlinChkr of x.oPrpNy(swChkr)) {
@@ -284,7 +315,8 @@ const bkSw: _bkSw = pm => bk => {
     }
     */
     const sw = lySw(pm)(gpLy(gp))
-    return {er, sw}
+    z = [er, sw]
+    return z
 }
 const gpSplitForErAndRemain: (p: p) => (gp: gp) => [gp, gp] = p => gp => [[], []]
 const lySw = (pm: Pm) => (a: ly) => {
@@ -294,14 +326,14 @@ const lySw = (pm: Pm) => (a: ly) => {
     let ly = x.itrClone(a)
     const isSomeNull = itr => { for (let i of itr) if (i === null) return true; return false }
     const someTrue = itr => { for (let i of itr) if (i === true) return true; return false }
-    const allTrue = itr => { for (let i of itr) if (i !== true) return false; return true } 
+    const allTrue = itr => { for (let i of itr) if (i !== true) return false; return true }
     const xAND = ay => isSomeNull(ay) ? null : allTrue(ay)
     const xOR = ay => isSomeNull(ay) ? null : someTrue(ay)
     const xEQ = ([a, b]) => a === null || b === null ? null : a === b
     const xNE = ([a, b]) => a === null || b === null ? null : a !== b
 
     const evlT2 = t => {
-        if(t.toUpperCase()==='*BLANK') return ''
+        if (t.toUpperCase() === '*BLANK') return ''
         return t
     }
     const evlT = t => {
@@ -309,11 +341,11 @@ const lySw = (pm: Pm) => (a: ly) => {
         return pm.get(t)
     }
     const evlAy = ay => x.itrMap(evlT)(ay)
-    const evlT1T2 = ay => [evlT(ay[0]), evlT2(ay[1])]
+    const evlT1T2 = (t1, t2) => [evlT(t1), evlT2(t2)]
     const evlOR = ay => { let a = evlAy(ay); return xOR(a) }
-    const evlAND = ay => { let a = evlT1T2(ay); return xAND(a) }
-    const evlEQ = ay => { let a = evlT1T2(ay); return xEQ(a) }
-    const evlNE = ay => { let a = evlT1T2(ay); return xNE(a) }
+    const evlAND = ay => { let a = evlAy(ay); return xAND(a) }
+    const evlEQ = (t1, t2) => { let [a1, a2] = evlT1T2(t1, t2); return xEQ([a1, a2]) }
+    const evlNE = (t1, t2) => { let [a1, a2] = evlT1T2(t1, t2); return xNE([a1, a2]) }
     const evlLin = lin => {
         let ay = x.sSplitSpc(lin)
         let key = x.vDft("")(ay.shift()).toUpperCase()
@@ -322,20 +354,20 @@ const lySw = (pm: Pm) => (a: ly) => {
         switch (op) {
             case 'AND': boolOpt = evlAND(ay); break
             case 'OR': boolOpt = evlOR(ay); break
-            case 'EQ': boolOpt = evlEQ(ay); break
-            case 'NE': boolOpt = evlNE(ay); break
+            case 'EQ': boolOpt = evlEQ(ay[0], ay[1]); break
+            case 'NE': boolOpt = evlNE(ay[0], ay[1]); break
             default: x.er('')
         }
         let o = { key, boolOpt }
         return o
     }
-    let ly1:ly = []
+    let ly1: ly = []
     while (isEvaluated && j++ < 100) {
-        isEvaluated = false 
+        isEvaluated = false
         ly1 = []
         for (let lin of ly) {
             let { key, boolOpt } = evlLin(lin)
-            if (boolOpt!==null) {
+            if (boolOpt !== null) {
                 sw.set(key, boolOpt)
                 isEvaluated = true
             } else
@@ -343,7 +375,7 @@ const lySw = (pm: Pm) => (a: ly) => {
         }
         ly = ly1
     }
-    if(ly1.length!==0) x.er('ly1 should has 0-length', {ly1})
+    if (ly1.length !== 0) x.er('ly1 should has 0-length', { ly1 })
     return sw
 }
 //?LvlY    EQ %SumLvl Y
