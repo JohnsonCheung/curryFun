@@ -1,44 +1,65 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const x = require("./curryfun");
-const erZipAy = (a) => {
-    const getMsg = i => {
-        let sfxMsg = [];
-        let endMsg = [];
-        for (let erItm of a) {
-            if (erItm.ix === i) {
-                sfxMsg = sfxMsg.concat(erItm.sfxMsg);
-                endMsg = endMsg.concat(erItm.endMsg);
-            }
-        }
-        return [sfxMsg, endMsg];
-    };
-    const leftMsgAy = [];
-    const rightMsgAy = [];
-    for (let i = 0; i < ly.length; i++) {
-        let [sfxMsg, endMsg] = getMsg(i);
-        let a = [ly[i]].concat(sfxMsg);
-        leftMsgAy.push(a);
-        rightMsgAy.push(endMsg);
+const $endMsg = (er, i_ix) => {
+    let o = [];
+    for (let { ix, endMsg } of er) {
+        if (i_ix === ix)
+            o = o.concat(endMsg);
     }
-    return [leftMsgAy, rightMsgAy];
+    return o;
 };
-const left_lyAy_NOT_EVEN = (ly, er) => [];
-const left_lyAy_MAKE_EVEN = (left_lyAy, right_lyAy) => [];
-const $right_lyAy = (ly, er) => {
-    return [];
+const $sfxMsg = (er, i_ix) => {
+    let o = [];
+    for (let { ix, sfxMsg } of er) {
+        if (i_ix === ix)
+            o = o.concat(sfxMsg);
+    }
+    return o;
 };
 const $left_lyAy = (ly, er) => {
-    return [];
+    const o = [];
+    for (let i of x.nItr(ly.length)) {
+        const m = [ly[i]].concat($endMsg(er, i));
+        o.push(m);
+    }
+    return o;
+};
+const $right_lyAy = (ly, er) => {
+    const o = [];
+    for (let i of x.nItr(ly.length)) {
+        const m = $sfxMsg(er, i);
+        o.push(m);
+    }
+    return o;
+};
+const $mge = (left_ly, right_ly) => {
+    const llen = left_ly.length;
+    const rlen = right_ly.length;
+    const o = [];
+    const min = x.itrMin([llen, rlen]);
+    for (let i of x.nItr(min)) {
+        const m = left_ly[i] + ' ' + right_ly[i];
+        o.push(m);
+    }
+    if (llen > rlen) {
+        for (let i = rlen; i < llen; i++)
+            o.push(left_ly[i].trim());
+    }
+    else if (llen < rlen) {
+        const s = x.nSpc(left_ly[0].length + 1);
+        for (let i = llen; i < rlen; i++)
+            o.push(s + right_ly[i]);
+    }
+    return o;
 };
 exports.lyAddErAsLines = (ly, er) => {
-    const left_lyAy = $left_lyAy(ly, er);
+    const left_lyAy = exports.lyAyAlignL($left_lyAy(ly, er));
     const right_lyAy = $right_lyAy(ly, er);
-    const left_ly = [].concat(left_lyAy);
-    const right_ly = [].concat(right_lyAy);
-    const o = [];
-    for (let i = 0; i < left_ly.length; i++) {
-        o.push((left_ly[i] + ' ' + right_ly[i]).trim());
+    let o = [];
+    for (let i of x.nItr(left_lyAy.length)) {
+        let m = $mge(left_lyAy[i], right_lyAy[i]);
+        o = o.concat(m);
     }
     return o;
 };
