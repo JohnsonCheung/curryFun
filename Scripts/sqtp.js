@@ -21,7 +21,7 @@ const sqtprslt = (a) => {
 exports.sqtprslt = sqtprslt;
 const linRmvMsg = (a) => {
     const b = a.match(/(.*)---/);
-    const c = b === null ? lin : a[1];
+    const c = b === null ? a : a[1];
     if (x.sHasPfx("^")(c.trimLeft()))
         return "";
     return c;
@@ -50,11 +50,13 @@ const pm03 = (a) => {
     return z;
 };
 const sw04 = (a, pm) => {
-    const { t: swBky, f: remainBky } = x.itrBrkForTrueFalse((a) => a.bkty === 2 /* SW */)(a);
+    const { t, f } = x.itrBrkForTrueFalse((a) => a.bkty === 2 /* SW */)(a);
+    const swBky = t;
+    const remain = f;
     const e1 = bkAyExcessEr(swBky, 'switch');
     const [e2, sw] = bkSw(swBky[0], pm);
     const er = e1.concat(e2);
-    let z = [er, remainBky, sw];
+    let z = [er, remain, sw];
     return z;
 };
 const sq05 = (a, pm, sw) => {
@@ -67,8 +69,11 @@ const er02 = (a) => {
     let z = [er, bky];
     return z;
 };
-const bkySfxMsgEr = (a, sfxMsgStr) => {
+const bkAyExcessEr = (a, bkNm) => {
+    const sfxMsgStr = `Three is already [${bkNm}] block.  This block is ignored`;
     const z = [];
+    if (a.length === 0)
+        return z;
     for (let bk of a) {
         const ix = bk.gp.length;
         const endMsg = [];
@@ -77,7 +82,6 @@ const bkySfxMsgEr = (a, sfxMsgStr) => {
     }
     return z;
 };
-const bkAyExcessEr = (a, bkNm) => bkySfxMsgEr(a.slice(1), `Three is already [${bkNm}] block.  This block is ignored`);
 const gpGpy = (a, linPfxSep) => {
     let { ix, lin } = a[0];
     const z = [];
@@ -264,40 +268,33 @@ const linFmT3DupTermMrkLin = lin => {
     }
     return o;
 };
+const gpVdt = (a, chkr) => {
+    const p = chkr.hasEr;
+    const m = chkr.erFun;
+    const [erGp, remainingGp] = gpSplitForErAndRemain(p)(a);
+    const z = [x.itrMap(m)(erGp), remainingGp];
+    return z;
+};
 const swChkr_FmT3Dup = {
     hasEr: a => linFmT3DupTermSet(a.lin).size > 0,
     erFun: a => [{ ix: a.ix, endMsg: [linFmT3DupTermMrkLin(a.lin)], sfxMsg: [] }]
 };
-const gppassVdt = (a, chkr) => {
-    const p = chkr.hasEr;
-    const m = chkr.erFun;
-    const [erGp, remainingGp] = gpSplitForErAndRemain(p)(a.gp);
-    const er = x.itrMap(m)(erGp);
-    const z = { er, gp: a.gp };
-    return z;
-};
-const bkSw_process_SwEr = (gp, er, SwEr) => { };
 const bkSw = (a, pm) => {
     let z;
-    if (a === undefined) {
+    if (a === undefined || a === null) {
         z = [[], new Map()];
         return z;
     }
-    let er = gpDupFstTermEr(a.gp);
-    let gp = a.gp;
-    let e = [];
-    /*
-    for (let ixlinChkr of x.oPrpNy(swChkr)) {
-        { er: e, gp } = gppassVdt(ixlinChkr)({ er, gp })
-        er = er.concat(e)
-    }
-    */
-    const sw = lySw(pm)(gpLy(gp));
-    z = [er, sw];
+    let e0 = gpDupFstTermEr(a.gp);
+    let g0 = a.gp;
+    const [e1, g1] = gpVdt(g0, swChkr_FmT3Dup);
+    const ly = gpLy(g1);
+    const sw = lySw(ly, pm);
+    z = [e0, sw];
     return z;
 };
 const gpSplitForErAndRemain = p => gp => [[], []];
-const lySw = (pm) => (a) => {
+const lySw = (a, pm) => {
     const sw = new Map();
     let isEvaluated = true;
     let j = 0;
