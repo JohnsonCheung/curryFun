@@ -196,7 +196,7 @@ export const sEscLf: _sTfm = a => a.replace('\n', '\\n')
 export const sEscCr: _sTfm = a => a.replace('\r', '\\r')
 export const sEscTab: _sTfm = a => a.replace('\t', '\\t')
 export const sEsc: _sTfm = compose(sEscLf, sEscCr, sEscTab)
-export const sBox: _sTfm = a => { const y = "== " + sEsc(a) + " ==", x = "=".repeat(a.length); return [x, y, x].join("\r\n") }
+export const sBox: _sTfm = a => { const y = "== " + sEsc(a) + " ==", x = "=".repeat(a.length+6); return [x, y, x].join("\r\n") }
 export const stack: _mkStr = () => { try { throw new Error() } catch (e) { return e.stack } }
 export const er: _er = (msg: s, ...v) => {
     let a = stack()
@@ -345,9 +345,9 @@ export const cmlNy = (a: cml) => {
     }
 }
 export const sHasPfx = (pfx: s) => (a: s) => a.startsWith(pfx)
-export const sRmvPfx = (pfx: s) => (a: s) => sHasPfx(a) ? a.substr(pfx.length) : a
+export const sRmvPfx = (pfx: s) => (a: s) => sHasPfx(pfx)(a) ? a.substr(pfx.length) : a
 export const sHasSfx = (sfx: s) => (a: s) => a.endsWith(sfx)
-export const sRmvSfx = (sfx: s) => (a: s) => sHasSfx(a) ? a.substr(0, a.length - sfx.length) : a
+export const sRmvSfx = (sfx: s) => (a: s) => sHasSfx(sfx)(a) ? a.substr(0, a.length - sfx.length) : a
 export const sMatch = (re:re) => (a:s) => a.match(re)
 //-----------------------------------------------------------------------
 export const predNot:_predTfm = a => v => !a(v)
@@ -605,7 +605,16 @@ export const itrAlignL: _itrSy = a => itrMap(sAlignL(itrWdt(a)))(a)
 export const itrClone: _itrAy = a => itrMap(i => i)(a)
 export const itrFind: _itrFind = p => a => { for (let i of a) if (p(i)) return i; return null }
 export const itrHasDup: _itrPred = a => { const set = new Set(); for (let i of a) if (set.has(i)) { return true } else set.add(i); return false }
-export const itrDupSet: _itrSet = a => { const set = new Set(), o = new Set(); for (let i in a) if (set.has(i)) { o.add(i) } else set.add(i); return o }
+export const itrDupSet: _itrSet = a => {
+    const set = new Set()
+    const o = new Set()
+    for (let i of a)
+        if (set.has(i))
+            o.add(i)
+        else
+            set.add(i)
+    return o
+}
 export const itrMax: _itrItm = a => { let o = itrFst(a); if (o === null) return null; for (let i of a) if (i > o) o = i; return o }
 export const itrMin: _itrItm = a => { let o = itrFst(a); if (o === null) return null; for (let i of a) if (i < o) o = i; return o }
 export const itrRmvEmp = (a: itr) => itrWhere(isNonEmp)(a)

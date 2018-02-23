@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-/// <reference path="../../node_modules/@types/jasime.d.ts"/>
-/// <reference path="../../Scripts/curryfun.ts"/>
-const x = require("../../Scripts/curryfun");
+/// <reference path="../../../node_modules/@types/jasime.d.ts"/>
+/// <reference path="../../../Scripts/curryfun.ts"/>
+const x = require("../../../Scripts/curryfun");
 describe("curryfun", function () {
     x.dryColMdy;
     var curryfun = require('../../scripts/curryfun.js');

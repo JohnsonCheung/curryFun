@@ -25,9 +25,9 @@ const sqtprslt = (a: sqtp) => {
     let gpy = gpGpy(gp1, '==')
     let bky = gpyBky(gpy)
     let bky_aftRm = x.itrWhere((bk: bk) => bk.bkty !== Bkty.RM)(bky)
-
     let [er_er, bky_aftEr] = er02(bky_aftRm)
     let [er_pm, bky_aftPm, pm] = pm03(bky_aftEr)
+    debugger
     let [er_sw, bky_aftSw, sw] = sw04(bky_aftPm, pm)
     let [er_sq, sql] = sq05(bky_aftSw, pm, sw)
     let er = er_er.concat(er_pm, er_sw, er_sq)
@@ -46,10 +46,12 @@ const lyRmvMsg = (a: ly) => {
     let z: ly = x.pipe(a)(x.itrMap(linRmvMsg), x.itrRmvEmp)
     return z
 }
+
 const gpRmvRmk = (a: gp) => {
     let z: gp = x.itrWhere(({ ix, lin }) => x.isNonRmkLin(lin))(a)
     return z
 }
+
 const lyGp = (a: ly) => {
     const z: ixlin[] = []
     let i = 0
@@ -60,47 +62,48 @@ const lyGp = (a: ly) => {
 
 const pm03 = (a: bk[]) => {
     const { t, f } = x.itrBrkForTrueFalse((a: bk) => a.bkty === Bkty.PM)(a)
-    const pmBky:bk[] = t
-    const remain:bk[] = f
-    const e1 = bkAyExcessEr(pmBky, 'parameter')
+    const pmBky: bk[] = t
+    const remain: bk[] = f
+    const e1 = bkyEr_forExcessBk(pmBky, 'parameter')
     const [e2, pm] = bkPm(pmBky[0])
     const er = e1.concat(e2)
     let z: [Er, bk[], Pm] = [er, remain, pm]
     return z
 }
+
 const sw04 = (a: bk[], pm: Pm) => {
     const { t, f } = x.itrBrkForTrueFalse((a: bk) => a.bkty === Bkty.SW)(a)
-    const swBky:bk[] = t
-    const remain:bk[] = f
-    const e1 = bkAyExcessEr(swBky, 'switch')
+    const swBky: bk[] = t
+    const remain: bk[] = f
+    const e1 = bkyEr_forExcessBk(swBky, 'switch')
     const [e2, sw] = bkSw(swBky[0], pm)
     const er = e1.concat(e2)
     let z: [Er, bk[], Sw] = [er, remain, sw]
     return z
 }
 
-const sqSel = (a: bk, term:s, pm: Pm, sw: Sw) => {
-    let z:[Er,sql] =[[],""]
+const sqSel = (a: bk, term: s, pm: Pm, sw: Sw) => {
+    let z: [Er, sql] = [[], ""]
     return z
 }
 const sqDrp = (a: bk) => {
-    let z:[Er,sql] =[[],""]
+    let z: [Er, sql] = [[], ""]
     return z
 }
 const sqUpd = (a: bk, pm: Pm, sw: Sw) => {
-    let z:[Er,sql] =[[],""]
+    let z: [Er, sql] = [[], ""]
     return z
 }
 const sqBk = (a: bk, pm: Pm, sw: Sw) => {
-    const fstLin = a[0].lin
+    const fstLin = a.gp[0].lin
     const term = x.sRmvPfx("?")(x.linFstTerm(fstLin).toUpperCase())
-    let z: [Er, sql] = [[],""]
+    let z: [Er, sql] = [[], ""]
     switch (term) {
         case 'DRP': z = sqDrp(a); break
-        case 'SEL': case 'SELDIST': z = sqSel(a, term, pm, sw); break
+        case 'SEL': case 'DIS': z = sqSel(a, term, pm, sw); break
         case 'UPD': z = sqUpd(a, pm, sw); break
         default:
-            x.er('impossible: {bk} should be one of [Drp | Sel | Upd]', { bk: a })
+            x.er('impossible: {bk} should have {term} be one of [Drp | Sel | SelDist | Upd]', { term, bk: a })
     }
     return z
 }
@@ -120,20 +123,36 @@ const sq05 = (a: bk[], pm: Pm, sw: Sw) => {
 }
 
 const er02 = (a: bk[]) => {
-    let { t: er, f: bky } = x.itrBrkForTrueFalse((a: bk) => a.bkty === Bkty.RM)(a)
+    let { t: erBky, f: bky } = x.itrBrkForTrueFalse((a: bk) => a.bkty === Bkty.ER)(a)
+    let er = bkyEr_forErBky(erBky)
     let z: [Er, bk[]] = [er, bky]
     return z
 }
 
-const bkAyExcessEr = (a: bk[], bkNm: s) => {
-    const sfxMsgStr = `Three is already [${bkNm}] block.  This block is ignored`
-    const z: Er = []
-    if (a.length === 0) return z
+const bkyEr_forErBky = (a: bk[]) => {
+    let z: Er = []
     for (let bk of a) {
-        const ix = bk.gp.length
-        const endMsg = []
-        const sfxMsg = [sfxMsgStr]
-        z.push({ ix, endMsg, sfxMsg })
+        const ix = x.ayLas(bk.gp).ix
+        z.push(endmsgstrEr(ix, '^^^ this block is error'))
+    }
+    return z
+}
+
+const endmsgstrEr = (ix: n, endMsgStr: s) => {
+    const sfxMsg = []
+    const endMsg = [endMsgStr]
+    let z: ErItm = { ix, endMsg, sfxMsg }
+    return z
+}
+
+const bkyEr_forExcessBk = (a: bk[], bkNm: s) => {
+    const excessbky = a.slice(1)
+    const z: Er = []
+    if (excessbky.length === 0) return z
+    const endMsgStr = `^^^ Three is already [${bkNm}] block.  This block is ignored`
+    for (let bk of excessbky) {
+        const ix = x.ayLas(bk.gp).ix
+        z.push(endmsgstrEr(ix, endMsgStr))
     }
     return z
 }
@@ -181,10 +200,11 @@ const gpyBky = (a: gp[]) => {
     let z: bk[] = x.itrMap(gpBk)(a)
     return z
 }
-const _x = x.sSplitSpc("drp upd sel dist")
+const _x = x.sSplitSpc("DRP UPD SEL DIS")
 const isSqLy = (a: ly) => {
     const fstNonRmkLin: lin = x.itrFind(x.isNonEmp)(a)
-    return x.vIN(_x)(x.sRmvPfx("?")(fstNonRmkLin).toLowerCase())
+    const fstTerm = x.linFstTerm(fstNonRmkLin)
+    return x.vIN(_x)(x.sRmvPfx("?")(fstTerm).toUpperCase())
 }
 const isRmLy = (a: ly) => x.itrPredIsAllTrue(x.isRmkLin)(a)
 const isPmLy = (a: ly) => x.lyHasMajPfx("%")(a)
@@ -222,42 +242,49 @@ const lyFstTermAy = (a: ly) => {
     let z: ly = x.itrMap(x.linFstTerm)(a)
     return z
 }
+
 const lyFstTermDupSet = (a: ly) => {
-    let z: sset = x.pipe(a)(x.itrMap(x.linFstTerm), x.itrDupSet)
+    const fstTermAy = x.itrMap(x.linFstTerm)(a)
+    let z: sset = x.itrDupSet(fstTermAy)
     return z
 }
+
 const gpDupFstTermEr = (a: gp) => {
-    const dup = lyFstTermDupSet(gpLy(a))
-    const z: Er = []
+    const ly = gpLy(a)
+    const dup = lyFstTermDupSet(ly)
+    const er: Er = []
     for (let { ix, lin } of a) {
         let fst = x.linFstTerm(lin)
         if (dup.has(fst)) {
-            let sfxMsg = [`"duplicate(${fst})`]
+            let sfxMsg = [`duplicate(${fst})`]
             let endMsg = []
-            const er = { ix, sfxMsg, endMsg }
-            z.push(er)
+            const m = { ix, sfxMsg, endMsg }
+            er.push(m)
         }
     }
+    const z: [Er, ly] = [er, ly]
     return z
 }
+
 const bkPm = (a: bk) => {
     let z: [Er, Pm]
     if (a === undefined) {
         z = [[], new Map<s, s>()]
         return z
     }
-    const er = gpDupFstTermEr(a.gp)
-    const ly = gpLy(a.gp)
+    const [er, ly] = gpDupFstTermEr(a.gp)
     const pm = x.lySdic(ly)
     z = [er, pm]
     return z
 }
+
 const vdt = ([itmErPred, itmErMap]) => ([ery, itr]) => {
     const { t: er, f: remainingAy } = x.itrBrkForTrueFalse(itmErPred)(itr)
     const ery1 = x.itrMap(itmErMap)(er)
     const ery2 = ery.concat(ery1)
     return [ery2, remainingAy]
 }
+
 const linTermAy = (a: lin) => {
     let z: s[] = a.trim().split(/\s+/)
     return z

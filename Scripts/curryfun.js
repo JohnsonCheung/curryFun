@@ -47,7 +47,7 @@ exports.sEscLf = a => a.replace('\n', '\\n');
 exports.sEscCr = a => a.replace('\r', '\\r');
 exports.sEscTab = a => a.replace('\t', '\\t');
 exports.sEsc = exports.compose(exports.sEscLf, exports.sEscCr, exports.sEscTab);
-exports.sBox = a => { const y = "== " + exports.sEsc(a) + " ==", x = "=".repeat(a.length); return [x, y, x].join("\r\n"); };
+exports.sBox = a => { const y = "== " + exports.sEsc(a) + " ==", x = "=".repeat(a.length + 6); return [x, y, x].join("\r\n"); };
 exports.stack = () => { try {
     throw new Error();
 }
@@ -215,9 +215,9 @@ exports.cmlNy = (a) => {
     }
 };
 exports.sHasPfx = (pfx) => (a) => a.startsWith(pfx);
-exports.sRmvPfx = (pfx) => (a) => exports.sHasPfx(a) ? a.substr(pfx.length) : a;
+exports.sRmvPfx = (pfx) => (a) => exports.sHasPfx(pfx)(a) ? a.substr(pfx.length) : a;
 exports.sHasSfx = (sfx) => (a) => a.endsWith(sfx);
-exports.sRmvSfx = (sfx) => (a) => exports.sHasSfx(a) ? a.substr(0, a.length - sfx.length) : a;
+exports.sRmvSfx = (sfx) => (a) => exports.sHasSfx(sfx)(a) ? a.substr(0, a.length - sfx.length) : a;
 exports.sMatch = (re) => (a) => a.match(re);
 //-----------------------------------------------------------------------
 exports.predNot = a => v => !a(v);
@@ -526,12 +526,16 @@ exports.itrHasDup = a => { const set = new Set(); for (let i of a)
     }
     else
         set.add(i); return false; };
-exports.itrDupSet = a => { const set = new Set(), o = new Set(); for (let i in a)
-    if (set.has(i)) {
-        o.add(i);
-    }
-    else
-        set.add(i); return o; };
+exports.itrDupSet = a => {
+    const set = new Set();
+    const o = new Set();
+    for (let i of a)
+        if (set.has(i))
+            o.add(i);
+        else
+            set.add(i);
+    return o;
+};
 exports.itrMax = a => { let o = exports.itrFst(a); if (o === null)
     return null; for (let i of a)
     if (i > o)

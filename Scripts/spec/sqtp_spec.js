@@ -1,5 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+/// <reference path="../../node_modules/@types/jasime.d.ts"/>
+/// <reference path="../../Scripts/curryfun.ts"/>
+const x = require("../curryfun");
 const sqtp_1 = require("../sqtp");
 describe('sqtp', function () {
     it('should pass', function () {
@@ -24,6 +27,7 @@ describe('sqtp', function () {
 Drp Tx TxMbr MbrDta Div Sto Crd Cnt Oup MbrWs
 =============================================
 -- %? means switch, value must be 0 or 1
+%?BrkMbr 0
 %?BrkMbr 0
 %?BrkMbr 0
 %?BrkSto 0
@@ -143,6 +147,8 @@ $Amt    Sum(Amt)
 ============================================
 --
 ============================================
+df eror fs--
+============================================
 -- EQ & NE t1 only TxtPm is allowed
 --         t2 allow TxtPm, *BLANK, and other text
 ?LvlY    EQ %SumLvl Y
@@ -151,6 +157,7 @@ $Amt    Sum(Amt)
 ?LvlD    EQ %SumLvl D
 ?Y       OR ?LvlD ?LvlW ?LvlM ?LvlY`;
         const { vtp, sql } = sqtp_1.sqtprslt(sqtp);
+        x.sBrw(vtp);
         debugger;
         expect(true).toBe(true);
         debugger;

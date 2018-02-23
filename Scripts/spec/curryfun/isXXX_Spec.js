@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-/// <reference path="../../types/jasmine.d.ts"/>
-const x = require("../../Scripts/curryfun");
+/// <reference path="../../../node_modules/\@types/"/>
+const x = require("../../../Scripts/curryfun");
 const dte = new Date();
 const aFun = () => { };
 const aStr = 'aaa';

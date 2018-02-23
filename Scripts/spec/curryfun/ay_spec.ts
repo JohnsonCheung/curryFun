@@ -1,6 +1,6 @@
-/// <reference path="../../node_modules/@types/jasime.d.ts"/>
-/// <reference path="../../Scripts/curryfun.ts"/>
-import * as x from '../../Scripts/curryfun'
+/// <reference path="../../../node_modules/@types/jasime.d.ts"/>
+/// <reference path="../../../Scripts/curryfun.ts"/>
+import * as x from '../../../Scripts/curryfun'
 describe("curryfun", function () {
     x.dryColMdy
     var curryfun = require('../../scripts/curryfun.js');

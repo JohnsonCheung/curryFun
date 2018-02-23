@@ -1,5 +1,5 @@
-/// <reference path="../../types/jasmine.d.ts"/>
-import * as x from '../../Scripts/curryfun'
+/// <reference path="../../../node_modules/\@types/"/>
+import * as x from '../../../Scripts/curryfun'
 const dte = new Date()
 const aFun = () => { }
 const aStr = 'aaa'
@@ -11,7 +11,7 @@ const aAy = []
 const aObj = {}
 let $fun
 //------------------------------
-describe('isNum', function() {
+describe('isNum', function () {
     it('should be pass', function () {
         let t = a => expect(x.isNum(a)).toBeTruthy()
         let f = a => expect(x.isNum(a)).toBeFalsy()
@@ -26,7 +26,7 @@ describe('isNum', function() {
     })
 })
 //------------------------------
-describe('isFun', function() {
+describe('isFun', function () {
     it('should be pass', function () {
         let t = a => expect(a).toBeTruthy()
         let f = a => expect(a).toBeFalsy()
@@ -41,20 +41,20 @@ describe('isFun', function() {
     })
 })
 //------------------------------
-describe('isOdd', function() {
-    it('should pass', function() {
+describe('isOdd', function () {
+    it('should pass', function () {
         let act = x.itrWhere(x.isOdd)([1, 2, 3, 4, 5, 7, 9])
         require('assert').deepStrictEqual(act, [1, 3, 5, 7, 9])
     })
 })
-describe('oPrpAy', function() {
-    it('should pass', function() {
+describe('oPrpAy', function () {
+    it('should pass', function () {
         let act = x.oPrpAy(x.sSplitSpc('a b c'))([{ a: 1, b: 2, c: 3, d: 4 }, { aa: 11, b: 22, c: 33, d: 44 }, { a: 111, bb: 222, cc: 333, d: 444 }])
         expect(act).toEqual([[1, 2, 3], [undefined, 22, 33], [111, undefined, undefined]])
     })
 })
-describe('swap', function() {
-    it('should pass', function() {
+describe('swap', function () {
+    it('should pass', function () {
         let act
         act = x.nMinus(1)(6);;;;;;;;; expect(act).toEqual(5)
         act = x.swap(x.nMinus)(1)(6); expect(act).toEqual(-5)

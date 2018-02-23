@@ -27,6 +27,7 @@ Drp Tx TxMbr MbrDta Div Sto Crd Cnt Oup MbrWs
 -- %? means switch, value must be 0 or 1
 %?BrkMbr 0
 %?BrkMbr 0
+%?BrkMbr 0
 %?BrkSto 0
 %?BrkCrd 0
 %?BrkDiv 0
@@ -144,6 +145,8 @@ $Amt    Sum(Amt)
 ============================================
 --
 ============================================
+df eror fs--
+============================================
 -- EQ & NE t1 only TxtPm is allowed
 --         t2 allow TxtPm, *BLANK, and other text
 ?LvlY    EQ %SumLvl Y
@@ -151,7 +154,8 @@ $Amt    Sum(Amt)
 ?LvlW    EQ %SumLvl W
 ?LvlD    EQ %SumLvl D
 ?Y       OR ?LvlD ?LvlW ?LvlM ?LvlY`
-        const {vtp,sql} = sqtprslt(sqtp)
+        const { vtp, sql } = sqtprslt(sqtp)
+        x.sBrw(vtp)
         debugger
         expect(true).toBe(true)
         debugger

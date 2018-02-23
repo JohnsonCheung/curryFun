@@ -12,6 +12,7 @@ const sqtprslt = (a) => {
     let bky_aftRm = x.itrWhere((bk) => bk.bkty !== 0 /* RM */)(bky);
     let [er_er, bky_aftEr] = er02(bky_aftRm);
     let [er_pm, bky_aftPm, pm] = pm03(bky_aftEr);
+    debugger;
     let [er_sw, bky_aftSw, sw] = sw04(bky_aftPm, pm);
     let [er_sq, sql] = sq05(bky_aftSw, pm, sw);
     let er = er_er.concat(er_pm, er_sw, er_sq);
@@ -42,43 +43,99 @@ const lyGp = (a) => {
     return z;
 };
 const pm03 = (a) => {
-    const { t: pmBky, f: remainBky } = x.itrBrkForTrueFalse((a) => a.bkty === 1 /* PM */)(a);
-    const e1 = bkAyExcessEr(pmBky, 'parameter');
+    const { t, f } = x.itrBrkForTrueFalse((a) => a.bkty === 1 /* PM */)(a);
+    const pmBky = t;
+    const remain = f;
+    const e1 = bkyEr_forExcessBk(pmBky, 'parameter');
     const [e2, pm] = bkPm(pmBky[0]);
     const er = e1.concat(e2);
-    let z = [er, remainBky, pm];
+    let z = [er, remain, pm];
     return z;
 };
 const sw04 = (a, pm) => {
     const { t, f } = x.itrBrkForTrueFalse((a) => a.bkty === 2 /* SW */)(a);
     const swBky = t;
     const remain = f;
-    const e1 = bkAyExcessEr(swBky, 'switch');
+    const e1 = bkyEr_forExcessBk(swBky, 'switch');
     const [e2, sw] = bkSw(swBky[0], pm);
     const er = e1.concat(e2);
     let z = [er, remain, sw];
     return z;
 };
+const sqSel = (a, term, pm, sw) => {
+    let z = [[], ""];
+    return z;
+};
+const sqDrp = (a) => {
+    let z = [[], ""];
+    return z;
+};
+const sqUpd = (a, pm, sw) => {
+    let z = [[], ""];
+    return z;
+};
+const sqBk = (a, pm, sw) => {
+    const fstLin = a.gp[0].lin;
+    const term = x.sRmvPfx("?")(x.linFstTerm(fstLin).toUpperCase());
+    let z = [[], ""];
+    switch (term) {
+        case 'DRP':
+            z = sqDrp(a);
+            break;
+        case 'SEL':
+        case 'DIS':
+            z = sqSel(a, term, pm, sw);
+            break;
+        case 'UPD':
+            z = sqUpd(a, pm, sw);
+            break;
+        default:
+            x.er('impossible: {bk} should have {term} be one of [Drp | Sel | SelDist | Upd]', { term, bk: a });
+    }
+    return z;
+};
 const sq05 = (a, pm, sw) => {
+    let er = [];
     let sql = "";
-    let z = [[], sql];
+    for (let bk of a) {
+        let [i_er, i_sql] = sqBk(bk, pm, sw);
+        er = er.concat(i_er);
+        sql = sql === ""
+            ? i_sql
+            : sql += '\r\n\r\n' + i_sql;
+    }
+    let z = [er, sql];
     return z;
 };
 const er02 = (a) => {
-    let { t: er, f: bky } = x.itrBrkForTrueFalse((a) => a.bkty === 0 /* RM */)(a);
+    let { t: erBky, f: bky } = x.itrBrkForTrueFalse((a) => a.bkty === 4 /* ER */)(a);
+    let er = bkyEr_forErBky(erBky);
     let z = [er, bky];
     return z;
 };
-const bkAyExcessEr = (a, bkNm) => {
-    const sfxMsgStr = `Three is already [${bkNm}] block.  This block is ignored`;
-    const z = [];
-    if (a.length === 0)
-        return z;
+const bkyEr_forErBky = (a) => {
+    let z = [];
     for (let bk of a) {
-        const ix = bk.gp.length;
-        const endMsg = [];
-        const sfxMsg = [sfxMsgStr];
-        z.push({ ix, endMsg, sfxMsg });
+        const ix = x.ayLas(bk.gp).ix;
+        z.push(endmsgstrEr(ix, '^^^ this block is error'));
+    }
+    return z;
+};
+const endmsgstrEr = (ix, endMsgStr) => {
+    const sfxMsg = [];
+    const endMsg = [endMsgStr];
+    let z = { ix, endMsg, sfxMsg };
+    return z;
+};
+const bkyEr_forExcessBk = (a, bkNm) => {
+    const excessbky = a.slice(1);
+    const z = [];
+    if (excessbky.length === 0)
+        return z;
+    const endMsgStr = `^^^ Three is already [${bkNm}] block.  This block is ignored`;
+    for (let bk of excessbky) {
+        const ix = x.ayLas(bk.gp).ix;
+        z.push(endmsgstrEr(ix, endMsgStr));
     }
     return z;
 };
@@ -123,10 +180,11 @@ const gpyBky = (a) => {
     let z = x.itrMap(gpBk)(a);
     return z;
 };
-const _x = x.sSplitSpc("drp upd sel dist");
+const _x = x.sSplitSpc("DRP UPD SEL DIS");
 const isSqLy = (a) => {
     const fstNonRmkLin = x.itrFind(x.isNonEmp)(a);
-    return x.vIN(_x)(x.sRmvPfx("?")(fstNonRmkLin).toLowerCase());
+    const fstTerm = x.linFstTerm(fstNonRmkLin);
+    return x.vIN(_x)(x.sRmvPfx("?")(fstTerm).toUpperCase());
 };
 const isRmLy = (a) => x.itrPredIsAllTrue(x.isRmkLin)(a);
 const isPmLy = (a) => x.lyHasMajPfx("%")(a);
@@ -164,21 +222,24 @@ const lyFstTermAy = (a) => {
     return z;
 };
 const lyFstTermDupSet = (a) => {
-    let z = x.pipe(a)(x.itrMap(x.linFstTerm), x.itrDupSet);
+    const fstTermAy = x.itrMap(x.linFstTerm)(a);
+    let z = x.itrDupSet(fstTermAy);
     return z;
 };
 const gpDupFstTermEr = (a) => {
-    const dup = lyFstTermDupSet(gpLy(a));
-    const z = [];
+    const ly = gpLy(a);
+    const dup = lyFstTermDupSet(ly);
+    const er = [];
     for (let { ix, lin } of a) {
         let fst = x.linFstTerm(lin);
         if (dup.has(fst)) {
-            let sfxMsg = [`"duplicate(${fst})`];
+            let sfxMsg = [`duplicate(${fst})`];
             let endMsg = [];
-            const er = { ix, sfxMsg, endMsg };
-            z.push(er);
+            const m = { ix, sfxMsg, endMsg };
+            er.push(m);
         }
     }
+    const z = [er, ly];
     return z;
 };
 const bkPm = (a) => {
@@ -187,8 +248,7 @@ const bkPm = (a) => {
         z = [[], new Map()];
         return z;
     }
-    const er = gpDupFstTermEr(a.gp);
-    const ly = gpLy(a.gp);
+    const [er, ly] = gpDupFstTermEr(a.gp);
     const pm = x.lySdic(ly);
     z = [er, pm];
     return z;

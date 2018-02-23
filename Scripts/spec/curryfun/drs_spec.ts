@@ -1,5 +1,5 @@
-/// <reference path="../../node_modules/@types/jasime.d.ts"/>
-import * as x from '../../Scripts/curryfun'
+/// <reference path="../../../node_modules/@types/jasime.d.ts"/>
+import * as x from '../../../Scripts/curryfun'
 describe("drs", function () {
     const dry = [[1, 2, 3], [1], [23, 3, 4, 5]]
     var curryfun = require('../../scripts/curryfun.js');
