@@ -61,94 +61,94 @@ export type sOrSy = s | s[]
 export type strOpt = string | null
 export type doFun = () => void
 
-export type _aySy = (a: ay) => sy
-export type _wdtAyLin = (a: wdt[]) => lin
-export type _sdrLin = (w: wdt[]) => (a: sdr) => lin
-export type _linKs = (a: lin) => ks
-export type _itrFold = <T>(f: cummulator<T>) => (cum: T) => (a: Itr<T>) => T
-export type _oDry = (a: o) => dry
-export type _itrTfmSet = (f: f) => (s: itr) => set
-export type _itrItm = <T>(a: Itr<T>) => T | null
-export type _itrPred = (a: itr) => b
-export type _itrSet = (a: itr) => set
-export type _matchAyDry = (a: RegExpMatchArray) => dry
-export type _lyHasMajPfx = (pfx: s) => (a: ly) => b
-export type _matchAyCol = (a: match[]) => scol
-export type _matchFstItm = (a: match) => s
-export type _itrAy = <T>(a: Itr<T>) => T[]
-export type _linShift = (a: lin) => linShift
-export type _lyPfxCnt = (pfx: s) => (a: ly) => cnt
-export type _ffnDo = (a: s) => void
-export type _optMap = <T>(f: fun<T>) => (a: opt<T>) => any
-export type _itrSplit<T> = (p: pred<T>) => (a: Itr<T>) => tf<T>
-export type _vMap = (f: f) => (a) => any
-export type _fApply = <T>(v: T) => (f: (x: T) => any) => any
-export type _ksLin = (a: ks) => lin
-export type _sdicSy = (a: sdic) => sy
-export type _nPadZero = (dig: n) => (a: n) => s
-export type _er = (msg: s, ...v: any[]) => void
-export type _vXPred = (x) => (a) => b
-export type _tfm<T> = (a: T) => T
-export type _sTfm = _tfm<s>
-export type _sStrTfm = (s: s) => (a: s) => s
-export type _sQuote = (q: quoteStr) => (a: s) => s
-export type _sNTfm = (n: n) => (a: s) => s
-export type _vLen = (a) => n
-export type _sLen = (a: s) => n
-export type _sMid = (pos: n) => (s: s) => s
-export type _sMidN = (pos: n) => (n: n) => (s: s) => s
-export type _sAlign = (w: n) => (a: s) => s
-export type _predsPred = <T>(...a: ((v: T) => b)[]) => (v: T) => b
-export type _oPrpNy = (a: o) => nm[]
-export type _oPrp = (prpPth: s) => (a: o) => any
-export type _oPrpAy = (prpNy: s[]) => (a: o) => any[]
-export type _oHasPrp = (prpNm: nm) => (a: o) => b
-export type _oCmlObj = (a: o) => o
-export type _predTfm = <T>(a: pred<T>) => pred<T>
-export type _sBrkAt = (at: n, len: n) => (a: s) => s1s2
-export type _sPred = (lik: s) => (s: s) => b
-export type _sSbsPred = (sbs: s) => (s: s) => b
-export type _itrFind = <T>(p: pred<T>) => (a: Itr<T>) => T | null
-export type _ayMdyEle = <T>(ix: n) => (f: fun<T>) => (a: T[]) => void
-export type _aySetEle = <T>(ix: n) => (v: T) => (a: T[]) => void
-export type _itrSy = (a: itr) => s[]
-export type _itrN = (a: itr) => n
-export type _sitrN = (a: Itr<s>) => n
-export type _lyMatchAy = (re: RegExp) => (a: ly) => RegExpMatchArray[]
-export type _lyReCol = (re: re) => (ly: ly) => col
-export type _lyReSdry = (re: re) => (ly: ly) => Sdry
-export type _sDo = (a: s) => void
-export type _cmdDo = (a: s) => void
-export type _pipe = (v) => (...f: f[]) => any
-export type _compose = (...f: f[]) => f
-export type _do = (a: doFun) => void
 //export type _halt = () => never
-export type _mkStr = () => s
-export type _Er = (msg: s, ...v: ay) => void
-export type _lyStrOpt = (a: ly) => strOpt
-export type _ftDo = (a: ft) => void
-export type _vDft = <T>(dft: T) => (v: T | undefined | null) => T
-export type _vDftRge = <T>(a: T, b: T) => (v: T | undefined | null) => T
+export type _ayEle = <T>(ix: n) => (a: T[]) => T
+export type _ayEleOrDft = <T>(dft: T) => (ix: n) => (a: T[]) => T
 export type _ayFindIx = (p: p) => (a: ay) => number | null
 export type _ayFindIxDft = (dftIx: n) => (p: p) => (a: ay) => number
 export type _ayItm = <T>(a: T[]) => T
-export type _ayEle = <T>(ix: n) => (a: T[]) => T
-export type _ayEleOrDft = <T>(dft: T) => (ix: n) => (a: T[]) => T
 export type _ayMdy = (f: f) => (a: ay) => void
-export type _sBrk = (sep: s) => (a: s) => s1s2
-export type _sLik = (slik: s) => (a: s) => b
-export type _sHasSbs = (sbs: s) => (a: s) => b
-export type _sTak = (sep: s) => (s: s) => s
-export type _ensSy = (sOrSy: sOrSy) => sy
+export type _ayMdyEle = <T>(ix: n) => (f: fun<T>) => (a: T[]) => void
+export type _aySetEle = <T>(ix: n) => (v: T) => (a: T[]) => void
+export type _cmdDo = (a: s) => void
+export type _compose = (...f: f[]) => f
+export type _do = (a: doFun) => void
 export type _ensRe = (sOrRe: sOrRe) => re
-export type _split<T> = (sep) => (a: T) => T[]
-export type _sSplit = _split<s>
+export type _ensSy = (sOrSy: sOrSy) => sy
+export type _er = (msg: s, ...v: any[]) => void
+export type _Er = (msg: s, ...v: ay) => void
+export type _fApply = <T>(v: T) => (f: (x: T) => any) => any
+export type _ffnDo = (a: s) => void
+export type _ftDo = (a: ft) => void
 export type _ftWrt = (s: s) => (a: ft) => void
-export type _vTee = <T>(f: (a: T) => void) => (a: T) => T
-export type _vCmp = <T>(x: T) => (a: T) => b
+export type _itrAy = <T>(a: Itr<T>) => T[]
+export type _itrFind = <T>(p: pred<T>) => (a: Itr<T>) => T | null
+export type _itrFold = <T>(f: cummulator<T>) => (cum: T) => (a: Itr<T>) => T
+export type _itrItm = <T>(a: Itr<T>) => T | null
+export type _itrN = (a: itr) => n
+export type _itrPred = (a: itr) => b
+export type _itrSet = (a: itr) => set
+export type _itrSplit<T> = (p: pred<T>) => (a: Itr<T>) => tf<T>
+export type _itrSy = (a: itr) => s[]
+export type _itrTfmSet = (f: f) => (s: itr) => set
+export type _ksLin = (a: ks) => lin
+export type _linKs = (a: lin) => ks
+export type _linShift = (a: lin) => linShift
+export type _lyHasMajPfx = (pfx: s) => (a: ly) => b
+export type _lyMatchAy = (re: RegExp) => (a: ly) => RegExpMatchArray[]
+export type _lyPfxCnt = (pfx: s) => (a: ly) => cnt
+export type _lyReCol = (re: re) => (ly: ly) => col
+export type _lyReSdry = (re: re) => (ly: ly) => Sdry
+export type _lyStrOpt = (a: ly) => strOpt
+export type _matchAyCol = (a: match[]) => scol
+export type _matchAyDry = (a: RegExpMatchArray) => dry
+export type _matchFstItm = (a: match) => s
+export type _mkStr = () => s
+export type _nPadZero = (dig: n) => (a: n) => s
+export type _oCmlObj = (a: o) => o
+export type _oDry = (a: o) => dry
+export type _oHasPrp = (prpNm: nm) => (a: o) => b
+export type _oPrp = (prpPth: s) => (a: o) => any
+export type _oPrpAy = (prpNy: s[]) => (a: o) => any[]
+export type _oPrpNy = (a: o) => nm[]
+export type _optMap = <T>(f: fun<T>) => (a: opt<T>) => any
+export type _pipe = (v) => (...f: f[]) => any
+export type _predsPred = <T>(...a: ((v: T) => b)[]) => (v: T) => b
+export type _predTfm = <T>(a: pred<T>) => pred<T>
+/*
+export type _sAlign = (w: n) => (a: s) => s
+export type _sBrk = (sep: s) => (a: s) => s1s2
+export type _sBrkAt = (at: n, len: n) => (a: s) => s1s2
+export type _sdicSy = (a: sdic) => sy
+export type _sDo = (a: s) => void
+*/
+export type _sdrLin = (w: wdt[]) => (a: sdr) => lin
+export type _sHasSbs = (sbs: s) => (a: s) => b
+export type _sitrN = (a: Itr<s>) => n
+export type _sLen = (a: s) => n
+export type _sLik = (slik: s) => (a: s) => b
+export type _sMid = (pos: n) => (s: s) => s
+export type _sMidN = (pos: n) => (n: n) => (s: s) => s
+export type _sNTfm = (n: n) => (a: s) => s
+export type _split<T> = (sep) => (a: T) => T[]
+export type _sPred = (lik: s) => (s: s) => b
+export type _sQuote = (q: quoteStr) => (a: s) => s
+export type _sSbsPred = (sbs: s) => (s: s) => b
+export type _sSplit = _split<s>
+export type _sStrTfm = (s: s) => (a: s) => s
+export type _sTak = (sep: s) => (s: s) => s
+export type _sTfm = _tfm<s>
+export type _tfm<T> = (a: T) => T
 export type _vBet = <T>(x: T, y: T) => (a: T) => b
-export type _vIn = <T>(itr: Itr<T>) => (a: T) => b
+export type _vCmp = <T>(x: T) => (a: T) => b
 export type _vCmpO = (o) => (v) => b
+export type _vDft = <T>(dft: T) => (v: T | undefined | null) => T
+export type _vDftRge = <T>(a: T, b: T) => (v: T | undefined | null) => T
+export type _vIn = <T>(itr: Itr<T>) => (a: T) => b
+export type _vLen = (a) => n
+export type _vMap = (f: f) => (a) => any
+export type _vTee = <T>(f: (a: T) => void) => (a: T) => T
+export type _vXPred = (x) => (a) => b
 //---------------------------------------
 export const strictEqual = require('assert').strictEqual
 export const eq = (exp, act) => { try { strictEqual(act, exp) } catch (e) { debugger } }
@@ -173,8 +173,8 @@ export const fApply: _fApply = v => f => f(v)
 export const swap = (f: f) => a => b => f(b)(a)
 export const compose: _compose = (...f: f[]) => v => pipe(v)(...f)
 //----------------------------------
-export const sdicSy: _sdicSy = a => itrMap(ksLin)(a)
-export const ksLin: _ksLin = ({ k, s }: ks) => k + ' ' + s
+export const sdicSy = (a: sdic) => { let z: s[] = itrMap(ksLin)(a); return z }
+export const ksLin = ({ k, s }: ks) => k + ' ' + s
 export const dmp = global.console.log
 export const funDmp: _do = f => dmp(f.toString())
 export const halt = () => { throw new Error() }
@@ -280,18 +280,18 @@ export const nPadZero: _nPadZero = dig => n => {
     const z = nZer > 0 ? "0".repeat(nZer) : ""
     return z + s
 }
-export const sAlignL: _sAlign = w => a => {
+export const sAlignL = (w: wdt) => (a: s) => {
     if (a === null || a === undefined) return nSpc(w)
     const l = vLen(a)
     if (l > w) return a
     return a + nSpc(w - l)
 }
-export const sAlignR: _sAlign = w => a => {
+export const sAlignR = (w: wdt) => (a: s) => {
     const l = sLen(a)
     if (l > w) return a
     return nSpc(w - l) + a
 }
-export const sWrt = ft => a => fs.writeFileSync(ft, a)
+export const sWrt = (ft: s) => (a: s) => fs.writeFileSync(ft, a)
 export const sSbsPos = (sbs: s) => (a: s) => a.indexOf(sbs)
 //strictEqual(sbsPos('aabb')('123aabb'),3)
 export const sSbsRevPos = (sbs: s) => (a: s) => a.lastIndexOf(sbs)
@@ -353,13 +353,12 @@ export const linRmvMsg: _sTfm = lin => {
     if (sHasPfx("^")(b.trimLeft())) return ""
     return b
 }
-export type _quoteStrBrk = (a: quoteStr) => quote
 //------------------------------------------------------------------
-export const sBrkAt: _sBrkAt = (at, len) => s => { return { s1: sLeft(at)(s).trim(), s2: sMid(at + len)(s).trim() } }
-export const sBrk1: _sBrk = sep => s => { const at = sSbsPos(sep)(s); return at === -1 ? { s1: sTrim(s), s2: '' } : sBrkAt(at, sLen(sep))(s) }
-export const sBrk2: _sBrk = sep => s => { const at = sSbsPos(sep)(s); return at === -1 ? { s1: '', s2: sTrim(s) } : sBrkAt(at, sLen(sep))(s) }
-export const sBrk: _sBrk = sep => s => { const at = sSbsPos(sep)(s); return sBrkAt(at, sLen(sep))(s) }
-export const quoteStrBrk: _quoteStrBrk = a => {
+export const sBrkAt = (at: n, len: n) => (a: s) => { return { s1: sLeft(at)(a).trim(), s2: sMid(at + len)(a).trim() } }
+export const sBrk1 = (sep: s) => (a: s) => { const at = sSbsPos(sep)(a); return at === -1 ? { s1: sTrim(a), s2: '' } : sBrkAt(at, sLen(sep))(a) }
+export const sBrk2 = (sep: s) => (a: s) => { const at = sSbsPos(sep)(a); return at === -1 ? { s1: '', s2: sTrim(a) } : sBrkAt(at, sLen(sep))(a) }
+export const sBrk = (sep: s) => (a: s) => { const at = sSbsPos(sep)(a); return sBrkAt(at, sLen(sep))(a) }
+export const quoteStrBrk = (a: s) => {
     const l = a.length
     if (l === 1) return { q1: a, q2: a }
     if (l === 2) return { q1: a.substr(0, 1), q2: a.substr(1) }
@@ -373,14 +372,14 @@ export const sQuote: _sQuote = q => s => {
     if (a === null) return s; else { let { q1, q2 } = a; return q1 + s + q2 };
 }
 //-----------------------------------------------------------------------
-export const sTakBef: _sTak = sep => a => sRevBrk2(sep)(a).s1
-export const sTakAft: _sTak = sep => a => sRevBrk1(sep)(a).s2
+export const sTakBef = (sep: s) => (a: s) => sRevBrk2(sep)(a).s1
+export const sTakAft = (sep: s) => (a: s) => sRevBrk1(sep)(a).s2
 //-----------------------------------------------------------------------
-export const sRevBrk1: _sBrk = sep => a => { const at = sSbsPos(sep)(a); return at === -1 ? { s1: a.trim(), s2: '' } : sBrkAt(at, sep.length)(a) }
-export const sRevBrk2: _sBrk = sep => a => { const at = sSbsPos(sep)(a); return at === -1 ? { s1: '', s2: a.trim() } : sBrkAt(at, sep.length)(a) }
-export const sRevBrk: _sBrk = sep => a => { const at = sSbsRevPos(sep)(a); return sBrkAt(at, sep.length)(a) }
-export const sRevTakBef: _sTak = sep => a => sRevBrk2(sep)(a).s1
-export const sRevTakAft: _sTak = sep => a => sRevBrk1(sep)(a).s2
+export const sRevBrk1 = (sep: s) => (a: s) => { const at = sSbsPos(sep)(a); return at === -1 ? { s1: a.trim(), s2: '' } : sBrkAt(at, sep.length)(a) }
+export const sRevBrk2 = (sep: s) => (a: s) => { const at = sSbsPos(sep)(a); return at === -1 ? { s1: '', s2: a.trim() } : sBrkAt(at, sep.length)(a) }
+export const sRevBrk = (sep: s) => (a: s) => { const at = sSbsRevPos(sep)(a); return sBrkAt(at, sep.length)(a) }
+export const sRevTakBef = (sep: s) => (a: s) => sRevBrk2(sep)(a).s1
+export const sRevTakAft = (sep: s) => (a: s) => sRevBrk1(sep)(a).s2
 //-----------------------------------------------------------------------
 export const sRmvFstChr: _sTfm = sMid(1)
 export const sRmvLasChr: _sTfm = a => sLeft(a.length - 1)(a)
@@ -677,7 +676,7 @@ export const dryCellMdy = (f: f) => (a: dry) => { itrEach(ayTfm(f))(a) }
 export const dryClone = (a: dry) => { let z: dry = itrMap(dr => itrClone(dr))(a); return z }
 export const dryColMdy = (colIx: n) => (f: f) => (a: dry) => { itrEach(ayTfmEle(colIx)(f))(a) }
 export const sdryLines = (a: sdry) => sdryLy(a).join('\r\n')
-export const wdtAyLin: _wdtAyLin = w => "|-" + itrMap(w => '-'.repeat(w))(w).join('-|-') + "-|"
+export const wdtAyLin = (wdyAy:n[]) => "|-" + itrMap(w => '-'.repeat(w))(w).join('-|-') + "-|"
 export const sdrLin = (wdtAy: n[]) => (a: sdr) => {
     let m = ([w, s]) => sAlignL(w)(s)
     let z = ayZip(wdtAy, a)
@@ -820,15 +819,13 @@ export const fjsRplExpStmt: _ftDo = fjs => {
     let a = newLines()
     if (oldLin !== newLin) { debugger; ffnMakBackup(fjs); sWrt(fjs)(newLines()) }
 }
-export const vTee: _vTee = f => a => { f(a); return a }
-export const ftWrt: _ftWrt = s => a => fs.writeFileSync(a, s)
+export const vTee = <T>(f: (a: T) => void) => (a: T) => { f(a); return a }
+export const ftWrt = (s: s) => (a: ft) => fs.writeFileSync(a, s)
 export const cmdShell: _cmdDo = a => child_process.exec(a)
-export const ftBrw: _ftDo = a => cmdShell(`code.cmd "${a}"`)
-export const sBrw: _sDo = a => pipe(tmpft())(vTee(ftWrt(a)), ftBrw)
-export const oBrw: _oDo = a => pipe(tmpjson())(vTee(ftWrt(oJsonLines(a))), ftBrw)
-export type _oStr = (a: o) => s
-export type _oDo = (a: o) => void
-export const oJsonLines: _oStr = o => JSON.stringify(o)
+export const ftBrw = (a: ft) => cmdShell(`code.cmd "${a}"`)
+export const sBrw = (a: s) => { pipe(tmpft())(vTee(ftWrt(a)), ftBrw) }
+export const oBrw = (a: o) => sBrw(oJsonLines(a))
+export const oJsonLines = (a: o) => JSON.stringify(a)
 const isMain = module.id === '.'
 if (isMain) {
     const acorn = require('acorn')

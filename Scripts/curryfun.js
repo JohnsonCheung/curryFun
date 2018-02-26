@@ -38,7 +38,7 @@ exports.fApply = v => f => f(v);
 exports.swap = (f) => a => b => f(b)(a);
 exports.compose = (...f) => v => exports.pipe(v)(...f);
 //----------------------------------
-exports.sdicSy = a => exports.itrMap(exports.ksLin)(a);
+exports.sdicSy = (a) => { let z = exports.itrMap(exports.ksLin)(a); return z; };
 exports.ksLin = ({ k, s }) => k + ' ' + s;
 exports.dmp = global.console.log;
 exports.funDmp = f => exports.dmp(f.toString());
@@ -155,7 +155,7 @@ exports.nPadZero = dig => n => {
     const z = nZer > 0 ? "0".repeat(nZer) : "";
     return z + s;
 };
-exports.sAlignL = w => a => {
+exports.sAlignL = (w) => (a) => {
     if (a === null || a === undefined)
         return exports.nSpc(w);
     const l = exports.vLen(a);
@@ -163,13 +163,13 @@ exports.sAlignL = w => a => {
         return a;
     return a + exports.nSpc(w - l);
 };
-exports.sAlignR = w => a => {
+exports.sAlignR = (w) => (a) => {
     const l = exports.sLen(a);
     if (l > w)
         return a;
     return exports.nSpc(w - l) + a;
 };
-exports.sWrt = ft => a => fs.writeFileSync(ft, a);
+exports.sWrt = (ft) => (a) => fs.writeFileSync(ft, a);
 exports.sSbsPos = (sbs) => (a) => a.indexOf(sbs);
 //strictEqual(sbsPos('aabb')('123aabb'),3)
 exports.sSbsRevPos = (sbs) => (a) => a.lastIndexOf(sbs);
@@ -245,11 +245,11 @@ exports.linRmvMsg = lin => {
     return b;
 };
 //------------------------------------------------------------------
-exports.sBrkAt = (at, len) => s => { return { s1: exports.sLeft(at)(s).trim(), s2: exports.sMid(at + len)(s).trim() }; };
-exports.sBrk1 = sep => s => { const at = exports.sSbsPos(sep)(s); return at === -1 ? { s1: exports.sTrim(s), s2: '' } : exports.sBrkAt(at, exports.sLen(sep))(s); };
-exports.sBrk2 = sep => s => { const at = exports.sSbsPos(sep)(s); return at === -1 ? { s1: '', s2: exports.sTrim(s) } : exports.sBrkAt(at, exports.sLen(sep))(s); };
-exports.sBrk = sep => s => { const at = exports.sSbsPos(sep)(s); return exports.sBrkAt(at, exports.sLen(sep))(s); };
-exports.quoteStrBrk = a => {
+exports.sBrkAt = (at, len) => (a) => { return { s1: exports.sLeft(at)(a).trim(), s2: exports.sMid(at + len)(a).trim() }; };
+exports.sBrk1 = (sep) => (a) => { const at = exports.sSbsPos(sep)(a); return at === -1 ? { s1: exports.sTrim(a), s2: '' } : exports.sBrkAt(at, exports.sLen(sep))(a); };
+exports.sBrk2 = (sep) => (a) => { const at = exports.sSbsPos(sep)(a); return at === -1 ? { s1: '', s2: exports.sTrim(a) } : exports.sBrkAt(at, exports.sLen(sep))(a); };
+exports.sBrk = (sep) => (a) => { const at = exports.sSbsPos(sep)(a); return exports.sBrkAt(at, exports.sLen(sep))(a); };
+exports.quoteStrBrk = (a) => {
     const l = a.length;
     if (l === 1)
         return { q1: a, q2: a };
@@ -272,14 +272,14 @@ exports.sQuote = q => s => {
     ;
 };
 //-----------------------------------------------------------------------
-exports.sTakBef = sep => a => exports.sRevBrk2(sep)(a).s1;
-exports.sTakAft = sep => a => exports.sRevBrk1(sep)(a).s2;
+exports.sTakBef = (sep) => (a) => exports.sRevBrk2(sep)(a).s1;
+exports.sTakAft = (sep) => (a) => exports.sRevBrk1(sep)(a).s2;
 //-----------------------------------------------------------------------
-exports.sRevBrk1 = sep => a => { const at = exports.sSbsPos(sep)(a); return at === -1 ? { s1: a.trim(), s2: '' } : exports.sBrkAt(at, sep.length)(a); };
-exports.sRevBrk2 = sep => a => { const at = exports.sSbsPos(sep)(a); return at === -1 ? { s1: '', s2: a.trim() } : exports.sBrkAt(at, sep.length)(a); };
-exports.sRevBrk = sep => a => { const at = exports.sSbsRevPos(sep)(a); return exports.sBrkAt(at, sep.length)(a); };
-exports.sRevTakBef = sep => a => exports.sRevBrk2(sep)(a).s1;
-exports.sRevTakAft = sep => a => exports.sRevBrk1(sep)(a).s2;
+exports.sRevBrk1 = (sep) => (a) => { const at = exports.sSbsPos(sep)(a); return at === -1 ? { s1: a.trim(), s2: '' } : exports.sBrkAt(at, sep.length)(a); };
+exports.sRevBrk2 = (sep) => (a) => { const at = exports.sSbsPos(sep)(a); return at === -1 ? { s1: '', s2: a.trim() } : exports.sBrkAt(at, sep.length)(a); };
+exports.sRevBrk = (sep) => (a) => { const at = exports.sSbsRevPos(sep)(a); return exports.sBrkAt(at, sep.length)(a); };
+exports.sRevTakBef = (sep) => (a) => exports.sRevBrk2(sep)(a).s1;
+exports.sRevTakAft = (sep) => (a) => exports.sRevBrk1(sep)(a).s2;
 //-----------------------------------------------------------------------
 exports.sRmvFstChr = exports.sMid(1);
 exports.sRmvLasChr = a => exports.sLeft(a.length - 1)(a);
@@ -622,7 +622,7 @@ exports.dryCellMdy = (f) => (a) => { exports.itrEach(exports.ayTfm(f))(a); };
 exports.dryClone = (a) => { let z = exports.itrMap(dr => exports.itrClone(dr))(a); return z; };
 exports.dryColMdy = (colIx) => (f) => (a) => { exports.itrEach(exports.ayTfmEle(colIx)(f))(a); };
 exports.sdryLines = (a) => exports.sdryLy(a).join('\r\n');
-exports.wdtAyLin = w => "|-" + exports.itrMap(w => '-'.repeat(w))(w).join('-|-') + "-|";
+exports.wdtAyLin = (wdyAy) => "|-" + exports.itrMap(w => '-'.repeat(w))(w).join('-|-') + "-|";
 exports.sdrLin = (wdtAy) => (a) => {
     let m = ([w, s]) => exports.sAlignL(w)(s);
     let z = exports.ayZip(wdtAy, a);
@@ -793,13 +793,13 @@ exports.fjsRplExpStmt = fjs => {
         exports.sWrt(fjs)(newLines());
     }
 };
-exports.vTee = f => a => { f(a); return a; };
-exports.ftWrt = s => a => fs.writeFileSync(a, s);
+exports.vTee = (f) => (a) => { f(a); return a; };
+exports.ftWrt = (s) => (a) => fs.writeFileSync(a, s);
 exports.cmdShell = a => child_process.exec(a);
-exports.ftBrw = a => exports.cmdShell(`code.cmd "${a}"`);
-exports.sBrw = a => exports.pipe(exports.tmpft())(exports.vTee(exports.ftWrt(a)), exports.ftBrw);
-exports.oBrw = a => exports.pipe(exports.tmpjson())(exports.vTee(exports.ftWrt(exports.oJsonLines(a))), exports.ftBrw);
-exports.oJsonLines = o => JSON.stringify(o);
+exports.ftBrw = (a) => exports.cmdShell(`code.cmd "${a}"`);
+exports.sBrw = (a) => { exports.pipe(exports.tmpft())(exports.vTee(exports.ftWrt(a)), exports.ftBrw); };
+exports.oBrw = (a) => exports.sBrw(exports.oJsonLines(a));
+exports.oJsonLines = (a) => JSON.stringify(a);
 const isMain = module.id === '.';
 if (isMain) {
     const acorn = require('acorn');
