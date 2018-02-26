@@ -106,18 +106,9 @@ export type _oHasPrp = (prpNm: nm) => (a: o) => b
 export type _oCmlObj = (a: o) => o
 export type _predTfm = <T>(a: pred<T>) => pred<T>
 export type _sBrkAt = (at: n, len: n) => (a: s) => s1s2
-export type _dryFunMdy = (f: f) => (a: dry) => void
-export type _dryColMdy = (colIx: n) => (f: f) => (a: dry) => void
-export type _dryTfm = (a: dry) => dry
-export type _dryCellMdy = (f: f) => (a: dry) => void
-export type _dryCnt = (a: dry) => cnt
-export type _sdryWdtAy = (a: sdry) => wdt[]
-export type _sdryWdt = (colIx: n) => (a: sdry) => wdt
-export type _drySrt = (f: (a: dr) => s) => (a: dry) => void
 export type _sPred = (lik: s) => (s: s) => b
 export type _sSbsPred = (sbs: s) => (s: s) => b
 export type _itrFind = <T>(p: pred<T>) => (a: Itr<T>) => T | null
-export type _dryCol = (colIx: n) => (a: dry) => col
 export type _ayMdyEle = <T>(ix: n) => (f: fun<T>) => (a: T[]) => void
 export type _aySetEle = <T>(ix: n) => (v: T) => (a: T[]) => void
 export type _itrSy = (a: itr) => s[]
@@ -131,7 +122,7 @@ export type _cmdDo = (a: s) => void
 export type _pipe = (v) => (...f: f[]) => any
 export type _compose = (...f: f[]) => f
 export type _do = (a: doFun) => void
-export type _halt = () => never
+//export type _halt = () => never
 export type _mkStr = () => s
 export type _Er = (msg: s, ...v: ay) => void
 export type _lyStrOpt = (a: ly) => strOpt
@@ -186,7 +177,7 @@ export const sdicSy: _sdicSy = a => itrMap(ksLin)(a)
 export const ksLin: _ksLin = ({ k, s }: ks) => k + ' ' + s
 export const dmp = global.console.log
 export const funDmp: _do = f => dmp(f.toString())
-export const halt: _halt = () => { throw new Error() }
+export const halt = () => { throw new Error() }
 export const sEscLf: _sTfm = a => a.replace('\n', '\\n')
 export const sEscCr: _sTfm = a => a.replace('\r', '\\r')
 export const sEscTab: _sTfm = a => a.replace('\t', '\\t')
@@ -678,18 +669,18 @@ export const oCmlObj: _oCmlObj = o => {
 // ----------------------------------------------
 export const ayClone = (ay: ay) => ay.slice(0, ay.length)
 // ----------------------------------------------
-export const sdryColWdt: _sdryWdt = colIx => a => sitrWdt(dryCol(colIx)(a))
-export const sdryColWdtAy: _sdryWdtAy = a => itrMap(i => sdryColWdt(i)(a))(nItr(dryColCnt(a)))
-export const dryCol: _dryCol = colIx => a => itrMap(ayEleOrDft('')(colIx))(a)
-export const dryColCnt: _dryCnt = a => itrMax(itrMap(vLen)(a))
-export const dryCellTfm: _dryCellMdy = f => a => { itrEach(ayTfm(f))(a) }
-export const dryClone: _dryTfm = a => itrMap(dr => itrClone(dr))(a)
-export const dryColMdy: _dryColMdy = colIx => f => a => { itrEach(ayTfmEle(colIx)(f))(a) }
+export const sdryColWdt = (colIx: n) => (a: sdry) => sitrWdt(dryCol(colIx)(a))
+export const sdryColWdtAy = (a: sdry) => { let z: n[] = itrMap(i => sdryColWdt(i)(a))(nItr(dryColCnt(a))); return z }
+export const dryCol = (colIx: n) => (a: dry) => itrMap(ayEleOrDft('')(colIx))(a)
+export const dryColCnt = (a: dry) => { let z: n = itrMax(itrMap(vLen)(a)); return z }
+export const dryCellMdy = (f: f) => (a: dry) => { itrEach(ayTfm(f))(a) }
+export const dryClone = (a: dry) => { let z: dry = itrMap(dr => itrClone(dr))(a); return z }
+export const dryColMdy = (colIx: n) => (f: f) => (a: dry) => { itrEach(ayTfmEle(colIx)(f))(a) }
 export const sdryLines = (a: sdry) => sdryLy(a).join('\r\n')
 export const wdtAyLin: _wdtAyLin = w => "|-" + itrMap(w => '-'.repeat(w))(w).join('-|-') + "-|"
-export const sdrLin: _sdrLin = w => a => {
+export const sdrLin = (wdtAy: n[]) => (a: sdr) => {
     let m = ([w, s]) => sAlignL(w)(s)
-    let z = ayZip(w, a)
+    let z = ayZip(wdtAy, a)
     let ay = itrMap(m)(z)
     let s = ay.join(' | ')
     return "| " + s + " |"
@@ -711,7 +702,7 @@ export const drsLy = (a: drs) => {
     return z
 }
 export const drsLines = (a: drs) => drsLy(a).join('\r\n')
-export const drySrt: _drySrt = fun_of_dr_to_key => dry => dry.sort((dr_A, dr_B) => vvCompare(fun_of_dr_to_key(dr_A), fun_of_dr_to_key(dr_B)))
+export const drySrt = (fun_of_dr_to_key: (dr: dr) => s) => (a: dry) => a.sort((dr_A, dr_B) => vvCompare(fun_of_dr_to_key(dr_A), fun_of_dr_to_key(dr_B)))
 //-----------------------------------------------------------------------
 export const oyPrpCol = prpNm => oy => { const oo: ay = []; for (let o of oy) oo.push(o[prpNm]); return oo }
 export const oyPrpDry = prpNy => oy => { const oo: ay = []; for (let o of oy) oo.push(oPrpAy(prpNy)(o)); return oo }

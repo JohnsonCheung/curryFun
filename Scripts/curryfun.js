@@ -614,18 +614,18 @@ exports.oCmlObj = o => {
 // ----------------------------------------------
 exports.ayClone = (ay) => ay.slice(0, ay.length);
 // ----------------------------------------------
-exports.sdryColWdt = colIx => a => exports.sitrWdt(exports.dryCol(colIx)(a));
-exports.sdryColWdtAy = a => exports.itrMap(i => exports.sdryColWdt(i)(a))(exports.nItr(exports.dryColCnt(a)));
-exports.dryCol = colIx => a => exports.itrMap(exports.ayEleOrDft('')(colIx))(a);
-exports.dryColCnt = a => exports.itrMax(exports.itrMap(exports.vLen)(a));
-exports.dryCellTfm = f => a => { exports.itrEach(exports.ayTfm(f))(a); };
-exports.dryClone = a => exports.itrMap(dr => exports.itrClone(dr))(a);
-exports.dryColMdy = colIx => f => a => { exports.itrEach(exports.ayTfmEle(colIx)(f))(a); };
+exports.sdryColWdt = (colIx) => (a) => exports.sitrWdt(exports.dryCol(colIx)(a));
+exports.sdryColWdtAy = (a) => { let z = exports.itrMap(i => exports.sdryColWdt(i)(a))(exports.nItr(exports.dryColCnt(a))); return z; };
+exports.dryCol = (colIx) => (a) => exports.itrMap(exports.ayEleOrDft('')(colIx))(a);
+exports.dryColCnt = (a) => { let z = exports.itrMax(exports.itrMap(exports.vLen)(a)); return z; };
+exports.dryCellMdy = (f) => (a) => { exports.itrEach(exports.ayTfm(f))(a); };
+exports.dryClone = (a) => { let z = exports.itrMap(dr => exports.itrClone(dr))(a); return z; };
+exports.dryColMdy = (colIx) => (f) => (a) => { exports.itrEach(exports.ayTfmEle(colIx)(f))(a); };
 exports.sdryLines = (a) => exports.sdryLy(a).join('\r\n');
 exports.wdtAyLin = w => "|-" + exports.itrMap(w => '-'.repeat(w))(w).join('-|-') + "-|";
-exports.sdrLin = w => a => {
+exports.sdrLin = (wdtAy) => (a) => {
     let m = ([w, s]) => exports.sAlignL(w)(s);
-    let z = exports.ayZip(w, a);
+    let z = exports.ayZip(wdtAy, a);
     let ay = exports.itrMap(m)(z);
     let s = ay.join(' | ');
     return "| " + s + " |";
@@ -647,7 +647,7 @@ exports.drsLy = (a) => {
     return z;
 };
 exports.drsLines = (a) => exports.drsLy(a).join('\r\n');
-exports.drySrt = fun_of_dr_to_key => dry => dry.sort((dr_A, dr_B) => exports.vvCompare(fun_of_dr_to_key(dr_A), fun_of_dr_to_key(dr_B)));
+exports.drySrt = (fun_of_dr_to_key) => (a) => a.sort((dr_A, dr_B) => exports.vvCompare(fun_of_dr_to_key(dr_A), fun_of_dr_to_key(dr_B)));
 //-----------------------------------------------------------------------
 exports.oyPrpCol = prpNm => oy => { const oo = []; for (let o of oy)
     oo.push(o[prpNm]); return oo; };
