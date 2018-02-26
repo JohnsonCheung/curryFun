@@ -54,6 +54,7 @@ export type fny = nm[]
 export type sdry = s[][]
 export type sdr = s[]
 export type itr = Itr<any>
+export type sItr = Itr<s>
 export type p = (a: any) => boolean
 export type f = (a: any) => any
 export type sOrRe = s | re
@@ -62,36 +63,6 @@ export type sOrSy = s | s[]
 export type strOpt = string | null
 export type doFun = () => void
 
-//export type _halt = () => never
-export type _ayEle = <T>(ix: n) => (a: T[]) => T
-export type _ayEleOrDft = <T>(dft: T) => (ix: n) => (a: T[]) => T
-export type _ayFindIx = (p: p) => (a: ay) => number | null
-export type _ayFindIxDft = (dftIx: n) => (p: p) => (a: ay) => number
-export type _ayItm = <T>(a: T[]) => T
-export type _ayMdy = (f: f) => (a: ay) => void
-export type _ayMdyEle = <T>(ix: n) => (f: fun<T>) => (a: T[]) => void
-export type _aySetEle = <T>(ix: n) => (v: T) => (a: T[]) => void
-export type _cmdDo = (a: s) => void
-export type _compose = (...f: f[]) => f
-export type _do = (a: doFun) => void
-export type _ensRe = (sOrRe: sOrRe) => re
-export type _ensSy = (sOrSy: sOrSy) => sy
-export type _er = (msg: s, ...v: any[]) => void
-export type _Er = (msg: s, ...v: ay) => void
-export type _fApply = <T>(v: T) => (f: (x: T) => any) => any
-export type _ffnDo = (a: s) => void
-export type _ftDo = (a: ft) => void
-export type _ftWrt = (s: s) => (a: ft) => void
-export type _itrAy = <T>(a: Itr<T>) => T[]
-export type _itrFind = <T>(p: pred<T>) => (a: Itr<T>) => T | null
-export type _itrFold = <T>(f: cummulator<T>) => (cum: T) => (a: Itr<T>) => T
-export type _itrItm = <T>(a: Itr<T>) => T | null
-export type _itrN = (a: itr) => n
-export type _itrPred = (a: itr) => b
-export type _itrSet = (a: itr) => set
-export type _itrSplit<T> = (p: pred<T>) => (a: Itr<T>) => tf<T>
-export type _itrSy = (a: itr) => s[]
-export type _itrTfmSet = (f: f) => (s: itr) => set
 export type _ksLin = (a: ks) => lin
 export type _linKs = (a: lin) => ks
 export type _linShift = (a: lin) => linShift
@@ -111,51 +82,41 @@ export type _pipe = (v) => (...f: f[]) => any
 export type _predsPred = <T>(...a: ((v: T) => b)[]) => (v: T) => b
 export type _predTfm = <T>(a: pred<T>) => pred<T>
 export type _tfm<T> = (a: T) => T
-export type _vBet = <T>(x: T, y: T) => (a: T) => b
-export type _vCmp = <T>(x: T) => (a: T) => b
-export type _vCmpO = (o) => (v) => b
-export type _vDft = <T>(dft: T) => (v: T | undefined | null) => T
-export type _vDftRge = <T>(a: T, b: T) => (v: T | undefined | null) => T
-export type _vIn = <T>(itr: Itr<T>) => (a: T) => b
-export type _vLen = (a) => n
-export type _vMap = (f: f) => (a) => any
-export type _vTee = <T>(f: (a: T) => void) => (a: T) => T
-export type _vXPred = (x) => (a) => b
 //---------------------------------------
 export const strictEqual = require('assert').strictEqual
 export const eq = (exp, act) => { try { strictEqual(act, exp) } catch (e) { debugger } }
 //---------------------------------------
-export const vLT: _vCmp = x => a => a < x
-export const vGE: _vCmp = x => a => a >= x
-export const vLE: _vCmp = x => a => a <= x
-export const vEQ: _vCmp = x => a => a === x
-export const vNE: _vCmp = x => a => a !== x
-export const vGT: _vCmp = x => a => a > x
-export const vIN: _vIn = itr => a => { for (let i of itr) if (i === a) return true; return false }
-export const vNIN: _vIn = itr => a => !vIN(itr)(a)
-export const vBET: _vBet = (x, y) => a => x <= a && a <= y
-export const vNBET: _vBet = (x, y) => a => !vBET(x, y)(a)
-export const vIsInstanceOf: _vXPred = x => a => a instanceof x
-export const ensSy: _ensSy = a => typeof a === 'string' ? sSplitSpc(a) : a
-export const ensRe: _ensRe = a => a instanceof RegExp ? a : new RegExp(a)
+export const vLT = x => a => a < x
+export const vGE = x => a => a >= x
+export const vLE = x => a => a <= x
+export const vEQ = x => a => a === x
+export const vNE = x => a => a !== x
+export const vGT = x => a => a > x
+export const vIN = (itr: itr) => a => { for (let i of itr) if (i === a) return true; return false }
+export const vNotIn = itr => a => !vIN(itr)(a)
+export const vBET = <T>(x: T, y: T) => (a: T) => x <= a && a <= y
+export const vNotBet = <T>(x: T, y: T) => (a: T) => !vBET(x, y)(a)
+export const vIsInstanceOf = <T>(x: Function) => (a: T) => a instanceof x
+export const ensSy = (a: s | sy) => typeof a === 'string' ? sSplitSpc(a) : a
+export const ensRe = (a: s | re) => a instanceof RegExp ? a : new RegExp(a)
 //-------------------------------------
-export const pipe: _pipe = v => (...f) => { let o = v; for (let ff of f) o = ff(o); return o }
-export const vMap: _vMap = f => a => f(a)
-export const fApply: _fApply = v => f => f(v)
+export const pipe = v => (...f: f[]) => { let o = v; for (let ff of f) o = ff(o); return o }
+export const vMap = (f: f) => a => f(a)
+export const funApply = v => (a: f) => f(v)
 export const swap = (f: f) => a => b => f(b)(a)
-export const compose: _compose = (...f: f[]) => v => pipe(v)(...f)
+export const compose = (...f: f[]) => v => pipe(v)(...f)
 //----------------------------------
 export const sdicSy = (a: sdic) => { let z: s[] = itrMap(ksLin)(a); return z }
 export const ksLin = ({ k, s }: ks) => k + ' ' + s
 export const dmp = global.console.log
-export const funDmp: _do = f => dmp(f.toString())
+export const funDmp = (f: Function) => dmp(f.toString())
 export const halt = () => { throw new Error() }
-export const sEscLf = (a:s) => a.replace('\n', '\\n')
-export const sEscCr = (a:s) => a.replace('\r', '\\r')
-export const sEscTab = (a:s) => a.replace('\t', '\\t')
+export const sEscLf = (a: s) => a.replace('\n', '\\n')
+export const sEscCr = (a: s) => a.replace('\r', '\\r')
+export const sEscTab = (a: s) => a.replace('\t', '\\t')
 export const sEsc: ((a: s) => s) = compose(sEscLf, sEscCr, sEscTab)
-export const sBox = (a:s) => { const y = "== " + sEsc(a) + " ==", x = "=".repeat(a.length + 6); return [x, y, x].join("\r\n") }
-export const stack = () => { try { throw new Error() } catch (e) { let z:s = e.stack; return z } }
+export const sBox = (a: s) => { const y = "== " + sEsc(a) + " ==", x = "=".repeat(a.length + 6); return [x, y, x].join("\r\n") }
+export const stack = () => { try { throw new Error() } catch (e) { let z: s = e.stack; return z } }
 export const er = (msg: s, ...v) => {
     let a = stack()
     let b = a.split(/\n/)
@@ -179,20 +140,20 @@ export const sSplitLf = sSplit('\n')
 export const sSplitSpc = sSplit(/\s+/)
 export const sSplitCommaSpc = sSplit(/,\s*/)
 //-----------------------------------------------------------------------
-export const vDft: _vDft = dft => a => a === null || a === undefined ? dft : a
+export const vDft = <T>(dft: T) => (a: T | null | undefined) => a === null || a === undefined ? dft : a
 export const vDftStr = vDft("")
-export const vDftUpper: _vDftRge = (x, y) => a => a === null || a === undefined || x > a || a > y ? y : a
-export const vDftLower: _vDftRge = (x, y) => a => a === null || a === undefined || x > a || a > y ? x : a
-export const ayFindIx: _ayFindIx = p => a => { for (let i in a) if (p(a[i])) return Number(i); return null }
-export const ayFindIxOrDft = dftIx => p => a => vDft(dftIx)(ayFindIx(p)(a))
-export const ayFst: _ayItm = a => a[0]
-export const aySnd: _ayItm = a => a[1]
-export const ayEle: _ayEle = ix => a => a[ix]
-export const ayEleOrDft: _ayEleOrDft = dft => ix => a => vDft(dft)(a[ix])
-export const ayLas: _ayItm = a => a[vLen(a) - 1]
-export const ayTfm: _ayMdy = f => a => { itrEach(i => a[i] = f(a[i]))(nItr(a.length)) }
-export const aySetEle: _aySetEle = ix => v => a => a[ix] = v
-export const ayTfmEle: _ayMdyEle = ix => f => a => a[ix] = f(a[ix])
+export const vDftUpper = <T>(x: T, y: T) => (a: T | null | undefined) => a === null || a === undefined || x > a || a > y ? y : a
+export const vDftLower = <T>(x: T, y: T) => (a: T | null | undefined) => a === null || a === undefined || x > a || a > y ? x : a
+export const ayFindIx = (p: p) => (a: ay) => { for (let i in a) if (p(a[i])) return Number(i); return null }
+export const ayFindIxOrDft = (dftIx: n) => (p: p) => (a: ay) => vDft(dftIx)(ayFindIx(p)(a))
+export const ayFst = <T>(a: T[]) => a[0]
+export const aySnd = <T>(a: T[]) => a[1]
+export const ayEle = <T>(ix: n) => (a: T[]) => a[ix]
+export const ayEleOrDft = <T>(dft: T) => (ix: n) => (a: T[]) => vDft(dft)(a[ix])
+export const ayLas = <T>(a: T[]) => a[vLen(a) - 1]
+export const aySetEle = <T>(ix: n) => (v: T) => (a: T[]) => { a[ix] = v }
+export const ayMdyEle = <T>(ix: n) => (f: (a: T) => T) => (a: T[]) => { a[ix] = f(a[ix]) }
+export const ayMdy = <T>(f: (a: T) => T) => (a: T[]) => itrEach(ix => a[ix] = f(a[ix]))(nItr(a.length))
 //-----------------------------------------------------------------------
 export const ayJn = (sep?: s) => (a: ay) => a.join(sep)
 export const ayJnCrLf = ayJn('\r\n')
@@ -229,13 +190,13 @@ export const ayJnAsLines = (sep0?: s, tab0?: n, wdt0?: n) => (a: ay) => {
     return b
 }
 //-----------------------------------------------------------------------
-export const sFstChr = (a:s) => a[0]
-export const sLasChr = (a:s) => a[a.length - 1]
+export const sFstChr = (a: s) => a[0]
+export const sLasChr = (a: s) => a[a.length - 1]
 export const sAddPfx = (pfx: s) => (a: s) => pfx + a
 export const sAddSfx = (sfx: s) => a => a + sfx
 export const sAddPfxSfx = (pfx: s, sfx: s) => (a: s) => pfx + a + sfx
 export const vLen = a => { let z: n = typeof a === 'string' ? a.length : ((a && a.length) || String(a).length); return z }
-export const sLen = (a:s) => a.length
+export const sLen = (a: s) => a.length
 export const sMidN = (pos: n) => (n: n) => (a: s) => a.substr(pos, n)
 export const sMid = (pos: n) => (a: s) => a.substr(pos)
 export const sLeft = (n: n) => (a: s) => a.substr(0, n)
@@ -246,7 +207,7 @@ export const sRight = (n: n) => (a: s) => {
     if (0 >= n) return ''
     return a.substr(-n)
 }
-export const nPadZero = (dig:n) => (a:n) => {
+export const nPadZero = (dig: n) => (a: n) => {
     const s = String(a)
     const nZer = dig - s.length
     const z = nZer > 0 ? "0".repeat(nZer) : ""
@@ -339,7 +300,7 @@ export const quoteStrBrk = (a: s) => {
     let { s1: q1, s2: q2 } = sBrkAt(p, 1)(a)
     return { q1, q2 }
 }
-export const sQuote = (q:s) => (a:s) => {
+export const sQuote = (q: s) => (a: s) => {
     let qq = quoteStrBrk(q);
     if (qq === null) return a; else { let { q1, q2 } = qq; return q1 + a + q2 };
 }
@@ -354,16 +315,16 @@ export const sRevTakBef = (sep: s) => (a: s) => sRevBrk2(sep)(a).s1
 export const sRevTakAft = (sep: s) => (a: s) => sRevBrk1(sep)(a).s2
 //-----------------------------------------------------------------------
 export const sRmvFstChr = sMid(1)
-export const sRmvLasChr = (a:s) => sLeft(a.length - 1)(a)
-export const sRmvLasNChr = (n:n) => (a:s) => sLeft(a.length - n)(a)
-export const sRmvSubStr = (sbs:s) => (a:s) => { const re = new RegExp(sbs, 'g'); return a.replace(re, '') }
+export const sRmvLasChr = (a: s) => sLeft(a.length - 1)(a)
+export const sRmvLasNChr = (n: n) => (a: s) => sLeft(a.length - n)(a)
+export const sRmvSubStr = (sbs: s) => (a: s) => { const re = new RegExp(sbs, 'g'); return a.replace(re, '') }
 export const sRmvColon = sRmvSubStr(":")
 export const pthsep = path.sep
-export const ffnPth = (a:ffn) => { const at = a.lastIndexOf(pthsep); return at === -1 ? '' : sLeft(at + 1)(a) }
-export const ffnFn = (a:ffn) => { const at = a.lastIndexOf(pthsep); return at === -1 ? a : sMid(at + 1)(a) }
-export const ffnExt = (a:ffn) => { const at = a.lastIndexOf('.'); return at === -1 ? '' : sMid(at)(a) }
-export const ffnAddFnSfx = (sfx:s) => (a:s) => ffnFfnn(a) + sfx + ffnExt(a)
-export const ffnRmvExt = (a:ffn) => { const at = a.indexOf('.'); return at === -1 ? a : sLeft(at)(a) }
+export const ffnPth = (a: ffn) => { const at = a.lastIndexOf(pthsep); return at === -1 ? '' : sLeft(at + 1)(a) }
+export const ffnFn = (a: ffn) => { const at = a.lastIndexOf(pthsep); return at === -1 ? a : sMid(at + 1)(a) }
+export const ffnExt = (a: ffn) => { const at = a.lastIndexOf('.'); return at === -1 ? '' : sMid(at)(a) }
+export const ffnAddFnSfx = (sfx: s) => (a: s) => ffnFfnn(a) + sfx + ffnExt(a)
+export const ffnRmvExt = (a: ffn) => { const at = a.indexOf('.'); return at === -1 ? a : sLeft(at)(a) }
 export const ffnFfnn = ffnRmvExt
 export const ffnFnn = (a: ffn) => ffnFn(ffnRmvExt(a))
 export const ffnRplExt = (ext: s) => (a: s) => ffnRmvExt(a) + ext
@@ -376,7 +337,7 @@ export const tmppth = os.tmpdir + pthsep
 export const tmpffn = (pfx = "", ext) => tmppth + pfx + tmpnm() + ext
 export const tmpft = () => tmpffn("T", ".txt")
 export const tmpfjson = () => tmpffn("T", ".json")
-export const ffnCloneTmp = (a:ffn) => {
+export const ffnCloneTmp = (a: ffn) => {
     const o = tmpffn(undefined, ffnExt(a))
     fs.copyFileSync(a, o)
     return o
@@ -473,7 +434,7 @@ export const setAft = aft => a => _setAft(false, aft, a)
 export const setAftIncl = a => set => _setAft(true, a, set)
 export const setClone = set => itrSet(set)
 export const itrSet = itr => { const o = new Set; for (let i of itr) o.add(i); return o }
-export const itrTfmSet: _itrTfmSet = f => a => { const o = new Set; for (let i of a) o.add(f(i)); return o }
+export const itrTfmSet = (f: f) => (a: itr) => { const o = new Set; for (let i of a) o.add(f(i)); return o }
 //---------------------------------------------------------------------------
 export const empSdic = () => new Map<s, s>()
 export const lySdic = (a: ly) => {
@@ -486,13 +447,13 @@ export const lySdic = (a: ly) => {
     itrEach(x)(a)
     return o
 };
-export const lyReDry = (re:re) => (a:ly) => itrMap(matchDr)(lyMatchAy(re)(a))
-export const lyReCol = (re:re) => (a:ly) => matchAyFstCol(lyMatchAy(re)(a)).sort()
+export const lyReDry = (re: re) => (a: ly) => itrMap(matchDr)(lyMatchAy(re)(a))
+export const lyReCol = (re: re) => (a: ly) => matchAyFstCol(lyMatchAy(re)(a)).sort()
 export const matchAyDry: _matchAyDry = a => itrMap(matchDr)(a)
 export const matchFstItm: _matchFstItm = a => a[1]
 export const matchAyFstCol: _matchAyCol = a => itrMap(matchFstItm)(a)
-export const lyPfxCnt = (pfx:s) => (a:ly) => { let o = 0; itrEach(lin => { if (sHasPfx(pfx)(lin)) o++ })(a); return o }
-export const lyHasMajPfx = (pfx:s) => (a:ly) => 2 * lyPfxCnt(pfx)(a) > a.length
+export const lyPfxCnt = (pfx: s) => (a: ly) => { let o = 0; itrEach(lin => { if (sHasPfx(pfx)(lin)) o++ })(a); return o }
+export const lyHasMajPfx = (pfx: s) => (a: ly) => 2 * lyPfxCnt(pfx)(a) > a.length
 export const lyMatchAy = (re: re) => (a: ly) => { let z: RegExpMatchArray[] = itrRmvEmp(itrMap(sMatch(re))(a)); return z }
 export const matchDr = (a: match) => [...a].splice(1)
 export const lyConstNy: _tfm<ly> = lyReCol(/^const\s+([\$\w][\$0-9\w_]*)[\:\= ]/)
@@ -528,7 +489,7 @@ export const isSpc = (s: s) => {
 }
 //----------------------------------------------------------------------------
 export const sSearch = (re: RegExp) => (a: s) => a.search(re)
-export const sBrkP123 = (quoteStr:s) => (a:s) => {
+export const sBrkP123 = (quoteStr: s) => (a: s) => {
     const { q1, q2 } = quoteStrBrk(quoteStr)
     if (q1 === "" || q2 === "") return null
     const l = a.length
@@ -554,30 +515,35 @@ export const itrPredIsAllTrue = (p: p) => (a: itr) => { for (let i of a) if (!p(
 export const itrPredIsAllFalse = (p: p) => (a: itr) => { for (let i of a) if (p(i)) return false; return true }
 export const itrPredIsSomeFalse = (p: p) => (a: itr) => { for (let i of a) if (!p(i)) return true; return false }
 export const itrPredIsSomeTrue = (p: p) => (a: itr) => { for (let i of a) if (p(i)) return true; return false }
-export const itrBrkForTrueFalse: _itrSplit<any> = p => a => { const t: ay = [], f: ay = []; for (let i of a) p(i) ? t.push(i) : f.push(i); return { t, f } }
-export const itrAy: _itrAy = a => { const o: ay = []; for (let i of a) o.push(i); return o }
-export const itrFst: _itrItm = a => { for (let i of a) return i; return null }
-export const itrAddPfxSfx: _itrAddPfxSfx = (pfx, sfx) => (a: itr) => itrMap(sAddPfxSfx(pfx, sfx))(a)
-export const itrAddPfx = pfx => (a: itr) => itrMap(sAddPfx(pfx))(a)
-export const itrAddSfx = sfx => (a: itr) => itrMap(sAddSfx(sfx))(a)
+export const itrBrkForTrueFalse = <T>(p: (a: T) => b) => (a: Iterable<T>) => {
+    const t: T[] = [], f: T[] = [];
+    for (let i of a)
+        p(i) ? t.push(i) : f.push(i);
+    return { t, f }
+}
+export const itrAy = <T>(a: Itr<T>) => { const o: T[] = []; for (let i of a) o.push(i); return o }
+export const itrFst = <T>(a: Itr<T>) => { for (let i of a) return i; return null }
+export const itrAddPfxSfx = (pfx: s, sfx: s) => (a: itr) => { let z: s[] = itrMap(sAddPfxSfx(pfx, sfx))(a); return z }
+export const itrAddPfx = (pfx: s) => (a: itr) => { let z: s[] = itrMap(sAddPfx(pfx))(a); return z }
+export const itrAddSfx = (sfx: s) => (a: itr) => { let z: s[] = itrMap(sAddSfx(sfx))(a); return z }
 export const itrWdt = (a: itr) => { let z: n = pipe(itrMap(vLen)(a))(itrMax); return z }
-export const sitrWdt = (a: Iterable<s>) => { let z: n = pipe(itrMap(sLen)(a))(itrMax); return z }
-export const itrAlignL: _itrSy = a => itrMap(sAlignL(itrWdt(a)))(a)
-export const itrClone: _itrAy = a => itrMap(i => i)(a)
-export const itrFind: _itrFind = p => a => { for (let i of a) if (p(i)) return i; return null }
-export const itrHasDup: _itrPred = a => { const set = new Set(); for (let i of a) if (set.has(i)) { return true } else set.add(i); return false }
-export const itrDupSet: _itrSet = a => {
-    const set = new Set()
-    const o = new Set()
+export const sitrWdt = (a: sItr) => { let z: n = pipe(itrMap(sLen)(a))(itrMax); return z }
+export const itrAlignL = (a: itr) => { let z: s[] = itrMap(sAlignL(itrWdt(a)))(a); return z }
+export const itrClone = (a: itr) => itrMap(i => i)(a)
+export const itrFind = <T>(p: (a: T) => b) => (a: Itr<T>) => { for (let i of a) if (p(i)) return i; return null }
+export const itrHasDup = (a: itr) => { const set = new Set(); for (let i of a) if (set.has(i)) { return true } else set.add(i); return false }
+export const itrDupSet = <T>(a: Itr<T>) => {
+    const set = new Set<T>()
+    const z = new Set<T>()
     for (let i of a)
         if (set.has(i))
-            o.add(i)
+            z.add(i)
         else
             set.add(i)
-    return o
+    return z
 }
-export const itrMax: _itrItm = a => { let o = itrFst(a); if (o === null) return null; for (let i of a) if (i > o) o = i; return o }
-export const itrMin: _itrItm = a => { let o = itrFst(a); if (o === null) return null; for (let i of a) if (i < o) o = i; return o }
+export const itrMax = <T>(a: Itr<T>) => { let o = itrFst(a); if (o === null) return null; for (let i of a) if (i > o) o = i; return o }
+export const itrMin = <T>(a: Itr<T>) => { let o = itrFst(a); if (o === null) return null; for (let i of a) if (i < o) o = i; return o }
 export const itrRmvEmp = (a: itr) => itrWhere(isNonEmp)(a)
 //-----------------------------------------------------------------------------------------
 export const oBringUpDollarPrp = o => {
@@ -644,11 +610,11 @@ export const sdryColWdt = (colIx: n) => (a: sdry) => sitrWdt(dryCol(colIx)(a))
 export const sdryColWdtAy = (a: sdry) => { let z: n[] = itrMap(i => sdryColWdt(i)(a))(nItr(dryColCnt(a))); return z }
 export const dryCol = (colIx: n) => (a: dry) => itrMap(ayEleOrDft('')(colIx))(a)
 export const dryColCnt = (a: dry) => { let z: n = itrMax(itrMap(vLen)(a)); return z }
-export const dryCellMdy = (f: f) => (a: dry) => { itrEach(ayTfm(f))(a) }
+export const dryCellMdy = (f: f) => (a: dry) => { itrEach(ayMdy(f))(a) }
 export const dryClone = (a: dry) => { let z: dry = itrMap(dr => itrClone(dr))(a); return z }
-export const dryColMdy = (colIx: n) => (f: f) => (a: dry) => { itrEach(ayTfmEle(colIx)(f))(a) }
+export const dryColMdy = (colIx: n) => (f: f) => (a: dry) => { itrEach(ayMdyEle(colIx)(f))(a) }
 export const sdryLines = (a: sdry) => sdryLy(a).join('\r\n')
-export const wdtAyLin = (wdtAy:n[]) => "|-" + itrMap(w => '-'.repeat(w))(wdtAy).join('-|-') + "-|"
+export const wdtAyLin = (wdtAy: n[]) => "|-" + itrMap(w => '-'.repeat(w))(wdtAy).join('-|-') + "-|"
 export const sdrLin = (wdtAy: n[]) => (a: sdr) => {
     let m = ([w, s]) => sAlignL(w)(s)
     let z = ayZip(wdtAy, a)
@@ -656,20 +622,20 @@ export const sdrLin = (wdtAy: n[]) => (a: sdr) => {
     let s = ay.join(' | ')
     return "| " + s + " |"
 }
-export const sdryLy = (a:sdry) => {
+export const sdryLy = (a: sdry) => {
     let w = sdryColWdtAy(a)
     let h = wdtAyLin(w)
-    let z:ly = [h].concat(itrMap(sdrLin(w))(a), h)
+    let z: ly = [h].concat(itrMap(sdrLin(w))(a), h)
     return z
 }
 export const aySy = (a: ay) => { let z: s[] = itrMap(String)(a); return z }
 export const drySdry = (a: dry) => { let z: sdry = itrMap(aySy)(a); return z }
 export const dryLy = (a: dry) => sdryLy(drySdry(a))
 export const drsLy = (a: drs) => {
-    let {fny, dry} = a
+    let { fny, dry } = a
     let b = [fny].concat(drySdry(dry))
     let c = sdryLy(b)
-    let z:ly = c.slice(0, 2).concat(c[0], c.slice(2))
+    let z: ly = c.slice(0, 2).concat(c[0], c.slice(2))
     return z
 }
 export const drsLines = (a: drs) => drsLy(a).join('\r\n')
@@ -724,8 +690,8 @@ export const nItr = function* (n) { for (let j = 0; j < n; j++) yield j }
 export const vvCompare = (a, b) => a === b ? 0 : a > b ? 1 : -1
 export const lazy = vf => { let v, done = false; return () => { if (!done) { v = vf(); done = true }; return v } }
 //---------------------------------------------------------------------------
-export const optMap: _optMap = f => a => a !== null ? f(a) : a
-export const ffnMakBackup: _ffnDo = a => {
+export const optMap = <T, U>(f: (a: T) => U) => (a: T | null) => a !== null ? f(a) : a
+export const ffnMakBackup = (a: ffn) => {
     const ext = ffnExt(a)
     const ffnn = ffnRmvExt(a)
     const pth = ffnPth(a)
@@ -792,7 +758,7 @@ export const fjsRplExpStmt: _ftDo = fjs => {
 }
 export const vTee = <T>(f: (a: T) => void) => (a: T) => { f(a); return a }
 export const ftWrt = (s: s) => (a: ft) => fs.writeFileSync(a, s)
-export const cmdShell: _cmdDo = a => child_process.exec(a)
+export const cmdShell = (a: s) => child_process.exec(a)
 export const ftBrw = (a: ft) => cmdShell(`code.cmd "${a}"`)
 export const sBrw = (a: s) => { pipe(tmpft())(vTee(ftWrt(a)), ftBrw) }
 export const oBrw = (a: o) => sBrw(oJsonLines(a))

@@ -21,27 +21,27 @@ exports.vLE = x => a => a <= x;
 exports.vEQ = x => a => a === x;
 exports.vNE = x => a => a !== x;
 exports.vGT = x => a => a > x;
-exports.vIN = itr => a => { for (let i of itr)
+exports.vIN = (itr) => a => { for (let i of itr)
     if (i === a)
         return true; return false; };
-exports.vNIN = itr => a => !exports.vIN(itr)(a);
-exports.vBET = (x, y) => a => x <= a && a <= y;
-exports.vNBET = (x, y) => a => !exports.vBET(x, y)(a);
-exports.vIsInstanceOf = x => a => a instanceof x;
-exports.ensSy = a => typeof a === 'string' ? exports.sSplitSpc(a) : a;
-exports.ensRe = a => a instanceof RegExp ? a : new RegExp(a);
+exports.vNotIn = itr => a => !exports.vIN(itr)(a);
+exports.vBET = (x, y) => (a) => x <= a && a <= y;
+exports.vNotBet = (x, y) => (a) => !exports.vBET(x, y)(a);
+exports.vIsInstanceOf = (x) => (a) => a instanceof x;
+exports.ensSy = (a) => typeof a === 'string' ? exports.sSplitSpc(a) : a;
+exports.ensRe = (a) => a instanceof RegExp ? a : new RegExp(a);
 //-------------------------------------
 exports.pipe = v => (...f) => { let o = v; for (let ff of f)
     o = ff(o); return o; };
-exports.vMap = f => a => f(a);
-exports.fApply = v => f => f(v);
+exports.vMap = (f) => a => f(a);
+exports.funApply = v => (a) => f(v);
 exports.swap = (f) => a => b => f(b)(a);
 exports.compose = (...f) => v => exports.pipe(v)(...f);
 //----------------------------------
 exports.sdicSy = (a) => { let z = exports.itrMap(exports.ksLin)(a); return z; };
 exports.ksLin = ({ k, s }) => k + ' ' + s;
 exports.dmp = global.console.log;
-exports.funDmp = f => exports.dmp(f.toString());
+exports.funDmp = (f) => exports.dmp(f.toString());
 exports.halt = () => { throw new Error(); };
 exports.sEscLf = (a) => a.replace('\n', '\\n');
 exports.sEscCr = (a) => a.replace('\r', '\\r');
@@ -79,22 +79,22 @@ exports.sSplitLf = exports.sSplit('\n');
 exports.sSplitSpc = exports.sSplit(/\s+/);
 exports.sSplitCommaSpc = exports.sSplit(/,\s*/);
 //-----------------------------------------------------------------------
-exports.vDft = dft => a => a === null || a === undefined ? dft : a;
+exports.vDft = (dft) => (a) => a === null || a === undefined ? dft : a;
 exports.vDftStr = exports.vDft("");
-exports.vDftUpper = (x, y) => a => a === null || a === undefined || x > a || a > y ? y : a;
-exports.vDftLower = (x, y) => a => a === null || a === undefined || x > a || a > y ? x : a;
-exports.ayFindIx = p => a => { for (let i in a)
+exports.vDftUpper = (x, y) => (a) => a === null || a === undefined || x > a || a > y ? y : a;
+exports.vDftLower = (x, y) => (a) => a === null || a === undefined || x > a || a > y ? x : a;
+exports.ayFindIx = (p) => (a) => { for (let i in a)
     if (p(a[i]))
         return Number(i); return null; };
-exports.ayFindIxOrDft = dftIx => p => a => exports.vDft(dftIx)(exports.ayFindIx(p)(a));
-exports.ayFst = a => a[0];
-exports.aySnd = a => a[1];
-exports.ayEle = ix => a => a[ix];
-exports.ayEleOrDft = dft => ix => a => exports.vDft(dft)(a[ix]);
-exports.ayLas = a => a[exports.vLen(a) - 1];
-exports.ayTfm = f => a => { exports.itrEach(i => a[i] = f(a[i]))(exports.nItr(a.length)); };
-exports.aySetEle = ix => v => a => a[ix] = v;
-exports.ayTfmEle = ix => f => a => a[ix] = f(a[ix]);
+exports.ayFindIxOrDft = (dftIx) => (p) => (a) => exports.vDft(dftIx)(exports.ayFindIx(p)(a));
+exports.ayFst = (a) => a[0];
+exports.aySnd = (a) => a[1];
+exports.ayEle = (ix) => (a) => a[ix];
+exports.ayEleOrDft = (dft) => (ix) => (a) => exports.vDft(dft)(a[ix]);
+exports.ayLas = (a) => a[exports.vLen(a) - 1];
+exports.aySetEle = (ix) => (v) => (a) => { a[ix] = v; };
+exports.ayMdyEle = (ix) => (f) => (a) => { a[ix] = f(a[ix]); };
+exports.ayMdy = (f) => (a) => exports.itrEach(ix => a[ix] = f(a[ix]))(exports.nItr(a.length));
 //-----------------------------------------------------------------------
 exports.ayJn = (sep) => (a) => a.join(sep);
 exports.ayJnCrLf = exports.ayJn('\r\n');
@@ -408,7 +408,7 @@ exports.setAftIncl = a => set => _setAft(true, a, set);
 exports.setClone = set => exports.itrSet(set);
 exports.itrSet = itr => { const o = new Set; for (let i of itr)
     o.add(i); return o; };
-exports.itrTfmSet = f => a => { const o = new Set; for (let i of a)
+exports.itrTfmSet = (f) => (a) => { const o = new Set; for (let i of a)
     o.add(f(i)); return o; };
 //---------------------------------------------------------------------------
 exports.empSdic = () => new Map();
@@ -510,43 +510,47 @@ exports.itrPredIsSomeFalse = (p) => (a) => { for (let i of a)
 exports.itrPredIsSomeTrue = (p) => (a) => { for (let i of a)
     if (p(i))
         return true; return false; };
-exports.itrBrkForTrueFalse = p => a => { const t = [], f = []; for (let i of a)
-    p(i) ? t.push(i) : f.push(i); return { t, f }; };
-exports.itrAy = a => { const o = []; for (let i of a)
+exports.itrBrkForTrueFalse = (p) => (a) => {
+    const t = [], f = [];
+    for (let i of a)
+        p(i) ? t.push(i) : f.push(i);
+    return { t, f };
+};
+exports.itrAy = (a) => { const o = []; for (let i of a)
     o.push(i); return o; };
-exports.itrFst = a => { for (let i of a)
+exports.itrFst = (a) => { for (let i of a)
     return i; return null; };
-exports.itrAddPfxSfx = (pfx, sfx) => (a) => exports.itrMap(exports.sAddPfxSfx(pfx, sfx))(a);
-exports.itrAddPfx = pfx => (a) => exports.itrMap(exports.sAddPfx(pfx))(a);
-exports.itrAddSfx = sfx => (a) => exports.itrMap(exports.sAddSfx(sfx))(a);
+exports.itrAddPfxSfx = (pfx, sfx) => (a) => { let z = exports.itrMap(exports.sAddPfxSfx(pfx, sfx))(a); return z; };
+exports.itrAddPfx = (pfx) => (a) => { let z = exports.itrMap(exports.sAddPfx(pfx))(a); return z; };
+exports.itrAddSfx = (sfx) => (a) => { let z = exports.itrMap(exports.sAddSfx(sfx))(a); return z; };
 exports.itrWdt = (a) => { let z = exports.pipe(exports.itrMap(exports.vLen)(a))(exports.itrMax); return z; };
 exports.sitrWdt = (a) => { let z = exports.pipe(exports.itrMap(exports.sLen)(a))(exports.itrMax); return z; };
-exports.itrAlignL = a => exports.itrMap(exports.sAlignL(exports.itrWdt(a)))(a);
-exports.itrClone = a => exports.itrMap(i => i)(a);
-exports.itrFind = p => a => { for (let i of a)
+exports.itrAlignL = (a) => { let z = exports.itrMap(exports.sAlignL(exports.itrWdt(a)))(a); return z; };
+exports.itrClone = (a) => exports.itrMap(i => i)(a);
+exports.itrFind = (p) => (a) => { for (let i of a)
     if (p(i))
         return i; return null; };
-exports.itrHasDup = a => { const set = new Set(); for (let i of a)
+exports.itrHasDup = (a) => { const set = new Set(); for (let i of a)
     if (set.has(i)) {
         return true;
     }
     else
         set.add(i); return false; };
-exports.itrDupSet = a => {
+exports.itrDupSet = (a) => {
     const set = new Set();
-    const o = new Set();
+    const z = new Set();
     for (let i of a)
         if (set.has(i))
-            o.add(i);
+            z.add(i);
         else
             set.add(i);
-    return o;
+    return z;
 };
-exports.itrMax = a => { let o = exports.itrFst(a); if (o === null)
+exports.itrMax = (a) => { let o = exports.itrFst(a); if (o === null)
     return null; for (let i of a)
     if (i > o)
         o = i; return o; };
-exports.itrMin = a => { let o = exports.itrFst(a); if (o === null)
+exports.itrMin = (a) => { let o = exports.itrFst(a); if (o === null)
     return null; for (let i of a)
     if (i < o)
         o = i; return o; };
@@ -619,9 +623,9 @@ exports.sdryColWdt = (colIx) => (a) => exports.sitrWdt(exports.dryCol(colIx)(a))
 exports.sdryColWdtAy = (a) => { let z = exports.itrMap(i => exports.sdryColWdt(i)(a))(exports.nItr(exports.dryColCnt(a))); return z; };
 exports.dryCol = (colIx) => (a) => exports.itrMap(exports.ayEleOrDft('')(colIx))(a);
 exports.dryColCnt = (a) => { let z = exports.itrMax(exports.itrMap(exports.vLen)(a)); return z; };
-exports.dryCellMdy = (f) => (a) => { exports.itrEach(exports.ayTfm(f))(a); };
+exports.dryCellMdy = (f) => (a) => { exports.itrEach(exports.ayMdy(f))(a); };
 exports.dryClone = (a) => { let z = exports.itrMap(dr => exports.itrClone(dr))(a); return z; };
-exports.dryColMdy = (colIx) => (f) => (a) => { exports.itrEach(exports.ayTfmEle(colIx)(f))(a); };
+exports.dryColMdy = (colIx) => (f) => (a) => { exports.itrEach(exports.ayMdyEle(colIx)(f))(a); };
 exports.sdryLines = (a) => exports.sdryLy(a).join('\r\n');
 exports.wdtAyLin = (wdtAy) => "|-" + exports.itrMap(w => '-'.repeat(w))(wdtAy).join('-|-') + "-|";
 exports.sdrLin = (wdtAy) => (a) => {
@@ -711,8 +715,8 @@ exports.lazy = vf => { let v, done = false; return () => { if (!done) {
     done = true;
 } ; return v; }; };
 //---------------------------------------------------------------------------
-exports.optMap = f => a => a !== null ? f(a) : a;
-exports.ffnMakBackup = a => {
+exports.optMap = (f) => (a) => a !== null ? f(a) : a;
+exports.ffnMakBackup = (a) => {
     const ext = exports.ffnExt(a);
     const ffnn = exports.ffnRmvExt(a);
     const pth = exports.ffnPth(a);
@@ -795,7 +799,7 @@ exports.fjsRplExpStmt = fjs => {
 };
 exports.vTee = (f) => (a) => { f(a); return a; };
 exports.ftWrt = (s) => (a) => fs.writeFileSync(a, s);
-exports.cmdShell = a => child_process.exec(a);
+exports.cmdShell = (a) => child_process.exec(a);
 exports.ftBrw = (a) => exports.cmdShell(`code.cmd "${a}"`);
 exports.sBrw = (a) => { exports.pipe(exports.tmpft())(exports.vTee(exports.ftWrt(a)), exports.ftBrw); };
 exports.oBrw = (a) => exports.sBrw(exports.oJsonLines(a));

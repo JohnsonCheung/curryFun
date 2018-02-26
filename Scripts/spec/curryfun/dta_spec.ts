@@ -14,7 +14,7 @@ function dta1$(dta) {
         let itm;
         for (let j = 0; j < i; j++) {
             if (j === i) {
-                o[j] = spc(len(ay[j])
+                o[j] = spc(len(ay[j]))
             }
             o.push(ay[j])
         }

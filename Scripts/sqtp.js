@@ -291,8 +291,8 @@ const gpPfxEr = (a, pfx) => {
 const plinParseSpc = (a) => {
     let [lin, pos] = a;
     for (let p = pos; p < lin.length; p++) {
-        if (x.isBool)
-            isSpc(lin[p]);
+        if (x.isSpc(lin[p])) {
+        }
     }
 };
 const plinParseTerm = (a) => {

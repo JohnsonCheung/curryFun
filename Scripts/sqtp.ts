@@ -262,7 +262,7 @@ const _x1 = (a: gp, fstTerm: s) => {
     const ixset = new Set<n>(ixay)
     return _x2(a, ixset)
 }
-const _x2 = (a: gp, ixset:Set<n>) => {
+const _x2 = (a: gp, ixset: Set<n>) => {
     // return [Er, gp]
     const er: Er = []
     const gp: gp = []
@@ -279,7 +279,7 @@ const _x2 = (a: gp, ixset:Set<n>) => {
     }
     let z: [Er, gp] = [er, gp]
     return z
-}    
+}
 
 const gpDupFstTermEr = (a: gp) => {
     const ly = gpLy(a)
@@ -311,10 +311,12 @@ const gpPfxEr = (a: gp, pfx: s) => {
     const z: [Er, gp] = [er, gp]
     return z
 }
-const plinParseSpc = (a:[lin, pos]) => {
+const plinParseSpc = (a: [lin, pos]) => {
     let [lin, pos] = a
-    for(let p = pos; p<lin.length; p++) {
-        if(x.isBool isSpc(lin[p])
+    for (let p = pos; p < lin.length; p++) {
+        if (x.isSpc(lin[p]) {
+
+        }
     }
 
 }
@@ -334,14 +336,14 @@ const linT2PosWdt = (a: lin) => {
 
 const linT2markerLin = (a: lin, msg: s) => {
     const pos = linT2pos(lin)
-    if(pos===null) return null
+    if (pos === null) return null
 }
 const gpPfxPrmSwEr = (a: gp) => {
     const er: Er = []
     const gp: gp = []
     for (const { ix, lin } of a) {
-        let endMsg:s[] = []
-        let sfxMsg:s[] = []
+        let endMsg: s[] = []
+        let sfxMsg: s[] = []
         const isPrmSw = !x.sHasPfx('%?')(lin)
         let erNo = 0
         if (isPrmSw) {
@@ -367,7 +369,7 @@ const gpPfxPrmSwEr = (a: gp) => {
     }
     const z: [Er, gp] = [er, gp]
     return z
-    
+
 }
 const bkPm = (a: bk) => {
     let z: [Er, Pm]
