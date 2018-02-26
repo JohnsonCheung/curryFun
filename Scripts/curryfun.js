@@ -43,16 +43,17 @@ exports.ksLin = ({ k, s }) => k + ' ' + s;
 exports.dmp = global.console.log;
 exports.funDmp = f => exports.dmp(f.toString());
 exports.halt = () => { throw new Error(); };
-exports.sEscLf = a => a.replace('\n', '\\n');
-exports.sEscCr = a => a.replace('\r', '\\r');
-exports.sEscTab = a => a.replace('\t', '\\t');
+exports.sEscLf = (a) => a.replace('\n', '\\n');
+exports.sEscCr = (a) => a.replace('\r', '\\r');
+exports.sEscTab = (a) => a.replace('\t', '\\t');
 exports.sEsc = exports.compose(exports.sEscLf, exports.sEscCr, exports.sEscTab);
-exports.sBox = a => { const y = "== " + exports.sEsc(a) + " ==", x = "=".repeat(a.length + 6); return [x, y, x].join("\r\n"); };
+exports.sBox = (a) => { const y = "== " + exports.sEsc(a) + " ==", x = "=".repeat(a.length + 6); return [x, y, x].join("\r\n"); };
 exports.stack = () => { try {
     throw new Error();
 }
 catch (e) {
-    return e.stack;
+    let z = e.stack;
+    return z;
 } };
 exports.er = (msg, ...v) => {
     let a = exports.stack();
@@ -130,13 +131,13 @@ exports.ayJnAsLines = (sep0, tab0, wdt0) => (a) => {
     return b;
 };
 //-----------------------------------------------------------------------
-exports.sFstChr = a => a[0];
-exports.sLasChr = a => a[a.length - 1];
+exports.sFstChr = (a) => a[0];
+exports.sLasChr = (a) => a[a.length - 1];
 exports.sAddPfx = (pfx) => (a) => pfx + a;
 exports.sAddSfx = (sfx) => a => a + sfx;
 exports.sAddPfxSfx = (pfx, sfx) => (a) => pfx + a + sfx;
-exports.vLen = a => typeof a === 'string' ? a.length : ((a && a.length) || String(a).length);
-exports.sLen = a => a.length;
+exports.vLen = a => { let z = typeof a === 'string' ? a.length : ((a && a.length) || String(a).length); return z; };
+exports.sLen = (a) => a.length;
 exports.sMidN = (pos) => (n) => (a) => a.substr(pos, n);
 exports.sMid = (pos) => (a) => a.substr(pos);
 exports.sLeft = (n) => (a) => a.substr(0, n);
@@ -149,8 +150,8 @@ exports.sRight = (n) => (a) => {
         return '';
     return a.substr(-n);
 };
-exports.nPadZero = dig => n => {
-    const s = String(n);
+exports.nPadZero = (dig) => (a) => {
+    const s = String(a);
     const nZer = dig - s.length;
     const z = nZer > 0 ? "0".repeat(nZer) : "";
     return z + s;
@@ -237,12 +238,12 @@ exports.isRmkLin = lin => {
     return false;
 };
 exports.isNonRmkLin = exports.predNot(exports.isRmkLin);
-exports.linRmvMsg = lin => {
-    const a = lin.match(/(.*)---/);
-    const b = a === null ? lin : a[1];
-    if (exports.sHasPfx("^")(b.trimLeft()))
+exports.linRmvMsg = (a) => {
+    const a1 = a.match(/(.*)---/);
+    const a2 = a1 === null ? a : a1[1];
+    if (exports.sHasPfx("^")(a2.trimLeft()))
         return "";
-    return b;
+    return a2;
 };
 //------------------------------------------------------------------
 exports.sBrkAt = (at, len) => (a) => { return { s1: exports.sLeft(at)(a).trim(), s2: exports.sMid(at + len)(a).trim() }; };
@@ -261,13 +262,13 @@ exports.quoteStrBrk = (a) => {
     let { s1: q1, s2: q2 } = exports.sBrkAt(p, 1)(a);
     return { q1, q2 };
 };
-exports.sQuote = q => s => {
-    let a = exports.quoteStrBrk(q);
-    if (a === null)
-        return s;
+exports.sQuote = (q) => (a) => {
+    let qq = exports.quoteStrBrk(q);
+    if (qq === null)
+        return a;
     else {
-        let { q1, q2 } = a;
-        return q1 + s + q2;
+        let { q1, q2 } = qq;
+        return q1 + a + q2;
     }
     ;
 };
@@ -282,29 +283,29 @@ exports.sRevTakBef = (sep) => (a) => exports.sRevBrk2(sep)(a).s1;
 exports.sRevTakAft = (sep) => (a) => exports.sRevBrk1(sep)(a).s2;
 //-----------------------------------------------------------------------
 exports.sRmvFstChr = exports.sMid(1);
-exports.sRmvLasChr = a => exports.sLeft(a.length - 1)(a);
-exports.sRmvLasNChr = n => a => exports.sLeft(a.length - n)(a);
-exports.sRmvSubStr = sbs => a => { const re = new RegExp(sbs, 'g'); return a.replace(re, ''); };
+exports.sRmvLasChr = (a) => exports.sLeft(a.length - 1)(a);
+exports.sRmvLasNChr = (n) => (a) => exports.sLeft(a.length - n)(a);
+exports.sRmvSubStr = (sbs) => (a) => { const re = new RegExp(sbs, 'g'); return a.replace(re, ''); };
 exports.sRmvColon = exports.sRmvSubStr(":");
 exports.pthsep = path.sep;
-exports.ffnPth = a => { const at = a.lastIndexOf(exports.pthsep); return at === -1 ? '' : exports.sLeft(at + 1)(a); };
-exports.ffnFn = a => { const at = a.lastIndexOf(exports.pthsep); return at === -1 ? a : exports.sMid(at + 1)(a); };
-exports.ffnExt = a => { const at = a.lastIndexOf('.'); return at === -1 ? '' : exports.sMid(at)(a); };
-exports.ffnAddFnSfx = sfx => a => exports.ffnFfnn(a) + sfx + exports.ffnExt(a);
-exports.ffnRmvExt = a => { const at = a.indexOf('.'); return at === -1 ? a : exports.sLeft(at)(a); };
+exports.ffnPth = (a) => { const at = a.lastIndexOf(exports.pthsep); return at === -1 ? '' : exports.sLeft(at + 1)(a); };
+exports.ffnFn = (a) => { const at = a.lastIndexOf(exports.pthsep); return at === -1 ? a : exports.sMid(at + 1)(a); };
+exports.ffnExt = (a) => { const at = a.lastIndexOf('.'); return at === -1 ? '' : exports.sMid(at)(a); };
+exports.ffnAddFnSfx = (sfx) => (a) => exports.ffnFfnn(a) + sfx + exports.ffnExt(a);
+exports.ffnRmvExt = (a) => { const at = a.indexOf('.'); return at === -1 ? a : exports.sLeft(at)(a); };
 exports.ffnFfnn = exports.ffnRmvExt;
-exports.ffnFnn = a => exports.ffnFn(exports.ffnRmvExt(a));
-exports.ffnRplExt = ext => a => exports.ffnRmvExt(a) + ext;
+exports.ffnFnn = (a) => exports.ffnFn(exports.ffnRmvExt(a));
+exports.ffnRplExt = (ext) => (a) => exports.ffnRmvExt(a) + ext;
 //-----------------------------------------------------------------------
-exports.ftLines = a => (fs.readFileSync(a).toString());
-exports.ftLy = (ft) => exports.sSplitCrLf(exports.ftLines(ft));
+exports.ftLines = (a) => (fs.readFileSync(a).toString());
+exports.ftLy = (a) => exports.sSplitCrLf(exports.ftLines(a));
 //-----------------------------------------------------------------------
 exports.tmpnm = () => exports.sRmvColon(new Date().toJSON());
 exports.tmppth = os.tmpdir + exports.pthsep;
 exports.tmpffn = (pfx = "", ext) => exports.tmppth + pfx + exports.tmpnm() + ext;
 exports.tmpft = () => exports.tmpffn("T", ".txt");
-exports.tmpjson = () => exports.tmpffn("T", ".json");
-exports.ffnTmp = a => {
+exports.tmpfjson = () => exports.tmpffn("T", ".json");
+exports.ffnCloneTmp = (a) => {
     const o = exports.tmpffn(undefined, exports.ffnExt(a));
     fs.copyFileSync(a, o);
     return o;
@@ -421,15 +422,15 @@ exports.lySdic = (a) => {
     exports.itrEach(x)(a);
     return o;
 };
-exports.lyReDry = re => a => exports.itrMap(exports.matchDr)(exports.lyMatchAy(re)(a));
-exports.lyReCol = re => a => exports.matchAyFstCol(exports.lyMatchAy(re)(a)).sort();
+exports.lyReDry = (re) => (a) => exports.itrMap(exports.matchDr)(exports.lyMatchAy(re)(a));
+exports.lyReCol = (re) => (a) => exports.matchAyFstCol(exports.lyMatchAy(re)(a)).sort();
 exports.matchAyDry = a => exports.itrMap(exports.matchDr)(a);
 exports.matchFstItm = a => a[1];
 exports.matchAyFstCol = a => exports.itrMap(exports.matchFstItm)(a);
-exports.lyPfxCnt = pfx => a => { let o = 0; exports.itrEach(lin => { if (exports.sHasPfx(pfx)(lin))
+exports.lyPfxCnt = (pfx) => (a) => { let o = 0; exports.itrEach(lin => { if (exports.sHasPfx(pfx)(lin))
     o++; })(a); return o; };
-exports.lyHasMajPfx = pfx => a => 2 * exports.lyPfxCnt(pfx)(a) > a.length;
-exports.lyMatchAy = re => a => exports.itrRmvEmp(exports.itrMap(exports.sMatch(re))(a));
+exports.lyHasMajPfx = (pfx) => (a) => 2 * exports.lyPfxCnt(pfx)(a) > a.length;
+exports.lyMatchAy = (re) => (a) => { let z = exports.itrRmvEmp(exports.itrMap(exports.sMatch(re))(a)); return z; };
 exports.matchDr = (a) => [...a].splice(1);
 exports.lyConstNy = exports.lyReCol(/^const\s+([\$\w][\$0-9\w_]*)[\:\= ]/);
 exports.lyConstDollarNy = exports.lyReCol(/^export const (\$[\$0-9\w_]*)[\:\= ]/);
@@ -518,8 +519,8 @@ exports.itrFst = a => { for (let i of a)
 exports.itrAddPfxSfx = (pfx, sfx) => (a) => exports.itrMap(exports.sAddPfxSfx(pfx, sfx))(a);
 exports.itrAddPfx = pfx => (a) => exports.itrMap(exports.sAddPfx(pfx))(a);
 exports.itrAddSfx = sfx => (a) => exports.itrMap(exports.sAddSfx(sfx))(a);
-exports.itrWdt = a => exports.pipe(exports.itrMap(exports.vLen)(a))(exports.itrMax);
-exports.sitrWdt = a => exports.pipe(exports.itrMap(exports.sLen)(a))(exports.itrMax);
+exports.itrWdt = (a) => { let z = exports.pipe(exports.itrMap(exports.vLen)(a))(exports.itrMax); return z; };
+exports.sitrWdt = (a) => { let z = exports.pipe(exports.itrMap(exports.sLen)(a))(exports.itrMax); return z; };
 exports.itrAlignL = a => exports.itrMap(exports.sAlignL(exports.itrWdt(a)))(a);
 exports.itrClone = a => exports.itrMap(i => i)(a);
 exports.itrFind = p => a => { for (let i of a)
@@ -622,7 +623,7 @@ exports.dryCellMdy = (f) => (a) => { exports.itrEach(exports.ayTfm(f))(a); };
 exports.dryClone = (a) => { let z = exports.itrMap(dr => exports.itrClone(dr))(a); return z; };
 exports.dryColMdy = (colIx) => (f) => (a) => { exports.itrEach(exports.ayTfmEle(colIx)(f))(a); };
 exports.sdryLines = (a) => exports.sdryLy(a).join('\r\n');
-exports.wdtAyLin = (wdyAy) => "|-" + exports.itrMap(w => '-'.repeat(w))(w).join('-|-') + "-|";
+exports.wdtAyLin = (wdtAy) => "|-" + exports.itrMap(w => '-'.repeat(w))(wdtAy).join('-|-') + "-|";
 exports.sdrLin = (wdtAy) => (a) => {
     let m = ([w, s]) => exports.sAlignL(w)(s);
     let z = exports.ayZip(wdtAy, a);
@@ -667,11 +668,11 @@ const _isEscSbs = i => { for (let spec of "()[]{}/|.+?*")
     if (i === spec)
         return true; };
 const _escSbs = c => c === '\\' ? '\\\\' : (_isEscSbs(c) ? '\\' + c : c);
-exports.sLik = lik => s => _likRe(s).test(s); // strictEqual(sLik("abc?dd")("abcxdd"), true); debugger
-exports.sHasSbs = sbs => s => {
+exports.sLik = (lik) => (a) => _likRe(a).test(a); // strictEqual(sLik("abc?dd")("abcxdd"), true); debugger
+exports.sHasSbs = (sbs) => (a) => {
     const _escSpec = exports.itrMap(_escSbs)(sbs).join("");
     const _sbsRe = new RegExp(_escSpec);
-    let o = _sbsRe.test(s);
+    let o = _sbsRe.test(a);
     return o;
 };
 //---------------------------------------
@@ -731,17 +732,16 @@ exports.ffnMakBackup = a => {
     exports.pthEnsSubFdr(backupSubFdr)(pth);
     fs.copyFileSync(a, backupFfn);
 };
-exports.lyExpStmt = ly => {
-    let ny = exports.lyConstNy(ly);
-    debugger;
+exports.lyExpStmt = (a) => {
+    let ny = exports.lyConstNy(a);
     ny = exports.itrWhere(exports.predNot(exports.sHasPfx("_")))(ny).sort();
     if (exports.isEmp(ny))
         return null;
     const x = exports.ayJnAsLines(", ", 4, 120)(ny);
-    const stmt = "export {\r\n" + x + "\r\n}";
-    return stmt;
+    let z = "export {\r\n" + x + "\r\n}";
+    return z;
 };
-exports.curExpStmt = () => exports.pipe(__filename)(exports.ftLy, exports.lyExpStmt);
+exports.curExpStmt = () => { let z = exports.pipe(__filename)(exports.ftLy, exports.lyExpStmt); return z; };
 // dmp(curExpStmt); debugger
 exports.fjsRplExpStmt = fjs => {
     const oldLy = exports.ftLy(fjs);
@@ -756,7 +756,7 @@ exports.fjsRplExpStmt = fjs => {
         }
         return 0;
     })();
-    const oldLin = (oldBegIx === null || oldEndIx === null) ? null : oldLy.slice(oldBegIx, oldEndIx);
+    const oldLin = (oldBegIx === null || oldEndIx === null) ? null : oldLy.slice(oldBegIx, oldEndIx).join('\r\n');
     const newLines = () => {
         const hasNewLin = newLin !== null;
         const hasOldLin = oldLin !== null;
