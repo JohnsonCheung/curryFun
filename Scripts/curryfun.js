@@ -5,7 +5,6 @@ const fs = require("fs");
 const path = require("path");
 const os = require("os");
 const child_process = require("child_process");
-const assert = require("assert");
 //---------------------------------------
 exports.strictEqual = require('assert').strictEqual;
 exports.eq = (exp, act) => { try {
@@ -34,7 +33,7 @@ exports.ensRe = (a) => a instanceof RegExp ? a : new RegExp(a);
 exports.pipe = v => (...f) => { let o = v; for (let ff of f)
     o = ff(o); return o; };
 exports.vMap = (f) => a => f(a);
-exports.funApply = v => (a) => f(v);
+exports.funApply = v => (a) => a(v);
 exports.swap = (f) => a => b => f(b)(a);
 exports.compose = (...f) => v => exports.pipe(v)(...f);
 //----------------------------------
@@ -803,34 +802,5 @@ exports.ftBrw = (a) => exports.cmdShell(`code.cmd "${a}"`);
 exports.sBrw = (a) => { exports.pipe(exports.tmpft())(exports.vTee(exports.ftWrt(a)), exports.ftBrw); };
 exports.oBrw = (a) => exports.sBrw(exports.oJsonLines(a));
 exports.oJsonLines = (a) => JSON.stringify(a);
-const isMain = module.id === '.';
-if (isMain) {
-    const acorn = require('acorn');
-    const a = acorn.parse.toString();
-    exports.sBrw(a);
-    debugger;
-    const o = acorn.parse(a);
-    exports.oBrw(o);
-}
-if (isMain) {
-    const sdry = [['lskdfj', '12345678901'], ['123456789', 'dkfj']];
-    let act;
-    act = exports.sdryColWdt(0)(sdry);
-    assert.strictEqual(act, 9);
-    act = exports.sdryColWdt(1)(sdry);
-    assert.strictEqual(act, 11);
-    act = exports.sdryColWdtAy(sdry);
-    assert.deepStrictEqual(act, [9, 11]);
-    act = exports.sdryLy(sdry);
-}
-if (isMain) {
-    const fny = exports.sSplitSpc('aa bb');
-    const dry = [[1233, '12345678901'], ['123456789', 'dkfj'], [new Date(), true, 1]];
-    const drs = { a: 1, dry, fny };
-    const act = exports.drsLines(drs);
-    debugger;
-}
-if (isMain) {
-}
 //fjsRplExpStmt(ffnRplExt(".ts")(__filename))
 //# sourceMappingURL=curryfun.js.map

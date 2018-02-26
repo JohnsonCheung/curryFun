@@ -83,7 +83,7 @@ export const ensRe = (a: s | re) => a instanceof RegExp ? a : new RegExp(a)
 //-------------------------------------
 export const pipe = v => (...f: f[]) => { let o = v; for (let ff of f) o = ff(o); return o }
 export const vMap = (f: f) => a => f(a)
-export const funApply = v => (a: f) => f(v)
+export const funApply = v => (a: f) => a(v)
 export const swap = (f: f) => a => b => f(b)(a)
 export const compose = (...f: f[]) => v => pipe(v)(...f)
 //----------------------------------
@@ -743,31 +743,4 @@ export const ftBrw = (a: ft) => cmdShell(`code.cmd "${a}"`)
 export const sBrw = (a: s) => { pipe(tmpft())(vTee(ftWrt(a)), ftBrw) }
 export const oBrw = (a: o) => sBrw(oJsonLines(a))
 export const oJsonLines = (a: o) => JSON.stringify(a)
-const isMain = module.id === '.'
-if (isMain) {
-    const acorn = require('acorn')
-    const a = acorn.parse.toString()
-    sBrw(a)
-    debugger
-    const o = acorn.parse(a)
-    oBrw(o)
-}
-if (isMain) {
-    const sdry = [['lskdfj', '12345678901'], ['123456789', 'dkfj']]
-    let act
-    act = sdryColWdt(0)(sdry); assert.strictEqual(act, 9)
-    act = sdryColWdt(1)(sdry); assert.strictEqual(act, 11)
-    act = sdryColWdtAy(sdry); assert.deepStrictEqual(act, [9, 11])
-    act = sdryLy(sdry)
-}
-if (isMain) {
-    const fny = sSplitSpc('aa bb')
-    const dry = [[1233, '12345678901'], ['123456789', 'dkfj'], [new Date(), true, 1]]
-    const drs = { a: 1, dry, fny }
-    const act = drsLines(drs)
-    debugger
-}
-if (isMain) {
-
-}
 //fjsRplExpStmt(ffnRplExt(".ts")(__filename))

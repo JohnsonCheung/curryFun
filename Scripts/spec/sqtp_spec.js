@@ -4,19 +4,38 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /// <reference path="../../Scripts/curryfun.ts"/>
 const x = require("../curryfun");
 const sqtp_1 = require("../sqtp");
-describe('sqtp', function () {
-    fit('should pass', function () {
+describe('sqtp -- pm03 -- bkPm --', function () {
+    it('this block is err - should pass', function () {
         const sqtp = '%?BrkMbr 0\n' +
+            '?BrkMbr 0\n' +
             '%?BrkMbr 0\n' +
-            '%?BrkMbr 0\n' +
-            '??BrkSto 0\n' +
-            '%?BrkCrd 0\n' +
-            '%?BrkDiv 0\n' +
+            '??BrkSto 0\n';
+        const { vtp, sql } = sqtp_1.sqtprslt(sqtp);
+        x.sBrw(vtp + '\n***\nsqtp' + sqtp);
+        debugger;
+    });
+    it('pfx err - should pass', function () {
+        const sqtp = '%?BrkMbr 0\n' +
+            '%?BrkXX 0\n' +
+            '%BrkMbr 0\n' +
+            '#?BrkMbr 0\n' +
+            '??BrkSto 0\n';
+        const { vtp, sql } = sqtp_1.sqtprslt(sqtp);
+        const exp = '%?BrkMbr 0\r\n' +
+            '%?BrkXX 0\r\n' +
+            '%BrkMbr 0\r\n' +
+            '#?BrkMbr 0\r\n' +
+            '^---- prefix must be (%)\r\n' +
+            '??BrkSto 0\r\n' +
+            '^---- prefix must be (%)';
+        expect(vtp).toEqual(exp);
+    });
+    fit('prmSwErr - should pass', function () {
+        const sqtp = '%?BrkDiv X\n' +
             '%SumLvl  Y\n' +
             '%?MbrEmail 1';
         const { vtp, sql } = sqtp_1.sqtprslt(sqtp);
-        debugger;
-        x.sBrw(vtp);
+        x.sBrw(vtp + '\n***\n' + sqtp);
         debugger;
     });
     it('should pass', function () {

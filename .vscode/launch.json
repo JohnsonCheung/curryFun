@@ -4,7 +4,13 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Jasmine isXXX_spec.js",
+            "program": "c:/users/user/appdata/roaming/npm/node_modules/jasmine/bin/jasmine.js",
+            "args": ["${workspaceFolder}/scripts/spec/curryfun/isXXX_spec.js"]
+        },
         {
             "type": "node",
             "request": "launch",
@@ -18,13 +24,6 @@
             "name": "Jasmine sqtp_spec.js",
             "program": "c:/users/user/appdata/roaming/npm/node_modules/jasmine/bin/jasmine.js",
             "args": ["${workspaceFolder}/scripts/spec/sqtp_spec.js"]
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "Jasmine isXXX_spec.js",
-            "program": "c:/users/user/appdata/roaming/npm/node_modules/jasmine/bin/jasmine.js",
-            "args": ["${workspaceFolder}/scripts/spec/curryfun/isXXX_spec.js"]
         },
         {
             "type": "node",

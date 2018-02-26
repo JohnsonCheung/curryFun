@@ -2,19 +2,42 @@
 /// <reference path="../../Scripts/curryfun.ts"/>
 import * as x from '../curryfun'
 import { sqtprslt } from '../sqtp'
-describe('sqtp', function () {
-    fit('should pass', function() {
-        const sqtp = '%?BrkMbr 0\n'+
-                    '%?BrkMbr 0\n'+
-                    '%?BrkMbr 0\n'+
-                    '??BrkSto 0\n'+
-                    '%?BrkCrd 0\n'+
-                    '%?BrkDiv 0\n'+
-                    '%SumLvl  Y\n'+
-                    '%?MbrEmail 1'
+describe('sqtp -- pm03 -- bkPm --', function () {
+    it('this block is err - should pass', function () {
+        const sqtp =
+            '%?BrkMbr 0\n' +
+            '?BrkMbr 0\n' +
+            '%?BrkMbr 0\n' +
+            '??BrkSto 0\n'
         const { vtp, sql } = sqtprslt(sqtp)
+        x.sBrw(vtp + '\n***\nsqtp' + sqtp)
         debugger
-        x.sBrw(vtp)
+    })
+    it('pfx err - should pass', function () {
+        const sqtp =
+            '%?BrkMbr 0\n' +
+            '%?BrkXX 0\n' +
+            '%BrkMbr 0\n' +
+            '#?BrkMbr 0\n' +
+            '??BrkSto 0\n'
+        const { vtp, sql } = sqtprslt(sqtp)
+        const exp =
+            '%?BrkMbr 0\r\n' +
+            '%?BrkXX 0\r\n' +
+            '%BrkMbr 0\r\n' +
+            '#?BrkMbr 0\r\n' +
+            '^---- prefix must be (%)\r\n' +
+            '??BrkSto 0\r\n' +
+            '^---- prefix must be (%)'
+        expect(vtp).toEqual(exp)
+    })
+    fit('prmSwErr - should pass', function () {
+        const sqtp =
+            '%?BrkDiv X\n' +
+            '%SumLvl  Y\n' +
+            '%?MbrEmail 1'
+        const { vtp, sql } = sqtprslt(sqtp)
+        x.sBrw(vtp + '\n***\n' + sqtp)
         debugger
     })
     it('should pass', function () {

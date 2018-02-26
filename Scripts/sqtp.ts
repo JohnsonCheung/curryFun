@@ -18,7 +18,6 @@ type Pm = Map<s, s>
 type sql = s
 type term = s
 type sqtp = s
-
 const sqtprslt = (a: sqtp) => {
     let ly = x.sSplitLf(a)
     let ly1 = lyRmvMsg(ly)
@@ -301,7 +300,7 @@ const gpPfxEr = (a: gp, pfx: s) => {
     const sfxMsg = []
     for (let { ix, lin } of a) {
         if (!x.sHasPfx(pfx)(lin)) {
-            const endMsg = ['^---- must have prefix (' + pfx + ')']
+            const endMsg = ['^---- prefix must be (' + pfx + ')']
             const m: ErItm = { ix, endMsg, sfxMsg }
             er.push(m)
         } else {
@@ -311,40 +310,57 @@ const gpPfxEr = (a: gp, pfx: s) => {
     const z: [Er, gp] = [er, gp]
     return z
 }
-const plinParseSpc = (a: [lin, pos]) => {
-    let [lin, pos] = a
-    for (let p = pos; p < lin.length; p++) {
-        if (x.isSpc(lin[p]) {
-
-        }
+const plinParseSpc = (a: plin) => {
+    let [pos, lin] = a
+    for (var p = pos; p < lin.length; p++) {
+        if (!x.isSpc(lin[p])) 
+            break
     }
+    let z: [pos, lin] = [p, lin]
+    return z
+}
 
-}
 const plinParseTerm = (a: plin) => {
-    const term = ''
-    const pos = 0
-    return [term, [lin, pos]]
+    let term = ''
+    const [pos, lin] = a
+    for (var p = pos; p < lin.length; p++) {
+        const c = lin[p]
+        if (/\s/.test(c))
+            break
+        else    
+            term += c
+    }
+    let z: [term, [pos, lin]] = [term, [p, lin]]
+    return z
 }
+
 const linT2PosWdt = (a: lin) => {
-    const a1 = plinParseSpc([a, 0])
+    const a1 = plinParseSpc([0, a])
     const [t1, a2] = plinParseTerm(a1)
     const a3 = plinParseSpc(a2)
-    const [t2, [lin, pos]] = plinParseTerm(a3)
+    const [t2, [pos, lin]] = plinParseTerm(a3)
     if (t2 === null) return null
-    return [pos, t2.length]
+    const z:[pos,n] = [pos, t2.length]
+    return z
 }
 
-const linT2markerLin = (a: lin, msg: s) => {
-    const pos = linT2pos(lin)
-    if (pos === null) return null
+const linT2MarkerLin = (a: lin, msg: s) => {
+    const poswdt = linT2PosWdt(a)
+    if (poswdt === null)
+        x.er('{lin} does have 2nd term', { lin: a })
+    const [pos, wdt] = poswdt
+    const chr = pos >= 3 ? '-' : ' '
+    const z = chr.repeat(pos-1) + '^'.repeat(wdt) + ' ' + msg
+    return z
 }
+
 const gpPfxPrmSwEr = (a: gp) => {
     const er: Er = []
     const gp: gp = []
     for (const { ix, lin } of a) {
         let endMsg: s[] = []
         let sfxMsg: s[] = []
-        const isPrmSw = !x.sHasPfx('%?')(lin)
+        const isPrmSw = x.sHasPfx('%?')(lin)
         let erNo = 0
         if (isPrmSw) {
             const ay = x.sSplitSpc(lin)
@@ -356,11 +372,12 @@ const gpPfxPrmSwEr = (a: gp) => {
         }
         switch (erNo) {
             case 1:
-                sfxMsg = ['must have 2 terms for prefix is [%?]']
+                sfxMsg = ['must have 2 terms for prefix being [%?]']
                 er.push({ ix, endMsg, sfxMsg })
                 break
             case 2:
-                endMsg = [t2markerLin(lin, 'must be 1 or 2 for prefix is [%?]')]
+                endMsg = [linT2MarkerLin(lin, 'must be 0 or 1 for prefix is [%?]')]
+                debugger
                 er.push({ ix, endMsg, sfxMsg })
                 break
             default:
@@ -369,7 +386,6 @@ const gpPfxPrmSwEr = (a: gp) => {
     }
     const z: [Er, gp] = [er, gp]
     return z
-
 }
 const bkPm = (a: bk) => {
     let z: [Er, Pm]
@@ -377,11 +393,11 @@ const bkPm = (a: bk) => {
         z = [[], new Map<s, s>()]
         return z
     }
-    debugger
     const [e1, g0] = gpPfxEr(a.gp, "%")
     const [e2, g1] = gpDupFstTermEr(g0)
     const [e3, g2] = gpPfxPrmSwEr(g1)
-    const er = e1.concat(e2)
+    debugger
+    const er = e1.concat(e2,e3)
     const pm = x.lySdic(gpLy(g1))
     z = [er, pm]
     return z

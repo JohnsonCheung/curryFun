@@ -17,10 +17,11 @@ describe("drs", function () {
             expect(x.dryCol(4)(dry)).toEqual([undefined, undefined, undefined]);
         });
     });
-    describe("sdryLy", function () {
+    describe("dryLy", function () {
+        const dry = [[1, 2, 3], [1], [23, 3, 4, 5]]
         it("should pass", function () {
             debugger
-            let act = x.sdryLy(dry)
+            let act = x.dryLy(dry)
             debugger
             expect(act).toEqual(['','']);
         });

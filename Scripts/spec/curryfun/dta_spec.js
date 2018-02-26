@@ -1,25 +1,27 @@
 "use strict";
-const { act, assert, cf, eq, t, f, $ } = require("../$tstConst.js")("$is");
-const { map, ayCpy, spc, len, splitSpc } = cf;
-const tst = 't f thw';
-const fun = `isN isS isF isB`;
-const funFor = `isNum isStr isFun isBool`;
-const dta = "b n s d f a o nul nan und";
-const dta1 = dta1$(dta);
-let dtaFor = "aNum aStr aFun aDte aAy aObj aNul aNan aUnd";
-function dta1$(dta) {
-    const ay = map(_ => dta)(splitSpc(dta));
-    const genLin = i => {
-        const o = ayCpy(ay);
-        let itm;
-        for (let j = 0; j < i; j++) {
-            if (j === i) {
-                o[j] = spc(len(ay[j]));
-            }
-            o.push(ay[j]);
-        }
-        [].splice();
-    };
-}
-console.log(dta1(dta));
+Object.defineProperty(exports, "__esModule", { value: true });
+const x = require("../../../Scripts/curryfun");
+describe('sdryLines', function () {
+    it('should pass', function () {
+        const sdry = [['lskdfj', '12345678901'], ['123456789', 'dkfj']];
+        let act;
+        act = x.sdryColWdt(0)(sdry);
+        expect(act).toEqual(9);
+        act = x.sdryColWdt(1)(sdry);
+        expect(act).toEqual(11);
+        act = x.sdryColWdtAy(sdry);
+        expect(act).toEqual([9, 11]);
+        //        act = x.sdryLines(sdry)
+        //        x.sBrw(act)
+    });
+});
+describe('drsLines', function () {
+    it('should pass', function () {
+        const fny = x.sSplitSpc('aa bb');
+        const dry = [[1233, '12345678901'], ['123456789', 'dkfj'], [new Date(), true, 1]];
+        const drs = { a: 1, dry, fny };
+        const act = x.drsLines(drs);
+        x.sBrw(act);
+    });
+});
 //# sourceMappingURL=dta_spec.js.map
