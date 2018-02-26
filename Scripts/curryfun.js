@@ -229,8 +229,8 @@ exports.predsAnd = (...a) => v => { for (let p of a)
     if (!p(v))
         return false; return true; };
 //-----------------------------------------------------------------------
-exports.isRmkLin = lin => {
-    const l = lin.trim();
+exports.isRmkLin = (a) => {
+    const l = a.trim();
     if (l === "")
         return true;
     if (exports.sHasPfx("--")(l))
@@ -395,12 +395,12 @@ exports.linFstTerm = (a) => {
     let { term, remainLin } = exports.linShift(a);
     return term;
 };
-exports.linShift = lin => {
-    const a = lin.trim();
-    const b = a.match(/(\S*)\s*(.*)/);
-    const o = b === null
+exports.linShift = (a) => {
+    const a1 = a.trim();
+    const a2 = a1.match(/(\S*)\s*(.*)/);
+    const o = a2 === null
         ? { term: "", remainLin: "" }
-        : { term: b[1], remainLin: b[2] };
+        : { term: a2[1], remainLin: a2[2] };
     return o;
 };
 exports.setAft = aft => a => _setAft(false, aft, a);
@@ -423,10 +423,10 @@ exports.lySdic = (a) => {
     return o;
 };
 exports.lyReDry = (re) => (a) => exports.itrMap(exports.matchDr)(exports.lyMatchAy(re)(a));
-exports.lyReCol = (re) => (a) => exports.matchAyFstCol(exports.lyMatchAy(re)(a)).sort();
-exports.matchAyDry = a => exports.itrMap(exports.matchDr)(a);
-exports.matchFstItm = a => a[1];
-exports.matchAyFstCol = a => exports.itrMap(exports.matchFstItm)(a);
+exports.lyReCol = (re) => (a) => { let z = exports.matchAyFstCol(exports.lyMatchAy(re)(a)).sort(); return z; };
+exports.matchAySdry = (a) => { let z = exports.itrMap(exports.matchDr)(a); return z; };
+exports.matchFstItm = (a) => a[1];
+exports.matchAyFstCol = (a) => { let z = exports.itrMap(exports.matchFstItm)(a); return z; };
 exports.lyPfxCnt = (pfx) => (a) => { let o = 0; exports.itrEach(lin => { if (exports.sHasPfx(pfx)(lin))
     o++; })(a); return o; };
 exports.lyHasMajPfx = (pfx) => (a) => 2 * exports.lyPfxCnt(pfx)(a) > a.length;
@@ -582,18 +582,17 @@ exports.oBringUpDollarPrp = o => {
     }
     return o;
 };
-exports.oCmlDry = o => {
-    let oo = exports.itrMap(n => [exports.cmlNm(n), n])(exports.oPrpNy(o));
-    exports.drySrt(exports.ayEle(0))(oo);
-    const w = exports.sdryColWdt(0)(oo);
-    const a = exports.sAlignL(w);
-    exports.dryColMdy(0)(a)(oo);
-    return oo;
+exports.oCmlDry = (a) => {
+    let z = exports.itrMap(n => [exports.cmlNm(n), n])(exports.oPrpNy(a));
+    exports.drySrt(exports.ayEle(0))(z);
+    const w = exports.sdryColWdt(0)(z);
+    exports.dryColMdy(0)(exports.sAlignL(w))(z);
+    return z;
 };
-exports.oCtorNm = o => o && o.constructor && o.constructor.name;
-exports.oIsInstance = instance => o => o instanceof instance;
-exports.oHasCtorNm = nm => o => exports.oCtorNm(o) === nm;
-exports.oPrp = prpPth => a => {
+exports.oCtorNm = (a) => a && a.constructor && a.constructor.name;
+exports.oIsInstance = (instance) => (a) => a instanceof instance;
+exports.oHasCtorNm = (nm) => (a) => exports.oCtorNm(a) === nm;
+exports.oPrp = (prpPth) => (a) => {
     /**
  * @description return the property value of object {o} by property path {pprPth}
  * @param {string} prpPth
@@ -606,15 +605,15 @@ exports.oPrp = prpPth => a => {
             return undefined;
     return a;
 };
-exports.oPrpAy = prpNy => a => exports.itrMap(nm => exports.oPrp(nm)(a))(prpNy);
-exports.oPrpNy = a => Object.getOwnPropertyNames(a);
-exports.oHasPrp = prpNm => a => a.hasOwnProperty(prpNm);
+exports.oPrpAy = (prpNy) => (a) => exports.itrMap(nm => exports.oPrp(nm)(a))(prpNy);
+exports.oPrpNy = (a) => Object.getOwnPropertyNames(a);
+exports.oHasPrp = (prpNm) => (a) => a.hasOwnProperty(prpNm);
 exports.oHasLen = exports.oHasPrp('length');
-exports.oCmlObj = o => {
-    const dry = exports.oCmlDry(o);
-    const oo = {};
-    dry.forEach(([cmlNm, prpNm]) => oo[cmlNm] = o[prpNm]);
-    return oo;
+exports.oCmlObj = (a) => {
+    const dry = exports.oCmlDry(a);
+    const z = {};
+    dry.forEach(([cmlNm, prpNm]) => z[cmlNm] = z[prpNm]);
+    return z;
 };
 // ----------------------------------------------
 exports.ayClone = (ay) => ay.slice(0, ay.length);

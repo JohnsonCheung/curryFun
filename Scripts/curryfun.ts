@@ -63,25 +63,6 @@ export type sOrSy = s | s[]
 export type strOpt = string | null
 export type doFun = () => void
 
-export type _ksLin = (a: ks) => lin
-export type _linKs = (a: lin) => ks
-export type _linShift = (a: lin) => linShift
-export type _matchAyCol = (a: match[]) => scol
-export type _matchAyDry = (a: RegExpMatchArray) => dry
-export type _matchFstItm = (a: match) => s
-export type _mkStr = () => s
-export type _nPadZero = (dig: n) => (a: n) => s
-export type _oCmlObj = (a: o) => o
-export type _oDry = (a: o) => dry
-export type _oHasPrp = (prpNm: nm) => (a: o) => b
-export type _oPrp = (prpPth: s) => (a: o) => any
-export type _oPrpAy = (prpNy: s[]) => (a: o) => any[]
-export type _oPrpNy = (a: o) => nm[]
-export type _optMap = <T>(f: fun<T>) => (a: opt<T>) => any
-export type _pipe = (v) => (...f: f[]) => any
-export type _predsPred = <T>(...a: ((v: T) => b)[]) => (v: T) => b
-export type _predTfm = <T>(a: pred<T>) => pred<T>
-export type _tfm<T> = (a: T) => T
 //---------------------------------------
 export const strictEqual = require('assert').strictEqual
 export const eq = (exp, act) => { try { strictEqual(act, exp) } catch (e) { debugger } }
@@ -269,17 +250,17 @@ export const sHasSfx = (sfx: s) => (a: s) => a.endsWith(sfx)
 export const sRmvSfx = (sfx: s) => (a: s) => sHasSfx(sfx)(a) ? a.substr(0, a.length - sfx.length) : a
 export const sMatch = (re: re) => (a: s) => a.match(re)
 //-----------------------------------------------------------------------
-export const predNot: _predTfm = a => v => !a(v)
-export const predsOr: _predsPred = (...a) => v => { for (let p of a) if (p(v)) return true; return false }
-export const predsAnd: _predsPred = (...a) => v => { for (let p of a) if (!p(v)) return false; return true }
+export const predNot: ((a: p) => p) = a => v => !a(v)
+export const predsOr: ((...a: p[]) => p) = (...a) => v => { for (let p of a) if (p(v)) return true; return false }
+export const predsAnd: ((...a: p[]) => p) = (...a) => v => { for (let p of a) if (!p(v)) return false; return true }
 //-----------------------------------------------------------------------
-export const isRmkLin: sPred = lin => {
-    const l = lin.trim()
+export const isRmkLin = (a: s) => {
+    const l = a.trim()
     if (l === "") return true
     if (sHasPfx("--")(l)) return true
     return false
 }
-export const isNonRmkLin = predNot(isRmkLin)
+export const isNonRmkLin: sPred = predNot(isRmkLin)
 export const linRmvMsg = (a: lin) => {
     const a1 = a.match(/(.*)---/)
     const a2 = a1 === null ? a : a1[1]
@@ -421,13 +402,13 @@ export const linFstTerm = (a: lin) => {
     let { term, remainLin } = linShift(a)
     return term
 }
-export const linShift: _linShift = lin => {
-    const a = lin.trim()
-    const b = a.match(/(\S*)\s*(.*)/)
+export const linShift = (a: lin) => {
+    const a1 = a.trim()
+    const a2 = a1.match(/(\S*)\s*(.*)/)
     const o =
-        b === null
+        a2 === null
             ? { term: "", remainLin: "" }
-            : { term: b[1], remainLin: b[2] }
+            : { term: a2[1], remainLin: a2[2] }
     return o
 }
 export const setAft = aft => a => _setAft(false, aft, a)
@@ -448,16 +429,16 @@ export const lySdic = (a: ly) => {
     return o
 };
 export const lyReDry = (re: re) => (a: ly) => itrMap(matchDr)(lyMatchAy(re)(a))
-export const lyReCol = (re: re) => (a: ly) => matchAyFstCol(lyMatchAy(re)(a)).sort()
-export const matchAyDry: _matchAyDry = a => itrMap(matchDr)(a)
-export const matchFstItm: _matchFstItm = a => a[1]
-export const matchAyFstCol: _matchAyCol = a => itrMap(matchFstItm)(a)
+export const lyReCol = (re: re) => (a: ly) => { let z: s[] = matchAyFstCol(lyMatchAy(re)(a)).sort(); return z }
+export const matchAySdry = (a: RegExpMatchArray[]) => { let z: sdry = itrMap(matchDr)(a); return z }
+export const matchFstItm = (a: RegExpMatchArray) => a[1]
+export const matchAyFstCol = (a: RegExpMatchArray[]) => { let z: s[] = itrMap(matchFstItm)(a); return z }
 export const lyPfxCnt = (pfx: s) => (a: ly) => { let o = 0; itrEach(lin => { if (sHasPfx(pfx)(lin)) o++ })(a); return o }
 export const lyHasMajPfx = (pfx: s) => (a: ly) => 2 * lyPfxCnt(pfx)(a) > a.length
 export const lyMatchAy = (re: re) => (a: ly) => { let z: RegExpMatchArray[] = itrRmvEmp(itrMap(sMatch(re))(a)); return z }
 export const matchDr = (a: match) => [...a].splice(1)
-export const lyConstNy: _tfm<ly> = lyReCol(/^const\s+([\$\w][\$0-9\w_]*)[\:\= ]/)
-export const lyConstDollarNy: _tfm<ly> = lyReCol(/^export const (\$[\$0-9\w_]*)[\:\= ]/)
+export const lyConstNy = lyReCol(/^const\s+([\$\w][\$0-9\w_]*)[\:\= ]/)
+export const lyConstDollarNy = lyReCol(/^export const (\$[\$0-9\w_]*)[\:\= ]/)
 export const ftConstNy = a => pipe(a)(ftLy, lyConstNy)
 export const ftConstDollarNy = a => pipe(a)(ftLy, lyConstDollarNy)
 //---------------------------------------------------------------------------
@@ -572,18 +553,17 @@ export const oBringUpDollarPrp = o => {
     }
     return o
 }
-export const oCmlDry: _oDry = o => {
-    let oo = itrMap(n => [cmlNm(n), n])(oPrpNy(o))
-    drySrt(ayEle(0))(oo)
-    const w = sdryColWdt(0)(oo)
-    const a = sAlignL(w)
-    dryColMdy(0)(a)(oo)
-    return oo
+export const oCmlDry = (a: o) => {
+    let z = itrMap(n => [cmlNm(n), n])(oPrpNy(a))
+    drySrt(ayEle(0))(z)
+    const w = sdryColWdt(0)(z)
+    dryColMdy(0)(sAlignL(w))(z)
+    return z
 }
-export const oCtorNm = o => o && o.constructor && o.constructor.name
-export const oIsInstance = instance => o => o instanceof instance
-export const oHasCtorNm = nm => o => oCtorNm(o) === nm
-export const oPrp: _oPrp = prpPth => a => {
+export const oCtorNm = (a: o) => a && a.constructor && a.constructor.name
+export const oIsInstance = (instance: Function) => (a: o) => a instanceof instance
+export const oHasCtorNm = (nm: s) => (a: o) => oCtorNm(a) === nm
+export const oPrp = (prpPth: s) => (a: o) => {
     /**
  * @description return the property value of object {o} by property path {pprPth}
  * @param {string} prpPth
@@ -593,15 +573,15 @@ export const oPrp: _oPrp = prpPth => a => {
  */
     for (let nm of prpPth.split('.')) if ((a = a[nm]) === undefined) return undefined; return a
 }
-export const oPrpAy: _oPrpAy = prpNy => a => itrMap(nm => oPrp(nm)(a))(prpNy)
-export const oPrpNy: _oPrpNy = a => Object.getOwnPropertyNames(a)
-export const oHasPrp: _oHasPrp = prpNm => a => a.hasOwnProperty(prpNm)
+export const oPrpAy = (prpNy: nm[]) => (a: o) => itrMap(nm => oPrp(nm)(a))(prpNy)
+export const oPrpNy = (a: o) => Object.getOwnPropertyNames(a)
+export const oHasPrp = (prpNm: nm) => (a: o) => a.hasOwnProperty(prpNm)
 export const oHasLen = oHasPrp('length')
-export const oCmlObj: _oCmlObj = o => {
-    const dry = oCmlDry(o)
-    const oo = {}
-    dry.forEach(([cmlNm, prpNm]) => oo[cmlNm] = o[prpNm])
-    return oo
+export const oCmlObj = (a: o) => {
+    const dry = oCmlDry(a)
+    const z: object = {}
+    dry.forEach(([cmlNm, prpNm]) => z[cmlNm] = z[prpNm])
+    return z
 }
 // ----------------------------------------------
 export const ayClone = (ay: ay) => ay.slice(0, ay.length)
@@ -721,7 +701,7 @@ export const lyExpStmt = (a: ly) => {
 }
 export const curExpStmt = () => { let z: s = pipe(__filename)(ftLy, lyExpStmt); return z }
 // dmp(curExpStmt); debugger
-export const fjsRplExpStmt: _ftDo = fjs => {
+export const fjsRplExpStmt = fjs => {
     const oldLy = ftLy(fjs)
     const newLin = lyExpStmt(oldLy)
 
