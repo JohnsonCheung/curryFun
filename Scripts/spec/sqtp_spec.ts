@@ -3,6 +3,20 @@
 import * as x from '../curryfun'
 import { sqtprslt } from '../sqtp'
 describe('sqtp', function () {
+    fit('should pass', function() {
+        const sqtp = '%?BrkMbr 0\n'+
+                    '%?BrkMbr 0\n'+
+                    '%?BrkMbr 0\n'+
+                    '??BrkSto 0\n'+
+                    '%?BrkCrd 0\n'+
+                    '%?BrkDiv 0\n'+
+                    '%SumLvl  Y\n'+
+                    '%?MbrEmail 1'
+        const { vtp, sql } = sqtprslt(sqtp)
+        debugger
+        x.sBrw(vtp)
+        debugger
+    })
     it('should pass', function () {
         //=====================================================
         const sqtp = `-- Rmk: -- is remark

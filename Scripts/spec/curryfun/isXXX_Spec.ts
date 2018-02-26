@@ -1,14 +1,13 @@
-/// <reference path="../../../node_modules/\@types/"/>
 import * as x from '../../../Scripts/curryfun'
 const dte = new Date()
 const aFun = () => { }
 const aStr = 'aaa'
-const aNum = 1
 const aNaN = NaN
 const aNul = null
 const aUnd = undefined
 const aAy = []
 const aObj = {}
+const aNum = 1
 let $fun
 //------------------------------
 describe('isNum', function () {
@@ -58,6 +57,15 @@ describe('swap', function () {
         let act
         act = x.nMinus(1)(6);;;;;;;;; expect(act).toEqual(5)
         act = x.swap(x.nMinus)(1)(6); expect(act).toEqual(-5)
+    })
+})
+fdescribe('isSpc', function () {
+    it('should pass', function () {
+        expect(x.isSpc(' a')).toBeTruthy()
+        expect(x.isSpc('\ta')).toBeTruthy()
+        expect(x.isSpc('\ra')).toBeTruthy()
+        expect(x.isSpc('\na')).toBeTruthy()
+        expect(x.isSpc('a')).toBeFalsy()
     })
 })
 describe('swap', function () {

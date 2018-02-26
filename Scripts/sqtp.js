@@ -12,7 +12,6 @@ const sqtprslt = (a) => {
     let bky_aftRm = x.itrWhere((bk) => bk.bkty !== 0 /* RM */)(bky);
     let [er_er, bky_aftEr] = er02(bky_aftRm);
     let [er_pm, bky_aftPm, pm] = pm03(bky_aftEr);
-    debugger;
     let [er_sw, bky_aftSw, sw] = sw04(bky_aftPm, pm);
     let [er_sq, sql] = sq05(bky_aftSw, pm, sw);
     let er = er_er.concat(er_pm, er_sw, er_sq);
@@ -226,20 +225,126 @@ const lyFstTermDupSet = (a) => {
     let z = x.itrDupSet(fstTermAy);
     return z;
 };
-const gpDupFstTermEr = (a) => {
-    const ly = gpLy(a);
-    const dup = lyFstTermDupSet(ly);
-    const er = [];
+// remove all, except after, lines in {a} with {fstTerm} as [gp] and 
+// put the removed lines as Er
+// return [Er,gp]
+const _x1 = (a, fstTerm) => {
+    const ixay = [];
     for (let { ix, lin } of a) {
         let fst = x.linFstTerm(lin);
-        if (dup.has(fst)) {
+        if (fstTerm === fst)
+            ixay.push(ix);
+    }
+    ixay.pop();
+    const ixset = new Set(ixay);
+    return _x2(a, ixset);
+};
+const _x2 = (a, ixset) => {
+    // return [Er, gp]
+    const er = [];
+    const gp = [];
+    for (let { ix, lin } of a) {
+        if (ixset.has(ix)) {
+            let fst = x.linFstTerm(lin);
             let sfxMsg = [`duplicate(${fst})`];
             let endMsg = [];
             const m = { ix, sfxMsg, endMsg };
             er.push(m);
         }
+        else {
+            gp.push({ ix, lin });
+        }
     }
-    const z = [er, ly];
+    let z = [er, gp];
+    return z;
+};
+const gpDupFstTermEr = (a) => {
+    const ly = gpLy(a);
+    const dup = lyFstTermDupSet(ly);
+    let er = [];
+    let gp = a;
+    for (let itm of dup) {
+        let [e, g] = _x1(gp, itm);
+        er = er.concat(e);
+        gp = g;
+    }
+    const z = [er, gp];
+    return z;
+};
+const gpPfxEr = (a, pfx) => {
+    const er = [];
+    const gp = [];
+    const sfxMsg = [];
+    for (let { ix, lin } of a) {
+        if (!x.sHasPfx(pfx)(lin)) {
+            const endMsg = ['^---- must have prefix (' + pfx + ')'];
+            const m = { ix, endMsg, sfxMsg };
+            er.push(m);
+        }
+        else {
+            gp.push({ ix, lin });
+        }
+    }
+    const z = [er, gp];
+    return z;
+};
+const plinParseSpc = (a) => {
+    let [lin, pos] = a;
+    for (let p = pos; p < lin.length; p++) {
+        if (x.isBool)
+            isSpc(lin[p]);
+    }
+};
+const plinParseTerm = (a) => {
+    const term = '';
+    const pos = 0;
+    return [term, [lin, pos]];
+};
+const linT2PosWdt = (a) => {
+    const a1 = plinParseSpc([a, 0]);
+    const [t1, a2] = plinParseTerm(a1);
+    const a3 = plinParseSpc(a2);
+    const [t2, [lin, pos]] = plinParseTerm(a3);
+    if (t2 === null)
+        return null;
+    return [pos, t2.length];
+};
+const linT2markerLin = (a, msg) => {
+    const pos = linT2pos(lin);
+    if (pos === null)
+        return null;
+};
+const gpPfxPrmSwEr = (a) => {
+    const er = [];
+    const gp = [];
+    for (const { ix, lin } of a) {
+        let endMsg = [];
+        let sfxMsg = [];
+        const isPrmSw = !x.sHasPfx('%?')(lin);
+        let erNo = 0;
+        if (isPrmSw) {
+            const ay = x.sSplitSpc(lin);
+            if (ay.length !== 2) {
+                erNo = 1;
+            }
+            else if (ay[1] !== '0' && ay[1] !== '1') {
+                erNo = 2;
+            }
+        }
+        switch (erNo) {
+            case 1:
+                sfxMsg = ['must have 2 terms for prefix is [%?]'];
+                er.push({ ix, endMsg, sfxMsg });
+                break;
+            case 2:
+                endMsg = [t2markerLin(lin, 'must be 1 or 2 for prefix is [%?]')];
+                er.push({ ix, endMsg, sfxMsg });
+                break;
+            default:
+                gp.push({ ix, lin });
+        }
+    }
+    const z = [er, gp];
     return z;
 };
 const bkPm = (a) => {
@@ -248,8 +353,12 @@ const bkPm = (a) => {
         z = [[], new Map()];
         return z;
     }
-    const [er, ly] = gpDupFstTermEr(a.gp);
-    const pm = x.lySdic(ly);
+    debugger;
+    const [e1, g0] = gpPfxEr(a.gp, "%");
+    const [e2, g1] = gpDupFstTermEr(g0);
+    const [e3, g2] = gpPfxPrmSwEr(g1);
+    const er = e1.concat(e2);
+    const pm = x.lySdic(gpLy(g1));
     z = [er, pm];
     return z;
 };
@@ -340,13 +449,12 @@ const swChkr_FmT3Dup = {
     erFun: a => [{ ix: a.ix, endMsg: [linFmT3DupTermMrkLin(a.lin)], sfxMsg: [] }]
 };
 const bkSw = (a, pm) => {
-    let z;
+    let z = [[], new Map()];
     if (a === undefined || a === null) {
         z = [[], new Map()];
         return z;
     }
-    let e0 = gpDupFstTermEr(a.gp);
-    let g0 = a.gp;
+    const [e0, g0] = gpDupFstTermEr(a.gp);
     const [e1, g1] = gpVdt(g0, swChkr_FmT3Dup);
     const ly = gpLy(g1);
     const sw = lySw(ly, pm);

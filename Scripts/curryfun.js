@@ -460,9 +460,13 @@ exports.isEmp = v => v ? false : true;
 exports.isNonEmp = v => v ? true : false;
 exports.isOdd = n => n % 2 === 1;
 exports.isEven = n => n % 2 === 0;
+exports.isSpc = (s) => {
+    let z = s === null || s[0] === undefined ? false : /\s/.test(s[0]);
+    return z;
+};
 //----------------------------------------------------------------------------
 exports.sSearch = (re) => (a) => a.search(re);
-exports.sBrkP123 = quoteStr => a => {
+exports.sBrkP123 = (quoteStr) => (a) => {
     const { q1, q2 } = exports.quoteStrBrk(quoteStr);
     if (q1 === "" || q2 === "")
         return null;
@@ -476,7 +480,8 @@ exports.sBrkP123 = quoteStr => a => {
     const p1 = a.substr(0, len1);
     const p2 = a.substr(pos2, len2);
     const p3 = a.substr(pos3);
-    return { p1, p2, p3 };
+    let z = [p1, p2, p3];
+    return z;
 };
 //let a = sBrkP123("(backup-*)")("slkdfjlsdjf(backup-123).exe");debugger
 //----------------------------------------------------------------------------
@@ -616,7 +621,7 @@ exports.dryColCnt = a => exports.itrMax(exports.itrMap(exports.vLen)(a));
 exports.dryCellTfm = f => a => { exports.itrEach(exports.ayTfm(f))(a); };
 exports.dryClone = a => exports.itrMap(dr => exports.itrClone(dr))(a);
 exports.dryColMdy = colIx => f => a => { exports.itrEach(exports.ayTfmEle(colIx)(f))(a); };
-exports.sdryLines = a => exports.sdryLy(a).join('\r\n');
+exports.sdryLines = (a) => exports.sdryLy(a).join('\r\n');
 exports.wdtAyLin = w => "|-" + exports.itrMap(w => '-'.repeat(w))(w).join('-|-') + "-|";
 exports.sdrLin = w => a => {
     let m = ([w, s]) => exports.sAlignL(w)(s);
@@ -625,22 +630,23 @@ exports.sdrLin = w => a => {
     let s = ay.join(' | ');
     return "| " + s + " |";
 };
-exports.sdryLy = a => {
+exports.sdryLy = (a) => {
     let w = exports.sdryColWdtAy(a);
     let h = exports.wdtAyLin(w);
-    let o = [h].concat(exports.itrMap(exports.sdrLin(w))(a), h);
-    return o;
+    let z = [h].concat(exports.itrMap(exports.sdrLin(w))(a), h);
+    return z;
 };
-exports.aySy = a => exports.itrMap(String)(a);
-exports.drySdry = a => exports.itrMap(exports.aySy)(a);
-exports.dryLy = a => exports.sdryLy(exports.drySdry(a));
-exports.drsLy = ({ dry, fny }) => {
+exports.aySy = (a) => { let z = exports.itrMap(String)(a); return z; };
+exports.drySdry = (a) => { let z = exports.itrMap(exports.aySy)(a); return z; };
+exports.dryLy = (a) => exports.sdryLy(exports.drySdry(a));
+exports.drsLy = (a) => {
+    let { fny, dry } = a;
     let b = [fny].concat(exports.drySdry(dry));
     let c = exports.sdryLy(b);
-    let o = c.slice(0, 2).concat(c[0], c.slice(2));
-    return o;
+    let z = c.slice(0, 2).concat(c[0], c.slice(2));
+    return z;
 };
-exports.drsLines = a => exports.drsLy(a).join('\r\n');
+exports.drsLines = (a) => exports.drsLy(a).join('\r\n');
 exports.drySrt = fun_of_dr_to_key => dry => dry.sort((dr_A, dr_B) => exports.vvCompare(fun_of_dr_to_key(dr_A), fun_of_dr_to_key(dr_B)));
 //-----------------------------------------------------------------------
 exports.oyPrpCol = prpNm => oy => { const oo = []; for (let o of oy)

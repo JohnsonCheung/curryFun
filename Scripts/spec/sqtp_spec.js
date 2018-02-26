@@ -5,6 +5,20 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const x = require("../curryfun");
 const sqtp_1 = require("../sqtp");
 describe('sqtp', function () {
+    fit('should pass', function () {
+        const sqtp = '%?BrkMbr 0\n' +
+            '%?BrkMbr 0\n' +
+            '%?BrkMbr 0\n' +
+            '??BrkSto 0\n' +
+            '%?BrkCrd 0\n' +
+            '%?BrkDiv 0\n' +
+            '%SumLvl  Y\n' +
+            '%?MbrEmail 1';
+        const { vtp, sql } = sqtp_1.sqtprslt(sqtp);
+        debugger;
+        x.sBrw(vtp);
+        debugger;
+    });
     it('should pass', function () {
         //=====================================================
         const sqtp = `-- Rmk: -- is remark
