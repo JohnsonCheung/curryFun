@@ -2,37 +2,41 @@
 import { ix, sset, sdic, p, pfx, cnt, n, s, ay, lin, b, ly } from './curryfun'
 import { lyAddErAsLines } from './lyAddErAsLines'
 import * as x from './curryfun'
-export interface ErItm { ix: n, sfxMsg: s[], endMsg: s[] }
+export interface eritm { ix: n, sfxMsg: s[], endMsg: s[] }
 export interface termPos { pos: n, len: n }
-export type Er = ErItm[]
+export type er = eritm[]
 export { sqtprslt }
+interface sqtp { sqtp: s }
 interface bk { bkty: Bkty, gp: gp }
-interface ixlinChkr { hasEr: (a: ixlin) => b, erFun: (a: ixlin) => Er }
+interface sqgp extends gp {}
+interface sqevl { er:er, sql:s}
+interface ixlinchkr { hasEr: (a: ixlin) => b, erFun: (a: ixlin) => er }
 interface ixlin { ix: n, lin: lin }
+interface sqtprslt { vtp: s, sql: s }
+interface plin { pos: n, lin: s }
+interface poswdt { pos: n, wdt: n }
+interface termprslt { term: s, plin: plin }
 const enum Bkty { RM, PM, SW, SQ, ER }
-type pos = n
-type plin = [pos, lin]
 type gp = ixlin[]
-type Sw = Map<s, boolean>
-type Pm = Map<s, s>
-type sql = s
+type sw = Map<s, boolean>
+type pm = Map<s, s>
 type term = s
-type sqtp = s
-const sqtprslt = (a: sqtp) => {
-    let ly = x.sSplitLf(a)
-    let ly1 = lyRmvMsg(ly)
-    let gp = lyGp(ly1)
-    let gp1 = gpRmvRmk(gp)
-    let gpy = gpGpy(gp1, '==')
-    let bky = gpyBky(gpy)
-    let bky_aftRm = x.itrWhere((bk: bk) => bk.bkty !== Bkty.RM)(bky)
-    let [er_er, bky_aftEr] = er02(bky_aftRm)
-    let [er_pm, bky_aftPm, pm] = pm03(bky_aftEr)
-    let [er_sw, bky_aftSw, sw] = sw04(bky_aftPm, pm)
-    let [er_sq, sql] = sq05(bky_aftSw, pm, sw)
-    let er = er_er.concat(er_pm, er_sw, er_sq)
-    let vtp = lyAddErAsLines(ly1, er)
-    return { vtp, sql }
+const sqtprslt = ({ sqtp: a }: sqtp) => {
+    const ly = x.sSplitLf(a)
+    const ly1 = lyRmvMsg(ly)
+    const gp = lyGp(ly1)
+    const gp1 = gpRmvRmk(gp)
+    const gpy = gpGpy(gp1, '==')
+    const bky = gpyBky(gpy)
+    const bky_aftRm = x.itrWhere((bk: bk) => bk.bkty !== Bkty.RM)(bky)
+    const [er_er, bky_aftEr] = er02(bky_aftRm)
+    const [er_pm, bky_aftPm, pm] = pm03(bky_aftEr)
+    const [er_sw, bky_aftSw, sw] = sw04(bky_aftPm, pm)
+    const [er_sq, sql] = sq05(bky_aftSw, pm, sw)
+    const er = er_er.concat(er_pm, er_sw, er_sq)
+    const vtp = lyAddErAsLines(ly1, er)
+    const z: sqtprslt = { vtp, sql }
+    return z
 }
 
 const linRmvMsg = (a: lin) => {
@@ -67,70 +71,67 @@ const pm03 = (a: bk[]) => {
     const e1 = bkyEr_forExcessBk(pmBky, 'parameter')
     const [e2, pm] = bkPm(pmBky[0])
     const er = e1.concat(e2)
-    let z: [Er, bk[], Pm] = [er, remain, pm]
+    let z: [er, bk[], pm] = [er, remain, pm]
     return z
 }
 
-const sw04 = (a: bk[], pm: Pm) => {
+const sw04 = (a: bk[], pm: pm) => {
     const { t, f } = x.itrBrkForTrueFalse((a: bk) => a.bkty === Bkty.SW)(a)
     const swBky: bk[] = t
     const remain: bk[] = f
     const e1 = bkyEr_forExcessBk(swBky, 'switch')
     const [e2, sw] = bkSw(swBky[0], pm)
     const er = e1.concat(e2)
-    let z: [Er, bk[], Sw] = [er, remain, sw]
+    let z: [er, bk[], sw] = [er, remain, sw]
     return z
 }
-
-const sqSel = (a: bk, term: s, pm: Pm, sw: Sw) => {
-    let z: [Er, sql] = [[], ""]
-    return z
+const emptySqevl: sqevl = {er:[],sql:''}
+const sqgpEvlSel = (a: sqgp, term: s, pm: pm, sw: sw) => {
+    return emptySqevl
 }
-const sqDrp = (a: bk) => {
-    let z: [Er, sql] = [[], ""]
-    return z
+const sqgpEvlDrp = (a: sqgp) => {
+    return emptySqevl
 }
-const sqUpd = (a: bk, pm: Pm, sw: Sw) => {
-    let z: [Er, sql] = [[], ""]
-    return z
+const sqgpEvlUpd = (a: sqgp, pm: pm, sw: sw) => {
+    return emptySqevl
 }
-const sqBk = (a: bk, pm: Pm, sw: Sw) => {
-    const fstLin = a.gp[0].lin
+const sqgpEvl = (a: sqgp, pm: pm, sw: sw) => {
+    const fstLin = a[0].lin
     const term = x.sRmvPfx("?")(x.linFstTerm(fstLin).toUpperCase())
-    let z: [Er, sql] = [[], ""]
+    let z: sqevl = emptySqevl
     switch (term) {
-        case 'DRP': z = sqDrp(a); break
-        case 'SEL': case 'DIS': z = sqSel(a, term, pm, sw); break
-        case 'UPD': z = sqUpd(a, pm, sw); break
+        case 'DRP': z = sqgpEvlDrp(a); break
+        case 'SEL': case 'DIS': z = sqgpEvlSel(a, term, pm, sw); break
+        case 'UPD': z = sqgpEvlUpd(a, pm, sw); break
         default:
             x.er('impossible: {bk} should have {term} be one of [Drp | Sel | SelDist | Upd]', { term, bk: a })
     }
     return z
 }
 
-const sq05 = (a: bk[], pm: Pm, sw: Sw) => {
-    let er: Er = []
+const sq05 = (a: bk[], pm: pm, sw: sw) => {
+    let er: er = []
     let sql = ""
-    for (let bk of a) {
-        let [i_er, i_sql] = sqBk(bk, pm, sw)
+    for (let { bkty, gp } of a) {
+        let { er: i_er, sql: i_sql } = sqgpEvl(gp, pm, sw)
         er = er.concat(i_er)
         sql = sql === ""
             ? i_sql
             : sql += '\r\n\r\n' + i_sql
     }
-    let z: [Er, sql] = [er, sql]
+    let z: [er, s] = [ er, sql ]
     return z
 }
 
 const er02 = (a: bk[]) => {
     let { t: erBky, f: bky } = x.itrBrkForTrueFalse((a: bk) => a.bkty === Bkty.ER)(a)
     let er = bkyEr_forErBky(erBky)
-    let z: [Er, bk[]] = [er, bky]
+    let z: [er, bk[]] = [er, bky]
     return z
 }
 
 const bkyEr_forErBky = (a: bk[]) => {
-    let z: Er = []
+    let z: er = []
     for (let bk of a) {
         const ix = x.ayLas(bk.gp).ix
         z.push(endmsgstrEr(ix, '^^^ this block is error'))
@@ -141,13 +142,13 @@ const bkyEr_forErBky = (a: bk[]) => {
 const endmsgstrEr = (ix: n, endMsgStr: s) => {
     const sfxMsg = []
     const endMsg = [endMsgStr]
-    let z: ErItm = { ix, endMsg, sfxMsg }
+    let z: eritm = { ix, endMsg, sfxMsg }
     return z
 }
 
 const bkyEr_forExcessBk = (a: bk[], bkNm: s) => {
     const excessbky = a.slice(1)
-    const z: Er = []
+    const z: er = []
     if (excessbky.length === 0) return z
     const endMsgStr = `^^^ Three is already [${bkNm}] block.  This block is ignored`
     for (let bk of excessbky) {
@@ -249,8 +250,8 @@ const lyFstTermDupSet = (a: ly) => {
     return z
 }
 // remove all, except after, lines in {a} with {fstTerm} as [gp] and 
-// put the removed lines as Er
-// return [Er,gp]
+// put the removed lines as er
+// return [er,gp]
 const _x1 = (a: gp, fstTerm: s) => {
     const ixay: n[] = []
     for (let { ix, lin } of a) {
@@ -262,8 +263,8 @@ const _x1 = (a: gp, fstTerm: s) => {
     return _x2(a, ixset)
 }
 const _x2 = (a: gp, ixset: Set<n>) => {
-    // return [Er, gp]
-    const er: Er = []
+    // return [er, gp]
+    const er: er = []
     const gp: gp = []
     for (let { ix, lin } of a) {
         if (ixset.has(ix)) {
@@ -276,53 +277,51 @@ const _x2 = (a: gp, ixset: Set<n>) => {
             gp.push({ ix, lin })
         }
     }
-    let z: [Er, gp] = [er, gp]
+    let z: [er, gp] = [er, gp]
     return z
 }
 
 const gpDupFstTermEr = (a: gp) => {
     const ly = gpLy(a)
     const dup = lyFstTermDupSet(ly)
-    let er: Er = []
+    let er: er = []
     let gp = a
     for (let itm of dup) {
         let [e, g] = _x1(gp, itm)
         er = er.concat(e)
         gp = g
     }
-    const z: [Er, gp] = [er, gp]
+    const z: [er, gp] = [er, gp]
     return z
 }
 
 const gpPfxEr = (a: gp, pfx: s) => {
-    const er: Er = []
+    const er: er = []
     const gp: gp = []
     const sfxMsg = []
     for (let { ix, lin } of a) {
         if (!x.sHasPfx(pfx)(lin)) {
             const endMsg = ['^---- prefix must be (' + pfx + ')']
-            const m: ErItm = { ix, endMsg, sfxMsg }
+            const m: eritm = { ix, endMsg, sfxMsg }
             er.push(m)
         } else {
             gp.push({ ix, lin })
         }
     }
-    const z: [Er, gp] = [er, gp]
+    const z: [er, gp] = [er, gp]
     return z
 }
-const plinParseSpc = (a: plin) => {
-    let [pos, lin] = a
+const plinParseSpc = ({ pos, lin }: plin) => {
     for (var p = pos; p < lin.length; p++) {
-        if (!x.isSpc(lin[p])) 
+        if (!x.isSpc(lin[p]))
             break
     }
-    let z: [pos, lin] = [p, lin]
+    let z: plin = { pos: p, lin }
     return z
 }
 
-const plinParseTerm = (a: plin) => {
+const plinParseTerm = ({pos,lin}: plin) => {
     let term = ''
-    const [pos, lin] = a
     for (var p = pos; p < lin.length; p++) {
         const c = lin[p]
         if (/\s/.test(c))
@@ -330,32 +329,34 @@ const plinParseTerm = (a: plin) => {
         else    
             term += c
     }
-    let z: [term, [pos, lin]] = [term, [p, lin]]
+    let z: termprslt = { term, plin: { pos: p, lin } }
     return z
 }
 
 const linT2PosWdt = (a: lin) => {
-    const a1 = plinParseSpc([0, a])
-    const [t1, a2] = plinParseTerm(a1)
+    const a1 = plinParseSpc({ pos: 0, lin: a })
+    const { term: t1, plin: a2 } = plinParseTerm(a1)
     const a3 = plinParseSpc(a2)
-    const [t2, [pos, lin]] = plinParseTerm(a3)
+    const { term: t2, plin: a4 } = plinParseTerm(a3)
     if (t2 === null) return null
-    const z:[pos,n] = [pos, t2.length]
+    const z: poswdt = { pos: a4.pos, wdt: t2.length }
     return z
 }
 
 const linT2MarkerLin = (a: lin, msg: s) => {
     const poswdt = linT2PosWdt(a)
-    if (poswdt === null)
+    if (poswdt === null) {
         x.er('{lin} does have 2nd term', { lin: a })
-    const [pos, wdt] = poswdt
+        return '{lin} does not have 2nd term: [' + a + ']'
+    }
+    const { pos, wdt } = poswdt
     const chr = pos >= 3 ? '-' : ' '
-    const z = chr.repeat(pos-1) + '^'.repeat(wdt) + ' ' + msg
+    const z = chr.repeat(pos - 1) + '^'.repeat(wdt) + ' ' + msg
     return z
 }
 
 const gpPfxPrmSwEr = (a: gp) => {
-    const er: Er = []
+    const er: er = []
     const gp: gp = []
     for (const { ix, lin } of a) {
         let endMsg: s[] = []
@@ -384,11 +385,11 @@ const gpPfxPrmSwEr = (a: gp) => {
                 gp.push({ ix, lin })
         }
     }
-    const z: [Er, gp] = [er, gp]
+    const z: [er, gp] = [er, gp]
     return z
 }
 const bkPm = (a: bk) => {
-    let z: [Er, Pm]
+    let z: [er, pm]
     if (a === undefined) {
         z = [[], new Map<s, s>()]
         return z
@@ -479,19 +480,19 @@ const linFmT3DupTermMrkLin = lin => {
     }
     return o
 }
-const gpVdt = (a: gp, chkr: ixlinChkr) => {
+const gpVdt = (a: gp, chkr: ixlinchkr) => {
     const p = chkr.hasEr
     const m = chkr.erFun
     const [erGp, remainingGp] = gpSplitForErAndRemain(p)(a)
-    const z: [Er, gp] = [x.itrMap(m)(erGp), remainingGp]
+    const z: [er, gp] = [x.itrMap(m)(erGp), remainingGp]
     return z
 }
-const swChkr_FmT3Dup: ixlinChkr = {
+const swChkr_FmT3Dup: ixlinchkr = {
     hasEr: a => linFmT3DupTermSet(a.lin).size > 0,
     erFun: a => [{ ix: a.ix, endMsg: [linFmT3DupTermMrkLin(a.lin)], sfxMsg: [] }]
 }
-const bkSw = (a: bk, pm: Pm) => {
-    let z: [Er, Sw] = [[], new Map<s, b>()]
+const bkSw = (a: bk, pm: pm) => {
+    let z: [er, sw] = [[], new Map<s, b>()]
     if (a === undefined || a === null) {
         z = [[], new Map<s, b>()]
         return z
@@ -505,7 +506,7 @@ const bkSw = (a: bk, pm: Pm) => {
     return z
 }
 const gpSplitForErAndRemain: (p: p) => (gp: gp) => [gp, gp] = p => gp => [[], []]
-const lySw = (a: ly, pm: Pm) => {
+const lySw = (a: ly, pm: pm) => {
     const sw = new Map<s, boolean>()
     let isEvaluated = true
     let j = 0

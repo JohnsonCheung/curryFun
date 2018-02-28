@@ -2,21 +2,22 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const lyAddErAsLines_1 = require("./lyAddErAsLines");
 const x = require("./curryfun");
-const sqtprslt = (a) => {
-    let ly = x.sSplitLf(a);
-    let ly1 = lyRmvMsg(ly);
-    let gp = lyGp(ly1);
-    let gp1 = gpRmvRmk(gp);
-    let gpy = gpGpy(gp1, '==');
-    let bky = gpyBky(gpy);
-    let bky_aftRm = x.itrWhere((bk) => bk.bkty !== 0 /* RM */)(bky);
-    let [er_er, bky_aftEr] = er02(bky_aftRm);
-    let [er_pm, bky_aftPm, pm] = pm03(bky_aftEr);
-    let [er_sw, bky_aftSw, sw] = sw04(bky_aftPm, pm);
-    let [er_sq, sql] = sq05(bky_aftSw, pm, sw);
-    let er = er_er.concat(er_pm, er_sw, er_sq);
-    let vtp = lyAddErAsLines_1.lyAddErAsLines(ly1, er);
-    return { vtp, sql };
+const sqtprslt = ({ sqtp: a }) => {
+    const ly = x.sSplitLf(a);
+    const ly1 = lyRmvMsg(ly);
+    const gp = lyGp(ly1);
+    const gp1 = gpRmvRmk(gp);
+    const gpy = gpGpy(gp1, '==');
+    const bky = gpyBky(gpy);
+    const bky_aftRm = x.itrWhere((bk) => bk.bkty !== 0 /* RM */)(bky);
+    const [er_er, bky_aftEr] = er02(bky_aftRm);
+    const [er_pm, bky_aftPm, pm] = pm03(bky_aftEr);
+    const [er_sw, bky_aftSw, sw] = sw04(bky_aftPm, pm);
+    const [er_sq, sql] = sq05(bky_aftSw, pm, sw);
+    const er = er_er.concat(er_pm, er_sw, er_sq);
+    const vtp = lyAddErAsLines_1.lyAddErAsLines(ly1, er);
+    const z = { vtp, sql };
+    return z;
 };
 exports.sqtprslt = sqtprslt;
 const linRmvMsg = (a) => {
@@ -61,32 +62,30 @@ const sw04 = (a, pm) => {
     let z = [er, remain, sw];
     return z;
 };
-const sqSel = (a, term, pm, sw) => {
-    let z = [[], ""];
-    return z;
+const emptySqevl = { er: [], sql: '' };
+const sqgpEvlSel = (a, term, pm, sw) => {
+    return emptySqevl;
 };
-const sqDrp = (a) => {
-    let z = [[], ""];
-    return z;
+const sqgpEvlDrp = (a) => {
+    return emptySqevl;
 };
-const sqUpd = (a, pm, sw) => {
-    let z = [[], ""];
-    return z;
+const sqgpEvlUpd = (a, pm, sw) => {
+    return emptySqevl;
 };
-const sqBk = (a, pm, sw) => {
-    const fstLin = a.gp[0].lin;
+const sqgpEvl = (a, pm, sw) => {
+    const fstLin = a[0].lin;
     const term = x.sRmvPfx("?")(x.linFstTerm(fstLin).toUpperCase());
-    let z = [[], ""];
+    let z = emptySqevl;
     switch (term) {
         case 'DRP':
-            z = sqDrp(a);
+            z = sqgpEvlDrp(a);
             break;
         case 'SEL':
         case 'DIS':
-            z = sqSel(a, term, pm, sw);
+            z = sqgpEvlSel(a, term, pm, sw);
             break;
         case 'UPD':
-            z = sqUpd(a, pm, sw);
+            z = sqgpEvlUpd(a, pm, sw);
             break;
         default:
             x.er('impossible: {bk} should have {term} be one of [Drp | Sel | SelDist | Upd]', { term, bk: a });
@@ -96,8 +95,8 @@ const sqBk = (a, pm, sw) => {
 const sq05 = (a, pm, sw) => {
     let er = [];
     let sql = "";
-    for (let bk of a) {
-        let [i_er, i_sql] = sqBk(bk, pm, sw);
+    for (let { bkty, gp } of a) {
+        let { er: i_er, sql: i_sql } = sqgpEvl(gp, pm, sw);
         er = er.concat(i_er);
         sql = sql === ""
             ? i_sql
@@ -226,8 +225,8 @@ const lyFstTermDupSet = (a) => {
     return z;
 };
 // remove all, except after, lines in {a} with {fstTerm} as [gp] and 
-// put the removed lines as Er
-// return [Er,gp]
+// put the removed lines as er
+// return [er,gp]
 const _x1 = (a, fstTerm) => {
     const ixay = [];
     for (let { ix, lin } of a) {
@@ -240,7 +239,7 @@ const _x1 = (a, fstTerm) => {
     return _x2(a, ixset);
 };
 const _x2 = (a, ixset) => {
-    // return [Er, gp]
+    // return [er, gp]
     const er = [];
     const gp = [];
     for (let { ix, lin } of a) {
@@ -288,18 +287,16 @@ const gpPfxEr = (a, pfx) => {
     const z = [er, gp];
     return z;
 };
-const plinParseSpc = (a) => {
-    let [pos, lin] = a;
+const plinParseSpc = ({ pos, lin }) => {
     for (var p = pos; p < lin.length; p++) {
         if (!x.isSpc(lin[p]))
             break;
     }
-    let z = [p, lin];
+    let z = { pos: p, lin };
     return z;
 };
-const plinParseTerm = (a) => {
+const plinParseTerm = ({ pos, lin }) => {
     let term = '';
-    const [pos, lin] = a;
     for (var p = pos; p < lin.length; p++) {
         const c = lin[p];
         if (/\s/.test(c))
@@ -307,24 +304,26 @@ const plinParseTerm = (a) => {
         else
             term += c;
     }
-    let z = [term, [p, lin]];
+    let z = { term, plin: { pos: p, lin } };
     return z;
 };
 const linT2PosWdt = (a) => {
-    const a1 = plinParseSpc([0, a]);
-    const [t1, a2] = plinParseTerm(a1);
+    const a1 = plinParseSpc({ pos: 0, lin: a });
+    const { term: t1, plin: a2 } = plinParseTerm(a1);
     const a3 = plinParseSpc(a2);
-    const [t2, [pos, lin]] = plinParseTerm(a3);
+    const { term: t2, plin: a4 } = plinParseTerm(a3);
     if (t2 === null)
         return null;
-    const z = [pos, t2.length];
+    const z = { pos: a4.pos, wdt: t2.length };
     return z;
 };
 const linT2MarkerLin = (a, msg) => {
     const poswdt = linT2PosWdt(a);
-    if (poswdt === null)
+    if (poswdt === null) {
         x.er('{lin} does have 2nd term', { lin: a });
-    const [pos, wdt] = poswdt;
+        return '{lin} does not have 2nd term: [' + a + ']';
+    }
+    const { pos, wdt } = poswdt;
     const chr = pos >= 3 ? '-' : ' ';
     const z = chr.repeat(pos - 1) + '^'.repeat(wdt) + ' ' + msg;
     return z;

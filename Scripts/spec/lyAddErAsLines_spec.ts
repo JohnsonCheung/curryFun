@@ -1,7 +1,7 @@
 /// <reference path="../../node_modules/@types/jasime.d.ts"/>
 /// <reference path="../curryfun.ts"/>
 /// <reference path="../lyAddErAsLines.ts"/>
-import { Er } from '../sqtp'
+import { er } from '../sqtp'
 import * as x from '../curryfun'
 import * as y from '../lyAddErAsLines'
 describe('lyAyWdt', function () {
@@ -26,7 +26,7 @@ describe('lyAyAlignL', function () {
 })
 describe('lyAddErAsLines', function () {
     it('should pass', function () {
-        const er: Er = [
+        const er: er = [
             { ix: 0, endMsg: ['--^'], sfxMsg: ['dd'] },
             { ix: 1, endMsg: ['--^xxx'], sfxMsg: ['aa', 'bb'] },
             { ix: 2, endMsg: ['---'], sfxMsg: [] }

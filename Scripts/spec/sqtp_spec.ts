@@ -9,7 +9,7 @@ describe('sqtp -- pm03 -- bkPm --', function () {
             '?BrkMbr 0\n' +
             '%?BrkMbr 0\n' +
             '??BrkSto 0\n'
-        const { vtp, sql } = sqtprslt(sqtp)
+        const { vtp, sql } = sqtprslt({ sqtp })
         x.sBrw(vtp + '\n***\nsqtp' + sqtp)
         debugger
     })
@@ -20,7 +20,7 @@ describe('sqtp -- pm03 -- bkPm --', function () {
             '%BrkMbr 0\n' +
             '#?BrkMbr 0\n' +
             '??BrkSto 0\n'
-        const { vtp, sql } = sqtprslt(sqtp)
+        const { vtp, sql } = sqtprslt({ sqtp })
         const exp =
             '%?BrkMbr 0\r\n' +
             '%?BrkXX 0\r\n' +
@@ -36,7 +36,7 @@ describe('sqtp -- pm03 -- bkPm --', function () {
             '%?BrkDiv X\n' +
             '%SumLvl  Y\n' +
             '%?MbrEmail 1'
-        const { vtp, sql } = sqtprslt(sqtp)
+        const { vtp, sql } = sqtprslt({ sqtp })
         x.sBrw(vtp + '\n***\n' + sqtp)
         debugger
     })
@@ -191,7 +191,7 @@ df eror fs--
 ?LvlW    EQ %SumLvl W
 ?LvlD    EQ %SumLvl D
 ?Y       OR ?LvlD ?LvlW ?LvlM ?LvlY`
-        const { vtp, sql } = sqtprslt(sqtp)
+        const { vtp, sql } = sqtprslt({ sqtp })
         x.sBrw(vtp)
         debugger
         expect(true).toBe(true)
