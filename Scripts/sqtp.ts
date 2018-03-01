@@ -3,24 +3,36 @@ import { ix, sset, sdic, p, pfx, cnt, n, s, ay, lin, b, ly } from './curryfun'
 import { lyAddErAsLines } from './lyAddErAsLines'
 import * as x from './curryfun'
 export interface eritm { ix: n, sfxMsg: s[], endMsg: s[] }
-export interface termPos { pos: n, len: n }
+export interface poswdt { pos: n, wdt: n }
 export type er = eritm[]
 export { sqtprslt }
 interface sqtp { sqtp: s }
 interface bk { bkty: Bkty, gp: gp }
-interface sqgp extends gp {}
-interface sqevl { er:er, sql:s}
+interface sqgp extends gp { }
 interface ixlinchkr { hasEr: (a: ixlin) => b, erFun: (a: ixlin) => er }
 interface ixlin { ix: n, lin: lin }
 interface sqtprslt { vtp: s, sql: s }
 interface plin { pos: n, lin: s }
-interface poswdt { pos: n, wdt: n }
 interface termprslt { term: s, plin: plin }
 const enum Bkty { RM, PM, SW, SQ, ER }
 type gp = ixlin[]
-type sw = Map<s, boolean>
+type sqevl = [er, sql]
+type bdic = Map<s, boolean>
+type sw = { sqFldSw: bdic, sqStmtSw: bdic }
 type pm = Map<s, s>
 type term = s
+type sql = s
+const sq_UPD = 'UPD'
+const sq_DIS = 'DIS'
+const sq_DRP = 'DRP'
+const sq_SEL = 'SEL'
+const sq_FRO = 'FRO'
+const sq_GRO = 'GRO'
+const sq_JOI = 'JOI'
+const sq_LEF = 'LEF'
+const sq_WHE = 'WHE'
+const sq_AND = 'AND'
+const sq_OR = 'OR'
 const sqtprslt = ({ sqtp: a }: sqtp) => {
     const ly = x.sSplitLf(a)
     const ly1 = lyRmvMsg(ly)
@@ -85,26 +97,142 @@ const sw04 = (a: bk[], pm: pm) => {
     let z: [er, bk[], sw] = [er, remain, sw]
     return z
 }
-const emptySqevl: sqevl = {er:[],sql:''}
-const sqgpEvlSel = (a: sqgp, term: s, pm: pm, sw: sw) => {
-    return emptySqevl
+const sqsellyIsSkip = (a: ly, sqStmtSw: bdic) => {
+    const tblFmLin = x.itrFind(x.sHasPfxIgnCas(sq_FRO))(a)
+    if (tblFmLin === null) return false
+    const tblNm = x.sSplitSpc(tblFmLin)[1]
+    if (sqStmtSw.has(tblNm))
+        return sqStmtSw.get(tblNm)
+    else
+        return false
+}
+const sqselBrkSel = (a:sqgp, term:s) => {
+    return [a,a]
+}
+const xflds_fny =  (a: sqgp, sqFldSw: bdic) => {
+    return []
+}
+const xflds_l_r_ay = (a: sqgp, sqFldSw: bdic) => {
+    const fny: s[] = xflds_fny(a, sqFldSw)
+    const l: s[] = []
+    const r: s[] = x.itrAlignL(fny)
+    const z: [ly, ly] = [l, r]
+    return z
+}
+const xflds_lines = (a: sqgp, sqFldSw: bdic, sqFldExprDic: sdic) => {
+    let [l, r] = xflds_l_r_ay(a, sqFldSw)
+    const z: s[] = []
+    for (let i = 0; i < l.length; i++) {
+        z.push(l[i] + r[i])
+    }
+    return z.join(',\r\n') + '\r\n'
+}
+
+const sqselSel = (a: sqgp, term: s, sqFldSw: bdic, sqFldExprDic: sdic) => {
+    let z: [er, s, sqgp]
+    let distinct: s
+    switch (term) {
+        case sq_SEL: distinct = ''; break
+        case sq_DIS: distinct = ' distinct'; break
+        default: 
+            x.er(x.sFmt('{term} must be [? | ?]', sq_SEL, sq_DIS), { sqgp: a, term })
+            z = [[], '', a]
+            return z
+    }
+
+    let [a1, remain] = sqselBrkSel(a, term)
+    let flds = xflds_lines(a1, sqFldSw, sqFldExprDic)
+    const sel = 'select' + distinct + '\r\n' + flds
+
+    z = [[], sel, remain]
+    return z
+}
+
+const sqselFro = (a: sqgp) => {
+    let fro = ''
+    let z: [er, s, sqgp] = [[], fro, a]
+    return z
+}
+
+const sqselJoi = (a: sqgp) => {
+    let joi = ''
+    let z: [er, s, sqgp] = [[], joi, a]
+    return z
+}
+const sqselGro = (a: sqgp, sqFldSw: bdic) => {
+    let gro = ''
+    let z: [er, s, sqgp] = [[], gro, a]
+    return z
+}
+const sqselWhe = (a: sqgp, pm:pm, sqFldSw: bdic) => {
+    let whe = ''
+    let z: [er, s, sqgp] = [[], whe, a]
+    return z
+}
+const sqgp_splitFor_ExprSdic = (a:sqgp) => {
+    const z:[gp,ly] = [[],[]]
+    return z
+}
+const sqgp_sqFldExprSdic = (a: sqgp) => {
+    const [gp, ly] = sqgp_splitFor_ExprSdic(a)
+    const z: [sdic, sqgp] = [lySdic(ly), gp]
+    return z
+}
+const sqgpEvlSel = (a: sqgp, term: s, pm: pm, { sqFldSw, sqStmtSw }: sw) => {
+    const ly = gpLy(a)
+    let z: sqevl
+    if (sqsellyIsSkip(ly, sqStmtSw)) {
+        z = [[], '']
+        return z
+    }
+    const [sqFldExprSdic, a0] = sqgp_sqFldExprSdic(a)
+    const [e1, sel, a1] = sqselSel(a0, term, sqFldSw, sqFldExprSdic)
+    const [e2, fro, a2] = sqselFro(a1)
+    const [e3, joi, a3] = sqselJoi(a2)
+    const [e4, gro, a4] = sqselGro(a3, sqFldSw)
+    const [e5, whe, a5] = sqselWhe(a4, pm, sqFldSw)
+    const sql = sel + fro + joi + whe + gro
+    const er: er = e1.concat(e2, e3, e4, e5)
+    z = [er, sql]
+    return z
 }
 const sqgpEvlDrp = (a: sqgp) => {
+    const emptySqevl: [er, sql] = [[], '']
     return emptySqevl
 }
-const sqgpEvlUpd = (a: sqgp, pm: pm, sw: sw) => {
-    return emptySqevl
+const squpdgpIsSkip = (a: sqgp, sqStmtSw: bdic) => {
+    const tblNm = ''
+    if(sqStmtSw.has(tblNm))
+        return sqStmtSw.get(tblNm)
+    else   
+        return false
+}
+const sqgpEvlUpd = (a: sqgp, pm: pm, { sqFldSw, sqStmtSw }: sw) => {
+    let z: sqevl
+    if (squpdgpIsSkip(a, sqStmtSw)) {
+        z = [[], '']
+        return z
+    }
+    const er: er = []
+    const upd = ''
+    const set = ''
+    const where = ''
+    const sql = upd + set + where
+    z = [er, sql]
+    return z
 }
 const sqgpEvl = (a: sqgp, pm: pm, sw: sw) => {
     const fstLin = a[0].lin
     const term = x.sRmvPfx("?")(x.linFstTerm(fstLin).toUpperCase())
-    let z: sqevl = emptySqevl
+    let z: sqevl 
     switch (term) {
-        case 'DRP': z = sqgpEvlDrp(a); break
-        case 'SEL': case 'DIS': z = sqgpEvlSel(a, term, pm, sw); break
-        case 'UPD': z = sqgpEvlUpd(a, pm, sw); break
+        case sq_DRP: z = sqgpEvlDrp(a); break
+        case sq_SEL:
+        case sq_DIS: z = sqgpEvlSel(a, term, pm, sw); break
+        case sq_UPD: z = sqgpEvlUpd(a, pm, sw); break
         default:
-            x.er('impossible: {bk} should have {term} be one of [Drp | Sel | SelDist | Upd]', { term, bk: a })
+            x.er('impossible: {bk} should have {term} be one of [Drp | Sel | Dis | Upd]', { term, bk: a })
+            z = [[],'']
     }
     return z
 }
@@ -113,13 +241,13 @@ const sq05 = (a: bk[], pm: pm, sw: sw) => {
     let er: er = []
     let sql = ""
     for (let { bkty, gp } of a) {
-        let { er: i_er, sql: i_sql } = sqgpEvl(gp, pm, sw)
+        let [i_er, i_sql] = sqgpEvl(gp, pm, sw)
         er = er.concat(i_er)
         sql = sql === ""
             ? i_sql
             : sql += '\r\n\r\n' + i_sql
     }
-    let z: [er, s] = [ er, sql ]
+    let z: [er, s] = [er, sql]
     return z
 }
 
@@ -320,13 +448,13 @@ const plinParseSpc = ({ pos, lin }: plin) => {
     return z
 }
 
-const plinParseTerm = ({pos,lin}: plin) => {
+const plinParseTerm = ({ pos, lin }: plin) => {
     let term = ''
     for (var p = pos; p < lin.length; p++) {
         const c = lin[p]
         if (/\s/.test(c))
             break
-        else    
+        else
             term += c
     }
     let z: termprslt = { term, plin: { pos: p, lin } }
@@ -398,7 +526,7 @@ const bkPm = (a: bk) => {
     const [e2, g1] = gpDupFstTermEr(g0)
     const [e3, g2] = gpPfxPrmSwEr(g1)
     debugger
-    const er = e1.concat(e2,e3)
+    const er = e1.concat(e2, e3)
     const pm = x.lySdic(gpLy(g1))
     z = [er, pm]
     return z
@@ -422,11 +550,11 @@ const linFmT3DupTermSet = (a: lin) => {
     let z: sset = x.itrDupSet(termAy)
     return z
 }
-const linTermPosAy = (a: lin) => {
-    const z: termPos[] = []
+const linTermPosWdtAy = (a: lin) => {
+    const z: poswdt[] = []
     let j = 0
     let pos: n = 0
-    let len: n
+    let wdt: n
     let i_lin = a
     xx:
     do {
@@ -438,9 +566,9 @@ const linTermPosAy = (a: lin) => {
         }
         let [x, a1, a2, a3] = m
         if (a1 !== "") {
-            len = a1.length
+            wdt = a1.length
             pos = pos + a1.length
-            z.push({ pos, len })
+            z.push({ pos, wdt })
             pos = pos + a2.length
         } else {
             if (a3 !== "")
@@ -450,12 +578,12 @@ const linTermPosAy = (a: lin) => {
     } while (a.trim() !== "");
     return z
 }
-export const _termPosAyRmkLin = (a: termPos[]) => {
+export const _termWdtPosAyRmkLin = (a: poswdt[]) => {
     let z: lin = ""
-    for (let { pos, len } of a) {
+    for (let { pos, wdt } of a) {
         const n = 1
         const s = x.nSpc(n)
-        z = z + s + '^'.repeat(len)
+        z = z + s + '^'.repeat(wdt)
     }
     return z
 }
@@ -467,7 +595,7 @@ const linAddMrk = (lin, pos, len) => {
 }
 const linFmT3DupTermMrkLin = lin => {
     const dup = linFmT3DupTermSet(lin)
-    const termPosAy = linTermPosAy(lin)
+    const termPosAy = linTermPosWdtAy(lin)
     const termAy = linTermAy(lin)
     let o = ""
     for (let j = 2; j < termAy.length; j++) {
@@ -483,8 +611,8 @@ const linFmT3DupTermMrkLin = lin => {
 const gpVdt = (a: gp, chkr: ixlinchkr) => {
     const p = chkr.hasEr
     const m = chkr.erFun
-    const [erGp, remainingGp] = gpSplitForErAndRemain(p)(a)
-    const z: [er, gp] = [x.itrMap(m)(erGp), remainingGp]
+    const { t: erGp, f: remainGp } = x.itrBrkForTrueFalse(p)(a)
+    const z: [er, gp] = [x.itrMap(m)(erGp), remainGp]
     return z
 }
 const swChkr_FmT3Dup: ixlinchkr = {
@@ -492,20 +620,18 @@ const swChkr_FmT3Dup: ixlinchkr = {
     erFun: a => [{ ix: a.ix, endMsg: [linFmT3DupTermMrkLin(a.lin)], sfxMsg: [] }]
 }
 const bkSw = (a: bk, pm: pm) => {
-    let z: [er, sw] = [[], new Map<s, b>()]
+    let emptyBdic = new Map<s, b>()
+    let z: [er, sw] = [[], { sqFldSw: emptyBdic, sqStmtSw: emptyBdic }]
     if (a === undefined || a === null) {
-        z = [[], new Map<s, b>()]
         return z
     }
     const [e0, g0] = gpDupFstTermEr(a.gp)
     const [e1, g1] = gpVdt(g0, swChkr_FmT3Dup)
-
     const ly = gpLy(g1)
     const sw = lySw(ly, pm)
     z = [e0, sw]
     return z
 }
-const gpSplitForErAndRemain: (p: p) => (gp: gp) => [gp, gp] = p => gp => [[], []]
 const lySw = (a: ly, pm: pm) => {
     const sw = new Map<s, boolean>()
     let isEvaluated = true
@@ -563,22 +689,8 @@ const lySw = (a: ly, pm: pm) => {
         ly = ly1
     }
     if (ly1.length !== 0) x.er('ly1 should has 0-length', { ly1 })
-    return sw
+    const sqFldSw = sw
+    const sqStmtSw = sw
+    const z: sw = { sqFldSw, sqStmtSw }
+    return z
 }
-//?LvlY    EQ %SumLvl Y
-//?LvlM    EQ %SumLvl M
-//?LvlW    EQ %SumLvl W
-//?LvlD    EQ %SumLvl D
-//?Y       OR ?LvlD ?LvlW ?LvlM ?LvlY
-//?M       OR ?LvlD ?LvlW ?LvlM
-//?W       OR ?LvlD ?LvlW
-//?D       OR ?LvlD
-//?Dte     OR ?LvlD
-//?Mbr     OR %?BrkMbr
-//?MbrCnt  OR %?BrkMbr
-//?Div     OR %?BrkDiv
-//?Sto     OR %?BrkSto
-//?Crd     OR %?BrkCrd
-//?sel#Div NE %LisDiv *blank
-//?sel#Sto NE %LisSto *blank
-//?sel#Crd NE %LisCrd *blank

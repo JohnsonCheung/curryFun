@@ -2,6 +2,17 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const lyAddErAsLines_1 = require("./lyAddErAsLines");
 const x = require("./curryfun");
+const sq_UPD = 'UPD';
+const sq_DIS = 'DIS';
+const sq_DRP = 'DRP';
+const sq_SEL = 'SEL';
+const sq_FRO = 'FRO';
+const sq_GRO = 'GRO';
+const sq_JOI = 'JOI';
+const sq_LEF = 'LEF';
+const sq_WHE = 'WHE';
+const sq_AND = 'AND';
+const sq_OR = 'OR';
 const sqtprslt = ({ sqtp: a }) => {
     const ly = x.sSplitLf(a);
     const ly1 = lyRmvMsg(ly);
@@ -62,33 +73,135 @@ const sw04 = (a, pm) => {
     let z = [er, remain, sw];
     return z;
 };
-const emptySqevl = { er: [], sql: '' };
-const sqgpEvlSel = (a, term, pm, sw) => {
-    return emptySqevl;
+const sqsellyIsSkip = (a, sqStmtSw) => {
+    const tblFmLin = x.itrFind(x.sHasPfxIgnCas(sq_FRO))(a);
+    if (tblFmLin === null)
+        return false;
+    const tblNm = x.sSplitSpc(tblFmLin)[1];
+    if (sqStmtSw.has(tblNm))
+        return sqStmtSw.get(tblNm);
+    else
+        return false;
+};
+const sqselBrkSel = (a, term) => {
+    return [a, a];
+};
+const xflds1 = (a, sqFldSw) => {
+    const fny = [];
+    const l = [];
+    const r = x.itrAlignL(fny);
+    const z = [l, r];
+    return z;
+};
+const xflds = (a, sqFldSw) => {
+    let [l, r] = xflds1(a, sqFldSw);
+    const z = [];
+    for (let i = 0; i < l.length; i++) {
+        z.push(l[i] + r[i]);
+    }
+    return z.join(',\r\n') + '\r\n';
+};
+const sqselSel = (a, term, sqFldSw) => {
+    let z;
+    let distinct;
+    switch (term) {
+        case sq_SEL:
+            distinct = '';
+            break;
+        case sq_DIS:
+            distinct = ' distinct';
+            break;
+        default:
+            x.er(x.sFmt('{term} must be [? | ?]', sq_SEL, sq_DIS), { sqgp: a, term });
+            z = [[], '', a];
+            return z;
+    }
+    let [a1, remain] = sqselBrkSel(a, term);
+    let flds = xflds(a1, sqFldSw);
+    const sel = 'select' + distinct + '\r\n' + flds;
+    z = [[], sel, remain];
+    return z;
+};
+const sqselFro = (a) => {
+    let fro = '';
+    let z = [[], fro, a];
+    return z;
+};
+const sqselJoi = (a) => {
+    let joi = '';
+    let z = [[], joi, a];
+    return z;
+};
+const sqselGro = (a, sqFldSw) => {
+    let gro = '';
+    let z = [[], gro, a];
+    return z;
+};
+const sqselWhe = (a, pm, sqFldSw) => {
+    let whe = '';
+    let z = [[], whe, a];
+    return z;
+};
+const sqgpEvlSel = (a, term, pm, { sqFldSw, sqStmtSw }) => {
+    const ly = gpLy(a);
+    let z;
+    if (sqsellyIsSkip(ly, sqStmtSw)) {
+        z = [[], ''];
+        return z;
+    }
+    const [e1, sel, a1] = sqselSel(a, term, sqFldSw);
+    const [e2, fro, a2] = sqselFro(a1);
+    const [e3, joi, a3] = sqselJoi(a2);
+    const [e4, gro, a4] = sqselGro(a3, sqFldSw);
+    const [e5, whe, a5] = sqselWhe(a4, pm, sqFldSw);
+    const sql = sel + fro + joi + whe + gro;
+    const er = e1.concat(e2, e3, e4, e5);
+    z = [er, sql];
+    return z;
 };
 const sqgpEvlDrp = (a) => {
+    const emptySqevl = [[], ''];
     return emptySqevl;
 };
-const sqgpEvlUpd = (a, pm, sw) => {
-    return emptySqevl;
+const squpdgpIsSkip = (a, sqStmtSw) => {
+    const tblNm = '';
+    if (sqStmtSw.has(tblNm))
+        return sqStmtSw.get(tblNm);
+    else
+        return false;
+};
+const sqgpEvlUpd = (a, pm, { sqFldSw, sqStmtSw }) => {
+    let z;
+    if (squpdgpIsSkip(a, sqStmtSw)) {
+        z = [[], ''];
+        return z;
+    }
+    const er = [];
+    const upd = '';
+    const set = '';
+    const where = '';
+    const sql = upd + set + where;
+    z = [er, sql];
+    return z;
 };
 const sqgpEvl = (a, pm, sw) => {
     const fstLin = a[0].lin;
     const term = x.sRmvPfx("?")(x.linFstTerm(fstLin).toUpperCase());
-    let z = emptySqevl;
+    let z;
     switch (term) {
-        case 'DRP':
+        case sq_DRP:
             z = sqgpEvlDrp(a);
             break;
-        case 'SEL':
-        case 'DIS':
+        case sq_SEL:
+        case sq_DIS:
             z = sqgpEvlSel(a, term, pm, sw);
             break;
-        case 'UPD':
+        case sq_UPD:
             z = sqgpEvlUpd(a, pm, sw);
             break;
         default:
-            x.er('impossible: {bk} should have {term} be one of [Drp | Sel | SelDist | Upd]', { term, bk: a });
+            x.er('impossible: {bk} should have {term} be one of [Drp | Sel | Dis | Upd]', { term, bk: a });
+            z = [[], ''];
     }
     return z;
 };
@@ -96,7 +209,7 @@ const sq05 = (a, pm, sw) => {
     let er = [];
     let sql = "";
     for (let { bkty, gp } of a) {
-        let { er: i_er, sql: i_sql } = sqgpEvl(gp, pm, sw);
+        let [i_er, i_sql] = sqgpEvl(gp, pm, sw);
         er = er.concat(i_er);
         sql = sql === ""
             ? i_sql
@@ -394,11 +507,11 @@ const linFmT3DupTermSet = (a) => {
     let z = x.itrDupSet(termAy);
     return z;
 };
-const linTermPosAy = (a) => {
+const linTermPosWdtAy = (a) => {
     const z = [];
     let j = 0;
     let pos = 0;
-    let len;
+    let wdt;
     let i_lin = a;
     xx: do {
         if ((j++) > 100)
@@ -409,9 +522,9 @@ const linTermPosAy = (a) => {
         }
         let [x, a1, a2, a3] = m;
         if (a1 !== "") {
-            len = a1.length;
+            wdt = a1.length;
             pos = pos + a1.length;
-            z.push({ pos, len });
+            z.push({ pos, wdt });
             pos = pos + a2.length;
         }
         else {
@@ -422,12 +535,12 @@ const linTermPosAy = (a) => {
     } while (a.trim() !== "");
     return z;
 };
-exports._termPosAyRmkLin = (a) => {
+exports._termWdtPosAyRmkLin = (a) => {
     let z = "";
-    for (let { pos, len } of a) {
+    for (let { pos, wdt } of a) {
         const n = 1;
         const s = x.nSpc(n);
-        z = z + s + '^'.repeat(len);
+        z = z + s + '^'.repeat(wdt);
     }
     return z;
 };
@@ -439,7 +552,7 @@ const linAddMrk = (lin, pos, len) => {
 };
 const linFmT3DupTermMrkLin = lin => {
     const dup = linFmT3DupTermSet(lin);
-    const termPosAy = linTermPosAy(lin);
+    const termPosAy = linTermPosWdtAy(lin);
     const termAy = linTermAy(lin);
     let o = "";
     for (let j = 2; j < termAy.length; j++) {
@@ -455,8 +568,8 @@ const linFmT3DupTermMrkLin = lin => {
 const gpVdt = (a, chkr) => {
     const p = chkr.hasEr;
     const m = chkr.erFun;
-    const [erGp, remainingGp] = gpSplitForErAndRemain(p)(a);
-    const z = [x.itrMap(m)(erGp), remainingGp];
+    const { t: erGp, f: remainGp } = x.itrBrkForTrueFalse(p)(a);
+    const z = [x.itrMap(m)(erGp), remainGp];
     return z;
 };
 const swChkr_FmT3Dup = {
@@ -464,9 +577,9 @@ const swChkr_FmT3Dup = {
     erFun: a => [{ ix: a.ix, endMsg: [linFmT3DupTermMrkLin(a.lin)], sfxMsg: [] }]
 };
 const bkSw = (a, pm) => {
-    let z = [[], new Map()];
+    let emptyBdic = new Map();
+    let z = [[], { sqFldSw: emptyBdic, sqStmtSw: emptyBdic }];
     if (a === undefined || a === null) {
-        z = [[], new Map()];
         return z;
     }
     const [e0, g0] = gpDupFstTermEr(a.gp);
@@ -476,7 +589,6 @@ const bkSw = (a, pm) => {
     z = [e0, sw];
     return z;
 };
-const gpSplitForErAndRemain = p => gp => [[], []];
 const lySw = (a, pm) => {
     const sw = new Map();
     let isEvaluated = true;
@@ -551,23 +663,9 @@ const lySw = (a, pm) => {
     }
     if (ly1.length !== 0)
         x.er('ly1 should has 0-length', { ly1 });
-    return sw;
+    const sqFldSw = sw;
+    const sqStmtSw = sw;
+    const z = { sqFldSw, sqStmtSw };
+    return z;
 };
-//?LvlY    EQ %SumLvl Y
-//?LvlM    EQ %SumLvl M
-//?LvlW    EQ %SumLvl W
-//?LvlD    EQ %SumLvl D
-//?Y       OR ?LvlD ?LvlW ?LvlM ?LvlY
-//?M       OR ?LvlD ?LvlW ?LvlM
-//?W       OR ?LvlD ?LvlW
-//?D       OR ?LvlD
-//?Dte     OR ?LvlD
-//?Mbr     OR %?BrkMbr
-//?MbrCnt  OR %?BrkMbr
-//?Div     OR %?BrkDiv
-//?Sto     OR %?BrkSto
-//?Crd     OR %?BrkCrd
-//?sel#Div NE %LisDiv *blank
-//?sel#Sto NE %LisSto *blank
-//?sel#Crd NE %LisCrd *blank
 //# sourceMappingURL=sqtp.js.map

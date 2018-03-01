@@ -96,6 +96,13 @@ export const sEscLf = (a: s) => a.replace('\n', '\\n')
 export const sEscCr = (a: s) => a.replace('\r', '\\r')
 export const sEscTab = (a: s) => a.replace('\t', '\\t')
 export const sEsc: ((a: s) => s) = compose(sEscLf, sEscCr, sEscTab)
+export const sFmt = (qqStr: s, ...v) => {
+    let z: s = qqStr
+    for (let i of v) {
+        z.replace(z, i)
+    }
+    return z
+}
 export const sBox = (a: s) => { const y = "== " + sEsc(a) + " ==", x = "=".repeat(a.length + 6); return [x, y, x].join("\r\n") }
 export const stack = () => { try { throw new Error() } catch (e) { let z: s = e.stack; return z } }
 export const er = (msg: s, ...v) => {
@@ -245,6 +252,11 @@ export const cmlNy = (a: cml) => {
     }
 }
 export const sHasPfx = (pfx: s) => (a: s) => a.startsWith(pfx)
+export const sHasPfxIgnCas = (pfx: s) => (a: s) => {
+    const a1 = sLeft(pfx.length)(a).toUpperCase()
+    const pfx1 = pfx.toUpperCase()
+    return a1 === pfx1
+}
 export const sRmvPfx = (pfx: s) => (a: s) => sHasPfx(pfx)(a) ? a.substr(pfx.length) : a
 export const sHasSfx = (sfx: s) => (a: s) => a.endsWith(sfx)
 export const sRmvSfx = (sfx: s) => (a: s) => sHasSfx(sfx)(a) ? a.substr(0, a.length - sfx.length) : a
@@ -736,6 +748,34 @@ export const fjsRplExpStmt = fjs => {
     let a = newLines()
     if (oldLin !== newLin) { debugger; ffnMakBackup(fjs); sWrt(fjs)(newLines()) }
 }
+
+export const linesAlignL = (wdt: n) => (a: lines) => {
+    const a1 = sSplitCrLf(a)
+    const aLas = ayLas(a1)
+    const n = wdt - aLas.length
+    const s = nSpc(n)
+    const z = a + s
+    return z
+}
+
+export const linesWdt = (a: lines) => {
+    const a1 = sSplitCrLf(a)
+    const z: n = itrWdt(a1)
+    return z
+}
+
+export const linesAyWdt = (a: lines[]) => {
+    const a1 = itrMap(linesWdt)(a)
+    const z: n = itrMax(a1)
+    return z
+}
+
+export const linesAyAlignL = (a: lines[]) => {
+    const w = linesAyWdt(a) + 1
+    const z:lines[] = itrMap(linesAlignL(w))(a)
+    return z
+}
+
 export const vTee = <T>(f: (a: T) => void) => (a: T) => { f(a); return a }
 export const ftWrt = (s: s) => (a: ft) => fs.writeFileSync(a, s)
 export const cmdShell = (a: s) => child_process.exec(a)

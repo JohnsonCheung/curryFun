@@ -46,6 +46,13 @@ exports.sEscLf = (a) => a.replace('\n', '\\n');
 exports.sEscCr = (a) => a.replace('\r', '\\r');
 exports.sEscTab = (a) => a.replace('\t', '\\t');
 exports.sEsc = exports.compose(exports.sEscLf, exports.sEscCr, exports.sEscTab);
+exports.sFmt = (qqStr, ...v) => {
+    let z = qqStr;
+    for (let i of v) {
+        z.replace(z, i);
+    }
+    return z;
+};
 exports.sBox = (a) => { const y = "== " + exports.sEsc(a) + " ==", x = "=".repeat(a.length + 6); return [x, y, x].join("\r\n"); };
 exports.stack = () => { try {
     throw new Error();
@@ -215,6 +222,11 @@ exports.cmlNy = (a) => {
     }
 };
 exports.sHasPfx = (pfx) => (a) => a.startsWith(pfx);
+exports.sHasPfxIgnCas = (pfx) => (a) => {
+    const a1 = exports.sLeft(pfx.length)(a).toUpperCase();
+    const pfx1 = pfx.toUpperCase();
+    return a1 === pfx1;
+};
 exports.sRmvPfx = (pfx) => (a) => exports.sHasPfx(pfx)(a) ? a.substr(pfx.length) : a;
 exports.sHasSfx = (sfx) => (a) => a.endsWith(sfx);
 exports.sRmvSfx = (sfx) => (a) => exports.sHasSfx(sfx)(a) ? a.substr(0, a.length - sfx.length) : a;
