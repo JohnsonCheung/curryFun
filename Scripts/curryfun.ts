@@ -251,13 +251,17 @@ export const cmlNy = (a: cml) => {
         return o
     }
 }
-export const sHasPfx = (pfx: s) => (a: s) => a.startsWith(pfx)
+export const swLinEr_stmtSwLinError = (pfx: s) => (a: s) => a.startsWith(pfx)
 export const sHasPfxIgnCas = (pfx: s) => (a: s) => {
     const a1 = sLeft(pfx.length)(a).toUpperCase()
     const pfx1 = pfx.toUpperCase()
     return a1 === pfx1
 }
-export const sRmvPfx = (pfx: s) => (a: s) => sHasPfx(pfx)(a) ? a.substr(pfx.length) : a
+export const sHasPfx = (pfx: s) => (a: s) => {
+    const a1 = sLeft(pfx.length)(a)
+    return a1 === pfx
+}
+export const sRmvPfx = (pfx: s) => (a: s) => swLinEr_stmtSwLinError(pfx)(a) ? a.substr(pfx.length) : a
 export const sHasSfx = (sfx: s) => (a: s) => a.endsWith(sfx)
 export const sRmvSfx = (sfx: s) => (a: s) => sHasSfx(sfx)(a) ? a.substr(0, a.length - sfx.length) : a
 export const sMatch = (re: re) => (a: s) => a.match(re)
@@ -269,14 +273,14 @@ export const predsAnd: ((...a: p[]) => p) = (...a) => v => { for (let p of a) if
 export const isRmkLin = (a: s) => {
     const l = a.trim()
     if (l === "") return true
-    if (sHasPfx("--")(l)) return true
+    if (swLinEr_stmtSwLinError("--")(l)) return true
     return false
 }
 export const isNonRmkLin: sPred = predNot(isRmkLin)
 export const linRmvMsg = (a: lin) => {
     const a1 = a.match(/(.*)---/)
     const a2 = a1 === null ? a : a1[1]
-    if (sHasPfx("^")(a2.trimLeft())) return ""
+    if (swLinEr_stmtSwLinError("^")(a2.trimLeft())) return ""
     return a2
 }
 //------------------------------------------------------------------
@@ -410,10 +414,18 @@ const _setAft = (incl, a, set) => {
         }
     return z
 }
+
 export const linFstTerm = (a: lin) => {
     let { term, remainLin } = linShift(a)
     return term
 }
+
+export const linT2 = (a: lin) => {
+    const {term: t1, remainLin:a1} = linShift(a)
+    const {term: t2, remainLin} = linShift(a1)
+    return t2
+}
+
 export const linShift = (a: lin) => {
     const a1 = a.trim()
     const a2 = a1.match(/(\S*)\s*(.*)/)
@@ -445,7 +457,7 @@ export const lyReCol = (re: re) => (a: ly) => { let z: s[] = matchAyFstCol(lyMat
 export const matchAySdry = (a: RegExpMatchArray[]) => { let z: sdry = itrMap(matchDr)(a); return z }
 export const matchFstItm = (a: RegExpMatchArray) => a[1]
 export const matchAyFstCol = (a: RegExpMatchArray[]) => { let z: s[] = itrMap(matchFstItm)(a); return z }
-export const lyPfxCnt = (pfx: s) => (a: ly) => { let o = 0; itrEach(lin => { if (sHasPfx(pfx)(lin)) o++ })(a); return o }
+export const lyPfxCnt = (pfx: s) => (a: ly) => { let o = 0; itrEach(lin => { if (swLinEr_stmtSwLinError(pfx)(lin)) o++ })(a); return o }
 export const lyHasMajPfx = (pfx: s) => (a: ly) => 2 * lyPfxCnt(pfx)(a) > a.length
 export const lyMatchAy = (re: re) => (a: ly) => { let z: RegExpMatchArray[] = itrRmvEmp(itrMap(sMatch(re))(a)); return z }
 export const matchDr = (a: match) => [...a].splice(1)
@@ -688,7 +700,7 @@ export const ffnMakBackup = (a: ffn) => {
     const ffnn = ffnRmvExt(a)
     const pth = ffnPth(a)
     let b = sRight(12)(ffnn)
-    const isBackupFfn = (sHasPfx("(backup-")(a)) && (sHasSfx(")")(a))
+    const isBackupFfn = (swLinEr_stmtSwLinError("(backup-")(a)) && (sHasSfx(")")(a))
     const fn = ffnFn(a)
     const backupSubFdr = `.backup\\${fn}\\`
     const backupPth = pth + backupSubFdr
@@ -705,7 +717,7 @@ export const ffnMakBackup = (a: ffn) => {
 }
 export const lyExpStmt = (a: ly) => {
     let ny = lyConstNy(a)
-    ny = itrWhere(predNot(sHasPfx("_")))(ny).sort()
+    ny = itrWhere(predNot(swLinEr_stmtSwLinError("_")))(ny).sort()
     if (isEmp(ny)) return null
     const x = ayJnAsLines(", ", 4, 120)(ny)
     let z: s = "export {\r\n" + x + "\r\n}"
@@ -717,7 +729,7 @@ export const fjsRplExpStmt = fjs => {
     const oldLy = ftLy(fjs)
     const newLin = lyExpStmt(oldLy)
 
-    let oldBegIx = ayFindIx(sHasPfx("exports {"))(oldLy)
+    let oldBegIx = ayFindIx(swLinEr_stmtSwLinError("exports {"))(oldLy)
     let oldEndIx: n = (() => {
         if (oldBegIx !== null) {
             for (let i: n = oldBegIx; i < oldLy.length; i++) {

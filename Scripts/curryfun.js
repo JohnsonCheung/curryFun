@@ -221,13 +221,17 @@ exports.cmlNy = (a) => {
         return o;
     }
 };
-exports.sHasPfx = (pfx) => (a) => a.startsWith(pfx);
+exports.swLinEr_stmtSwLinError = (pfx) => (a) => a.startsWith(pfx);
 exports.sHasPfxIgnCas = (pfx) => (a) => {
     const a1 = exports.sLeft(pfx.length)(a).toUpperCase();
     const pfx1 = pfx.toUpperCase();
     return a1 === pfx1;
 };
-exports.sRmvPfx = (pfx) => (a) => exports.sHasPfx(pfx)(a) ? a.substr(pfx.length) : a;
+exports.sHasPfx = (pfx) => (a) => {
+    const a1 = exports.sLeft(pfx.length)(a);
+    return a1 === pfx;
+};
+exports.sRmvPfx = (pfx) => (a) => exports.swLinEr_stmtSwLinError(pfx)(a) ? a.substr(pfx.length) : a;
 exports.sHasSfx = (sfx) => (a) => a.endsWith(sfx);
 exports.sRmvSfx = (sfx) => (a) => exports.sHasSfx(sfx)(a) ? a.substr(0, a.length - sfx.length) : a;
 exports.sMatch = (re) => (a) => a.match(re);
@@ -244,7 +248,7 @@ exports.isRmkLin = (a) => {
     const l = a.trim();
     if (l === "")
         return true;
-    if (exports.sHasPfx("--")(l))
+    if (exports.swLinEr_stmtSwLinError("--")(l))
         return true;
     return false;
 };
@@ -252,7 +256,7 @@ exports.isNonRmkLin = exports.predNot(exports.isRmkLin);
 exports.linRmvMsg = (a) => {
     const a1 = a.match(/(.*)---/);
     const a2 = a1 === null ? a : a1[1];
-    if (exports.sHasPfx("^")(a2.trimLeft()))
+    if (exports.swLinEr_stmtSwLinError("^")(a2.trimLeft()))
         return "";
     return a2;
 };
@@ -406,6 +410,11 @@ exports.linFstTerm = (a) => {
     let { term, remainLin } = exports.linShift(a);
     return term;
 };
+exports.linT2 = (a) => {
+    const { term: t1, remainLin: a1 } = exports.linShift(a);
+    const { term: t2, remainLin } = exports.linShift(a1);
+    return t2;
+};
 exports.linShift = (a) => {
     const a1 = a.trim();
     const a2 = a1.match(/(\S*)\s*(.*)/);
@@ -438,7 +447,7 @@ exports.lyReCol = (re) => (a) => { let z = exports.matchAyFstCol(exports.lyMatch
 exports.matchAySdry = (a) => { let z = exports.itrMap(exports.matchDr)(a); return z; };
 exports.matchFstItm = (a) => a[1];
 exports.matchAyFstCol = (a) => { let z = exports.itrMap(exports.matchFstItm)(a); return z; };
-exports.lyPfxCnt = (pfx) => (a) => { let o = 0; exports.itrEach(lin => { if (exports.sHasPfx(pfx)(lin))
+exports.lyPfxCnt = (pfx) => (a) => { let o = 0; exports.itrEach(lin => { if (exports.swLinEr_stmtSwLinError(pfx)(lin))
     o++; })(a); return o; };
 exports.lyHasMajPfx = (pfx) => (a) => 2 * exports.lyPfxCnt(pfx)(a) > a.length;
 exports.lyMatchAy = (re) => (a) => { let z = exports.itrRmvEmp(exports.itrMap(exports.sMatch(re))(a)); return z; };
@@ -731,7 +740,7 @@ exports.ffnMakBackup = (a) => {
     const ffnn = exports.ffnRmvExt(a);
     const pth = exports.ffnPth(a);
     let b = exports.sRight(12)(ffnn);
-    const isBackupFfn = (exports.sHasPfx("(backup-")(a)) && (exports.sHasSfx(")")(a));
+    const isBackupFfn = (exports.swLinEr_stmtSwLinError("(backup-")(a)) && (exports.sHasSfx(")")(a));
     const fn = exports.ffnFn(a);
     const backupSubFdr = `.backup\\${fn}\\`;
     const backupPth = pth + backupSubFdr;
@@ -748,7 +757,7 @@ exports.ffnMakBackup = (a) => {
 };
 exports.lyExpStmt = (a) => {
     let ny = exports.lyConstNy(a);
-    ny = exports.itrWhere(exports.predNot(exports.sHasPfx("_")))(ny).sort();
+    ny = exports.itrWhere(exports.predNot(exports.swLinEr_stmtSwLinError("_")))(ny).sort();
     if (exports.isEmp(ny))
         return null;
     const x = exports.ayJnAsLines(", ", 4, 120)(ny);
@@ -760,7 +769,7 @@ exports.curExpStmt = () => { let z = exports.pipe(__filename)(exports.ftLy, expo
 exports.fjsRplExpStmt = fjs => {
     const oldLy = exports.ftLy(fjs);
     const newLin = exports.lyExpStmt(oldLy);
-    let oldBegIx = exports.ayFindIx(exports.sHasPfx("exports {"))(oldLy);
+    let oldBegIx = exports.ayFindIx(exports.swLinEr_stmtSwLinError("exports {"))(oldLy);
     let oldEndIx = (() => {
         if (oldBegIx !== null) {
             for (let i = oldBegIx; i < oldLy.length; i++) {
@@ -806,6 +815,29 @@ exports.fjsRplExpStmt = fjs => {
         exports.ffnMakBackup(fjs);
         exports.sWrt(fjs)(newLines());
     }
+};
+exports.linesAlignL = (wdt) => (a) => {
+    const a1 = exports.sSplitCrLf(a);
+    const aLas = exports.ayLas(a1);
+    const n = wdt - aLas.length;
+    const s = exports.nSpc(n);
+    const z = a + s;
+    return z;
+};
+exports.linesWdt = (a) => {
+    const a1 = exports.sSplitCrLf(a);
+    const z = exports.itrWdt(a1);
+    return z;
+};
+exports.linesAyWdt = (a) => {
+    const a1 = exports.itrMap(exports.linesWdt)(a);
+    const z = exports.itrMax(a1);
+    return z;
+};
+exports.linesAyAlignL = (a) => {
+    const w = exports.linesAyWdt(a) + 1;
+    const z = exports.itrMap(exports.linesAlignL(w))(a);
+    return z;
 };
 exports.vTee = (f) => (a) => { f(a); return a; };
 exports.ftWrt = (s) => (a) => fs.writeFileSync(a, s);

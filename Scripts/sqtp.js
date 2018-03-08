@@ -24,6 +24,7 @@ const sqtprslt = ({ sqtp: a }) => {
     const [er_er, bky_aftEr] = er02(bky_aftRm);
     const [er_pm, bky_aftPm, pm] = pm03(bky_aftEr);
     const [er_sw, bky_aftSw, sw] = sw04(bky_aftPm, pm);
+    debugger;
     const [er_sq, sql] = sq05(bky_aftSw, pm, sw);
     const er = er_er.concat(er_pm, er_sw, er_sq);
     const vtp = lyAddErAsLines_1.lyAddErAsLines(ly1, er);
@@ -86,22 +87,25 @@ const sqsellyIsSkip = (a, sqStmtSw) => {
 const sqselBrkSel = (a, term) => {
     return [a, a];
 };
-const xflds1 = (a, sqFldSw) => {
-    const fny = [];
+const xflds_fny = (a, sqFldSw) => {
+    return [];
+};
+const xflds_l_r_ay = (a, sqFldSw) => {
+    const fny = xflds_fny(a, sqFldSw);
     const l = [];
     const r = x.itrAlignL(fny);
     const z = [l, r];
     return z;
 };
-const xflds = (a, sqFldSw) => {
-    let [l, r] = xflds1(a, sqFldSw);
+const xflds_lines = (a, sqFldSw, sqFldExprDic) => {
+    let [l, r] = xflds_l_r_ay(a, sqFldSw);
     const z = [];
     for (let i = 0; i < l.length; i++) {
         z.push(l[i] + r[i]);
     }
     return z.join(',\r\n') + '\r\n';
 };
-const sqselSel = (a, term, sqFldSw) => {
+const sqselSel = (a, term, sqFldSw, sqFldExprDic) => {
     let z;
     let distinct;
     switch (term) {
@@ -117,7 +121,7 @@ const sqselSel = (a, term, sqFldSw) => {
             return z;
     }
     let [a1, remain] = sqselBrkSel(a, term);
-    let flds = xflds(a1, sqFldSw);
+    let flds = xflds_lines(a1, sqFldSw, sqFldExprDic);
     const sel = 'select' + distinct + '\r\n' + flds;
     z = [[], sel, remain];
     return z;
@@ -142,6 +146,24 @@ const sqselWhe = (a, pm, sqFldSw) => {
     let z = [[], whe, a];
     return z;
 };
+const sqgp_splitFor_ExprSdic = (a) => {
+    const ly = [];
+    const gp = [];
+    const isExprLin = lin => x.sHasPfx('$');
+    for (let { ix, lin } of a) {
+        if (isExprLin(lin))
+            ly.push(lin);
+        else
+            gp.push({ ix, lin });
+    }
+    const z = [gp, ly];
+    return z;
+};
+const sqgp_sqFldExprSdic = (a) => {
+    const [gp, ly] = sqgp_splitFor_ExprSdic(a);
+    const z = [lySdic(ly), gp];
+    return z;
+};
 const sqgpEvlSel = (a, term, pm, { sqFldSw, sqStmtSw }) => {
     const ly = gpLy(a);
     let z;
@@ -149,7 +171,8 @@ const sqgpEvlSel = (a, term, pm, { sqFldSw, sqStmtSw }) => {
         z = [[], ''];
         return z;
     }
-    const [e1, sel, a1] = sqselSel(a, term, sqFldSw);
+    const [sqFldExprSdic, a0] = sqgp_sqFldExprSdic(a);
+    const [e1, sel, a1] = sqselSel(a0, term, sqFldSw, sqFldExprSdic);
     const [e2, fro, a2] = sqselFro(a1);
     const [e3, joi, a3] = sqselJoi(a2);
     const [e4, gro, a4] = sqselGro(a3, sqFldSw);
@@ -420,25 +443,31 @@ const plinParseTerm = ({ pos, lin }) => {
     let z = { term, plin: { pos: p, lin } };
     return z;
 };
-const linT2PosWdt = (a) => {
+exports.linT2PosWdt = (a) => {
     const a1 = plinParseSpc({ pos: 0, lin: a });
     const { term: t1, plin: a2 } = plinParseTerm(a1);
     const a3 = plinParseSpc(a2);
     const { term: t2, plin: a4 } = plinParseTerm(a3);
     if (t2 === null)
         return null;
-    const z = { pos: a4.pos, wdt: t2.length };
+    const z = { pos: a3.pos, wdt: t2.length };
     return z;
 };
-const linT2MarkerLin = (a, msg) => {
-    const poswdt = linT2PosWdt(a);
+exports.linT1MarkerLin = (a, msg) => {
+    if (a.trimLeft() !== a)
+        x.er('given {lin} must not have space in front', { lin: a });
+    const { term, plin } = plinParseTerm({ pos: 0, lin: a });
+    return '^'.repeat(term.length) + ' ' + msg;
+};
+exports.linT2MarkerLin = (a, msg) => {
+    const poswdt = exports.linT2PosWdt(a);
     if (poswdt === null) {
         x.er('{lin} does have 2nd term', { lin: a });
         return '{lin} does not have 2nd term: [' + a + ']';
     }
     const { pos, wdt } = poswdt;
     const chr = pos >= 3 ? '-' : ' ';
-    const z = chr.repeat(pos - 1) + '^'.repeat(wdt) + ' ' + msg;
+    const z = chr.repeat(pos) + '^'.repeat(wdt) + ' ' + msg;
     return z;
 };
 const gpPfxPrmSwEr = (a) => {
@@ -464,8 +493,7 @@ const gpPfxPrmSwEr = (a) => {
                 er.push({ ix, endMsg, sfxMsg });
                 break;
             case 2:
-                endMsg = [linT2MarkerLin(lin, 'must be 0 or 1 for prefix is [%?]')];
-                debugger;
+                endMsg = [exports.linT2MarkerLin(lin, 'must be 0 or 1 for prefix is [%?]')];
                 er.push({ ix, endMsg, sfxMsg });
                 break;
             default:
@@ -484,7 +512,6 @@ const bkPm = (a) => {
     const [e1, g0] = gpPfxEr(a.gp, "%");
     const [e2, g1] = gpDupFstTermEr(g0);
     const [e3, g2] = gpPfxPrmSwEr(g1);
-    debugger;
     const er = e1.concat(e2, e3);
     const pm = x.lySdic(gpLy(g1));
     z = [er, pm];
@@ -576,6 +603,31 @@ const swChkr_FmT3Dup = {
     hasEr: a => linFmT3DupTermSet(a.lin).size > 0,
     erFun: a => [{ ix: a.ix, endMsg: [linFmT3DupTermMrkLin(a.lin)], sfxMsg: [] }]
 };
+const linIsStmtSwError = (a) => {
+    if (x.sHasPfx('?#')(a)) {
+        if (x.sHasPfx('?#SEL#')(a))
+            return false;
+        if (x.sHasPfx('?#UPD#')(a))
+            return false;
+    }
+    return true;
+};
+const swChkr_StmtSwLin_mustBeEither_SEL_or_UPD = {
+    hasEr: a => linIsStmtSwError(a.lin),
+    erFun: a => [{ ix: a.ix, endMsg: [exports.linT1MarkerLin(a.lin, '')], sfxMsg: [] }]
+};
+const opIsErr = (op) => {
+    const z = !['AND', 'OR', 'EQ', 'NE'].includes(op.toUpperCase());
+    return z;
+};
+const swChkr_SwLinOp_mustBeAny_AND_OR_EQ_NE = {
+    hasEr: a => opIsErr(x.linT2(a.lin)),
+    erFun: a => [{
+            ix: a.ix,
+            endMsg: [exports.linT2MarkerLin(a.lin, 'switch line 2nd term must be [ AND | OR | EQ | NE ]')],
+            sfxMsg: []
+        }]
+};
 const bkSw = (a, pm) => {
     let emptyBdic = new Map();
     let z = [[], { sqFldSw: emptyBdic, sqStmtSw: emptyBdic }];
@@ -584,7 +636,9 @@ const bkSw = (a, pm) => {
     }
     const [e0, g0] = gpDupFstTermEr(a.gp);
     const [e1, g1] = gpVdt(g0, swChkr_FmT3Dup);
-    const ly = gpLy(g1);
+    const [e2, g2] = gpVdt(g1, swChkr_StmtSwLin_mustBeEither_SEL_or_UPD);
+    const [e3, g3] = gpVdt(g2, swChkr_SwLinOp_mustBeAny_AND_OR_EQ_NE);
+    const ly = gpLy(g3);
     const sw = lySw(ly, pm);
     z = [e0, sw];
     return z;
@@ -663,8 +717,17 @@ const lySw = (a, pm) => {
     }
     if (ly1.length !== 0)
         x.er('ly1 should has 0-length', { ly1 });
-    const sqFldSw = sw;
-    const sqStmtSw = sw;
+    return swSplit(sw);
+};
+const swSplit = (a) => {
+    const sqFldSw = new Map();
+    const sqStmtSw = new Map();
+    for (let [k, b] of a) {
+        if (x.sHasPfx('?#')(k))
+            sqStmtSw.set(k, b);
+        else
+            sqFldSw.set(k, b);
+    }
     const z = { sqFldSw, sqStmtSw };
     return z;
 };

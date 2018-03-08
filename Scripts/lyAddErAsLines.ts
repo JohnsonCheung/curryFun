@@ -1,10 +1,10 @@
 /// <reference path="./curryfun.d.ts"/>
 import * as assert from 'assert'
 import { ly, p, pfx, cnt, n, s, ay, lin, b } from './curryfun'
-import { Er, ErItm } from './sqtp'
+import { er, eritm } from './sqtp'
 import * as x from './curryfun'
 
-const $endMsg = (er: Er, i_ix: n) => {
+const $endMsg = (er: er, i_ix: n) => {
     let o: s[] = []
     for (let { ix, endMsg } of er) {
         if (i_ix === ix) o = o.concat(endMsg)
@@ -12,7 +12,7 @@ const $endMsg = (er: Er, i_ix: n) => {
     return o
 }
 
-const $sfxMsg = (er: Er, i_ix: n) => {
+const $sfxMsg = (er: er, i_ix: n) => {
     let o: s[] = []
     for (let { ix, sfxMsg } of er) {
         if (i_ix === ix) o = o.concat(sfxMsg)
@@ -20,7 +20,7 @@ const $sfxMsg = (er: Er, i_ix: n) => {
     return o
 }
 
-const $left_lyAy = (ly: ly, er: Er) => {
+const $left_lyAy = (ly: ly, er: er) => {
     const o: ly[] = []
     for (let i of x.nItr(ly.length)) {
         const m = [ly[i]].concat($endMsg(er, i))
@@ -28,7 +28,7 @@ const $left_lyAy = (ly: ly, er: Er) => {
     }
     return o
 }
-const $right_lyAy = (ly: ly, er: Er) => {
+const $right_lyAy = (ly: ly, er: er) => {
     const o: ly[] = []
     for (let i of x.nItr(ly.length)) {
         const m = $sfxMsg(er, i)
@@ -56,7 +56,7 @@ const $mge = (left_ly: ly, right_ly: ly) => {
     }
     return o
 }
-export const lyAddErAsLy = (ly: ly, er: Er) => {
+export const lyAddErAsLy = (ly: ly, er: er) => {
     const left_lyAy = lyAyAlignL($left_lyAy(ly, er))
     const right_lyAy = $right_lyAy(ly, er)
     let o: ly = []
@@ -66,7 +66,7 @@ export const lyAddErAsLy = (ly: ly, er: Er) => {
     }
     return o
 }
-export const lyAddErAsLines = (ly: ly, er: Er) => x.ayJnCrLf(lyAddErAsLy(ly, er))
+export const lyAddErAsLines = (ly: ly, er: er) => x.ayJnCrLf(lyAddErAsLy(ly, er))
 export const lyAyWdt = (a: ly[]) => {
     const b = x.itrMap(x.itrWdt)(a)
     return x.itrMax(b)

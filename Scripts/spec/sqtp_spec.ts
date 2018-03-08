@@ -1,7 +1,24 @@
 /// <reference path="../../node_modules/@types/jasime.d.ts"/>
 /// <reference path="../../Scripts/curryfun.ts"/>
 import * as x from '../curryfun'
-import { sqtprslt } from '../sqtp'
+import * as y from '../sqtp'
+
+describe('linT2PosWdt', function () {
+    it('should pass', function () {
+        const lin = 'aaa  bb'
+        const act = y.linT2PosWdt(lin)
+        expect(act).toEqual({ pos: 5, wdt: 2 })
+    })
+})
+
+describe('linT2MarkerLine', function () {
+    it('should pass', function () {
+        const lin = 'aaa  bb'
+        const act = y.linT2MarkerLin(lin,'aa')
+        expect(act).toEqual('-----^^ aa')
+    })
+})
+
 describe('sqtp -- pm03 -- bkPm --', function () {
     it('this block is err - should pass', function () {
         const sqtp =
@@ -9,7 +26,7 @@ describe('sqtp -- pm03 -- bkPm --', function () {
             '?BrkMbr 0\n' +
             '%?BrkMbr 0\n' +
             '??BrkSto 0\n'
-        const { vtp, sql } = sqtprslt({ sqtp })
+        const { vtp, sql } = y.sqtprslt({ sqtp })
         x.sBrw(vtp + '\n***\nsqtp' + sqtp)
         debugger
     })
@@ -20,7 +37,7 @@ describe('sqtp -- pm03 -- bkPm --', function () {
             '%BrkMbr 0\n' +
             '#?BrkMbr 0\n' +
             '??BrkSto 0\n'
-        const { vtp, sql } = sqtprslt({ sqtp })
+        const { vtp, sql } = y.sqtprslt({ sqtp })
         const exp =
             '%?BrkMbr 0\r\n' +
             '%?BrkXX 0\r\n' +
@@ -31,15 +48,43 @@ describe('sqtp -- pm03 -- bkPm --', function () {
             '^---- prefix must be (%)'
         expect(vtp).toEqual(exp)
     })
-    fit('prmSwErr - should pass', function () {
+    it('prmSwErr - should pass', function () {
         const sqtp =
-            '%?BrkDiv X\n' +
+            '%?BrkDiv  XX\n' +
             '%SumLvl  Y\n' +
             '%?MbrEmail 1'
-        const { vtp, sql } = sqtprslt({ sqtp })
-        x.sBrw(vtp + '\n***\n' + sqtp)
-        debugger
+        const { vtp, sql } = y.sqtprslt({ sqtp })
+        //x.sBrw(vtp + '\n***\n' + sqtp)
+        const exp = 
+            '%?BrkDiv  XX\r\n' +
+            '----------^^ must be 0 or 1 for prefix is [%?]\r\n' +
+            '%SumLvl  Y\r\n' +
+            '%?MbrEmail 1'
+        const rslt = vtp === exp
+        expect(rslt).toBeTruthy()
     })
+})
+
+describe('SwEr --', function () {
+    fit('should pass', function () { 
+        const sqtp =
+            '?#SEL#aa 1\n' +
+            '?#UPD#bb OR 1\n' +
+            '?AA AND 1'
+        const { vtp, sql } = y.sqtprslt({ sqtp })
+        //x.sBrw(vtp + '\n***\n' + sqtp)
+        const exp = 
+            '%?BrkDiv  XX\r\n' +
+            '----------^^ must be 0 or 1 for prefix is [%?]\r\n' +
+            '%SumLvl  Y\r\n' +
+            '%?MbrEmail 1'
+        const rslt = vtp === exp
+        debugger
+        expect(rslt).toBeTruthy()
+    })
+})
+
+describe('sqtprslt --', function () {
     it('should pass', function () {
         //=====================================================
         const sqtp = `-- Rmk: -- is remark
@@ -98,9 +143,9 @@ Drp Tx TxMbr MbrDta Div Sto Crd Cnt Oup MbrWs
 ?Div     OR %?BrkDiv
 ?Sto     OR %?BrkSto
 ?Crd     OR %?BrkCrd
-?sel#Div NE %LisDiv *blank
-?sel#Sto NE %LisSto *blank
-?sel#Crd NE %LisCrd *blank
+?#SEL#Div NE %LisDiv *blank
+?#SEL#Sto NE %LisSto *blank
+?#SEL#Crd NE %LisCrd *blank
 ============================================= #Tx
 sel  ?Crd ?Mbr ?Div ?Sto ?Y ?M ?W ?WD ?D ?Dte Amt Qty Cnt 
 into #Tx
@@ -191,7 +236,7 @@ df eror fs--
 ?LvlW    EQ %SumLvl W
 ?LvlD    EQ %SumLvl D
 ?Y       OR ?LvlD ?LvlW ?LvlM ?LvlY`
-        const { vtp, sql } = sqtprslt({ sqtp })
+        const { vtp, sql } = y.sqtprslt({ sqtp })
         x.sBrw(vtp)
         debugger
         expect(true).toBe(true)

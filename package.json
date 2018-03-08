@@ -5,8 +5,9 @@
   "main": "curryfun.js",
   "scripts": {
     "test": "jasmine",
-    "t-drs": "jasmine scripts/spec/curryfun/drs_spec.j",
-    "t-is": "jasmine scripts/spec/curryfun/isXXX_spec.js"
+    "t-sqtp": "jasmine ./scripts/spec/sqtp_spec.js",
+    "t-drs": "jasmine ./scripts/spec/curryfun/drs_spec.js",
+    "t-is": "jasmine ./scripts/spec/curryfun/isXXX_spec.js"
   },
   "repository": {
     "type": "git",
