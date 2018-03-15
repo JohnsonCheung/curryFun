@@ -40,13 +40,13 @@ const sqtprslt = ({ sqtp: a }: sqtp) => {
     const gp1 = gpRmvRmk(gp)
     const gpy = gpGpy(gp1, '==')
     const bky = gpyBky(gpy)
-    const bky_aftRm = x.itrWhere((bk: bk) => bk.bkty !== Bkty.RM)(bky)
-    const [er_er, bky_aftEr] = er02(bky_aftRm)
-    const [er_pm, bky_aftPm, pm] = pm03(bky_aftEr)
-    const [er_sw, bky_aftSw, sw] = sw04(bky_aftPm, pm)
+    const aftRm_bky = x.itrWhere((bk: bk) => bk.bkty !== Bkty.RM)(bky)
+    const [aftEr_er, aftEr_bky] = er02(aftRm_bky)
+    const [aftPm_er, aftPm_bky, pm] = pm03(aftEr_bky)
+    const [aftSw_er, aftSw_bky, sw] = sw04(aftPm_bky, pm)
     debugger
-    const [er_sq, sql] = sq05(bky_aftSw, pm, sw)
-    const er = er_er.concat(er_pm, er_sw, er_sq)
+    const [aftSq_er, sql] = sq05(aftSw_bky, pm, sw)
+    const er = aftEr_er.concat(aftPm_er, aftSw_er, aftSq_er)
     const vtp = lyAddErAsLines(ly1, er)
     const z: sqtprslt = { vtp, sql }
     return z
@@ -671,8 +671,9 @@ const bkSw = (a: bk, pm: pm) => {
     const [e2, g2] = gpVdt(g1, swChkr_StmtSwLin_mustBeEither_SEL_or_UPD)
     const [e3, g3] = gpVdt(g2, swChkr_SwLinOp_mustBeAny_AND_OR_EQ_NE)
     const ly = gpLy(g3)
+    const er = e0.concat(e1, e2, e3)
     const sw = lySw(ly, pm)
-    z = [e0, sw]
+    z = [er, sw]
     return z
 }
 const lySw = (a: ly, pm: pm) => {
