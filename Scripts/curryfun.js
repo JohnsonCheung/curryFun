@@ -6,6 +6,7 @@ const path = require("path");
 const os = require("os");
 const child_process = require("child_process");
 //---------------------------------------
+//---------------------------------------
 exports.strictEqual = require('assert').strictEqual;
 exports.eq = (exp, act) => { try {
     exports.strictEqual(act, exp);
@@ -17,8 +18,8 @@ catch (e) {
 exports.vLT = x => a => a < x;
 exports.vGE = x => a => a >= x;
 exports.vLE = x => a => a <= x;
-exports.vEQ = x => a => a === x;
-exports.vNE = x => a => a !== x;
+exports.vEQ = (x) => (a) => a === x;
+exports.vNE = (x) => (a) => a !== x;
 exports.vGT = x => a => a > x;
 exports.vIN = (itr) => a => { for (let i of itr)
     if (i === a)
@@ -37,7 +38,7 @@ exports.funApply = v => (a) => a(v);
 exports.swap = (f) => a => b => f(b)(a);
 exports.compose = (...f) => v => exports.pipe(v)(...f);
 //----------------------------------
-exports.sdicSy = (a) => { let z = exports.itrMap(exports.ksLin)(a); return z; };
+exports.sdicSy = (a) => exports.itrMap(exports.ksLin)(a);
 exports.ksLin = ({ k, s }) => k + ' ' + s;
 exports.dmp = global.console.log;
 exports.funDmp = (f) => exports.dmp(f.toString());
@@ -80,6 +81,8 @@ exports.er = (msg, ...v) => {
 };
 //-----------------------------------------------------------------------
 exports.sSplit = (sep) => (a) => a.split(sep);
+exports.sRmvCr = (a) => a.replace(/\r/g, '');
+exports.sSplitLines = (a) => exports.sSplitLf(exports.sRmvCr(a));
 exports.sSplitCrLf = exports.sSplit('\r\n');
 exports.sSplitLf = exports.sSplit('\n');
 exports.sSplitSpc = exports.sSplit(/\s+/);
@@ -142,7 +145,7 @@ exports.sLasChr = (a) => a[a.length - 1];
 exports.sAddPfx = (pfx) => (a) => pfx + a;
 exports.sAddSfx = (sfx) => a => a + sfx;
 exports.sAddPfxSfx = (pfx, sfx) => (a) => pfx + a + sfx;
-exports.vLen = a => { let z = typeof a === 'string' ? a.length : ((a && a.length) || String(a).length); return z; };
+exports.vLen = a => typeof a === 'string' ? a.length : ((a && a.length) || String(a).length);
 exports.sLen = (a) => a.length;
 exports.sMidN = (pos) => (n) => (a) => a.substr(pos, n);
 exports.sMid = (pos) => (a) => a.substr(pos);
@@ -182,56 +185,59 @@ exports.sSbsPos = (sbs) => (a) => a.indexOf(sbs);
 exports.sSbsRevPos = (sbs) => (a) => a.lastIndexOf(sbs);
 //strictEqual(sbsRevPos('a')('0123aabb'),5)
 exports.cmlNm = (a) => exports.cmlNy(a).reverse().join(' '); // @eg cmlNm(relItmNy) === 'Ny Itm rel'
-exports.cmlNy = (a) => {
-    const o = [];
-    if (a.trim() === '')
-        return o;
-    let j = 0;
-    let brk = true;
-    while (!brk) {
-        if (j++ > 100) {
-            debugger;
-            throw null;
-        }
-        const i = pseg();
-        if (i === '')
-            return o;
-        o.push(i.trim());
+exports.cmlSpcNm = (a) => exports.cmlNy(a).join(' ');
+exports.isNm = (s) => {
+    if (s === undefined || s === null || s === '')
+        return false;
+    if (!exports.chrCd_isFstNmChr(s.charCodeAt(0)))
+        return false;
+    for (let i = 1; i < s.length; i++) {
+        if (!exports.chrCd_isNmChr(s.charCodeAt(i)))
+            return false;
     }
-    return o;
-    function pseg() {
-        let o = pchr();
-        let j = 0;
-        while (a.length > 0) {
-            if (j++ > 100) {
-                debugger;
-                throw null;
-            }
-            if (/^[A-Z]/.test(a))
-                return o;
-            o += pchr();
-        }
-        return o;
-    }
-    function pchr() {
-        if (a === '')
-            return '';
-        const o = a[0];
-        a = exports.sRmvFstChr(a);
-        return o;
-    }
+    return true;
 };
-exports.swLinEr_stmtSwLinError = (pfx) => (a) => a.startsWith(pfx);
+exports.sRplNonNmChr = (a) => {
+    const a1 = [];
+    for (let i = 0; i < a.length; i++) {
+        const c = a.charCodeAt(i);
+        if (exports.chrCd_isNmChr(c))
+            a1.push(a[i]);
+        else
+            a1.push(' ');
+    }
+    return a1.join('');
+};
+exports.sNmSet = (a) => new Set(exports.sRplNonNmChr(a).split(/\s+/));
+const _isBrkChrCd = (c) => c === NaN || exports.chrCd_isCapitalLetter(c) || exports.chrCd_isUnderScore(c) || exports.chrCd_isDollar(c);
+const _isBrk = (c, c0) => _isBrkChrCd(c) && !_isBrkChrCd(c0);
+exports.cmlNy = (a) => {
+    if (!exports.isNm(a))
+        exports.er('Give {s} is not a name', { s: a });
+    const o = [];
+    let m = '';
+    for (let i = a.length; i--; i > 0) {
+        const cc = a[i];
+        const c = a.charCodeAt(i);
+        const c0 = a.charCodeAt(i - 1);
+        m = cc + m;
+        if (_isBrk(c, c0)) {
+            o.push(m);
+            m = '';
+        }
+    }
+    if (m !== '')
+        o.push(m);
+    const z = o.reverse();
+    return z;
+};
+exports.sHasPfx = (pfx) => (a) => a.startsWith(pfx);
 exports.sHasPfxIgnCas = (pfx) => (a) => {
     const a1 = exports.sLeft(pfx.length)(a).toUpperCase();
     const pfx1 = pfx.toUpperCase();
     return a1 === pfx1;
 };
-exports.sHasPfx = (pfx) => (a) => {
-    const a1 = exports.sLeft(pfx.length)(a);
-    return a1 === pfx;
-};
-exports.sRmvPfx = (pfx) => (a) => exports.swLinEr_stmtSwLinError(pfx)(a) ? a.substr(pfx.length) : a;
+exports.sRmvPfx = (pfx) => (a) => exports.sHasPfx(pfx)(a) ? a.substr(pfx.length) : a;
 exports.sHasSfx = (sfx) => (a) => a.endsWith(sfx);
 exports.sRmvSfx = (sfx) => (a) => exports.sHasSfx(sfx)(a) ? a.substr(0, a.length - sfx.length) : a;
 exports.sMatch = (re) => (a) => a.match(re);
@@ -248,7 +254,7 @@ exports.isRmkLin = (a) => {
     const l = a.trim();
     if (l === "")
         return true;
-    if (exports.swLinEr_stmtSwLinError("--")(l))
+    if (exports.sHasPfx("--")(l))
         return true;
     return false;
 };
@@ -256,7 +262,7 @@ exports.isNonRmkLin = exports.predNot(exports.isRmkLin);
 exports.linRmvMsg = (a) => {
     const a1 = a.match(/(.*)---/);
     const a2 = a1 === null ? a : a1[1];
-    if (exports.swLinEr_stmtSwLinError("^")(a2.trimLeft()))
+    if (exports.sHasPfx("^")(a2.trimLeft()))
         return "";
     return a2;
 };
@@ -313,7 +319,7 @@ exports.ffnFnn = (a) => exports.ffnFn(exports.ffnRmvExt(a));
 exports.ffnRplExt = (ext) => (a) => exports.ffnRmvExt(a) + ext;
 //-----------------------------------------------------------------------
 exports.ftLines = (a) => (fs.readFileSync(a).toString());
-exports.ftLy = (a) => exports.sSplitCrLf(exports.ftLines(a));
+exports.ftLy = (a) => exports.sSplitLines(exports.ftLines(a));
 //-----------------------------------------------------------------------
 exports.tmpnm = () => exports.sRmvColon(new Date().toJSON());
 exports.tmppth = os.tmpdir + exports.pthsep;
@@ -328,8 +334,8 @@ exports.ffnCloneTmp = (a) => {
 //-----------------------------------------------------------------------
 exports.pm = (f, ...p) => new Promise(
 /**
- * @description return a Promise of {er,rslt} by calling f(...,p,cb), where cb is (er,rslt)=>{...}
- * it is usefully in creating a promise by any async f(...p,cb), assuming cb is (er,rslt)=>{...}
+ * @description return a Promise of {er,rslt} by calling f(...p,cb), where cb is (er,rslt)=>{...}
+ * it is usefully in creating a promise by any async f(...p,cb)
  * @param {(er,rslt)=>void} f
  * @param {...any} p
  * @see
@@ -337,6 +343,18 @@ exports.pm = (f, ...p) => new Promise(
 (rs, rj) => {
     f(...p, (e, rslt) => {
         e ? rj(e) : rs(rslt);
+    });
+});
+exports.pmErRslt = (f, ...p) => new Promise((rs, rj) => {
+    f(...p, (er, rslt) => {
+        let z = er ? { er, rslt: null } : { er, rslt };
+        rs(z);
+    });
+});
+exports.pmRsltOpt = (f, ...p) => new Promise((rs, rj) => {
+    f(...p, (er, rslt) => {
+        let z = er ? null : rslt;
+        rs(z);
     });
 });
 exports.ftLinesPm = (a) => exports.pm(fs.readFile, a).then(rslt => rslt.toString());
@@ -443,19 +461,21 @@ exports.lySdic = (a) => {
     return o;
 };
 exports.lyReDry = (re) => (a) => exports.itrMap(exports.matchDr)(exports.lyMatchAy(re)(a));
-exports.lyReCol = (re) => (a) => { let z = exports.matchAyFstCol(exports.lyMatchAy(re)(a)).sort(); return z; };
-exports.matchAySdry = (a) => { let z = exports.itrMap(exports.matchDr)(a); return z; };
+exports.lyReCol = (re) => (a) => exports.matchAyFstCol(exports.lyMatchAy(re)(a)).sort();
+exports.matchAySdry = (a) => exports.itrMap(exports.matchDr)(a);
 exports.matchFstItm = (a) => a[1];
-exports.matchAyFstCol = (a) => { let z = exports.itrMap(exports.matchFstItm)(a); return z; };
-exports.lyPfxCnt = (pfx) => (a) => { let o = 0; exports.itrEach(lin => { if (exports.swLinEr_stmtSwLinError(pfx)(lin))
-    o++; })(a); return o; };
+exports.matchAyFstCol = (a) => exports.itrMap(exports.matchFstItm)(a);
+exports.lyPfxCnt = (pfx) => (a) => { let z = 0; exports.itrEach(lin => { if (exports.sHasPfx(pfx)(lin))
+    z++; })(a); return z; };
 exports.lyHasMajPfx = (pfx) => (a) => 2 * exports.lyPfxCnt(pfx)(a) > a.length;
-exports.lyMatchAy = (re) => (a) => { let z = exports.itrRmvEmp(exports.itrMap(exports.sMatch(re))(a)); return z; };
+exports.lyMatchAy = (re) => (a) => exports.itrRmvEmp(exports.itrMap(exports.sMatch(re))(a));
 exports.matchDr = (a) => [...a].splice(1);
-exports.lyConstNy = exports.lyReCol(/^const\s+([\$\w][\$0-9\w_]*)[\:\= ]/);
-exports.lyConstDollarNy = exports.lyReCol(/^export const (\$[\$0-9\w_]*)[\:\= ]/);
-exports.ftConstNy = a => exports.pipe(a)(exports.ftLy, exports.lyConstNy);
-exports.ftConstDollarNy = a => exports.pipe(a)(exports.ftLy, exports.lyConstDollarNy);
+exports.reExpConstNm = /^export\s+const\s+([\w][\$_0-9\w_]*)/;
+exports.reExpDollarConstNm = /^export\s+const\s+([\$\w][\$_0-9\w_]*)/;
+exports.lyExpConstNy = (a) => exports.lyReCol(exports.reExpConstNm)(a);
+exports.lyExpConstDollarNy = (a) => exports.lyReCol(exports.reExpDollarConstNm)(a);
+exports.ftsExpConstNy = (a) => exports.pipe(a)(exports.ftLy, exports.lyExpConstNy);
+exports.ftsExpConstDollarNy = (a) => exports.pipe(a)(exports.ftLy, exports.lyExpConstDollarNy);
 //---------------------------------------------------------------------------
 exports.isStr = v => typeof v === 'string';
 exports.isNum = v => typeof v === 'number';
@@ -481,10 +501,7 @@ exports.isEmp = v => v ? false : true;
 exports.isNonEmp = v => v ? true : false;
 exports.isOdd = n => n % 2 === 1;
 exports.isEven = n => n % 2 === 0;
-exports.isSpc = (s) => {
-    let z = s === null || s[0] === undefined ? false : /\s/.test(s[0]);
-    return z;
-};
+exports.isSpc = (s) => s === null || s === undefined || s[0] === undefined ? false : /\s/.test(s[0]);
 //----------------------------------------------------------------------------
 exports.sSearch = (re) => (a) => a.search(re);
 exports.sBrkP123 = (quoteStr) => (a) => {
@@ -540,12 +557,12 @@ exports.itrAy = (a) => { const o = []; for (let i of a)
     o.push(i); return o; };
 exports.itrFst = (a) => { for (let i of a)
     return i; return null; };
-exports.itrAddPfxSfx = (pfx, sfx) => (a) => { let z = exports.itrMap(exports.sAddPfxSfx(pfx, sfx))(a); return z; };
-exports.itrAddPfx = (pfx) => (a) => { let z = exports.itrMap(exports.sAddPfx(pfx))(a); return z; };
-exports.itrAddSfx = (sfx) => (a) => { let z = exports.itrMap(exports.sAddSfx(sfx))(a); return z; };
-exports.itrWdt = (a) => { let z = exports.pipe(exports.itrMap(exports.vLen)(a))(exports.itrMax); return z; };
-exports.sitrWdt = (a) => { let z = exports.pipe(exports.itrMap(exports.sLen)(a))(exports.itrMax); return z; };
-exports.itrAlignL = (a) => { let z = exports.itrMap(exports.sAlignL(exports.itrWdt(a)))(a); return z; };
+exports.itrAddPfxSfx = (pfx, sfx) => (a) => exports.itrMap(exports.sAddPfxSfx(pfx, sfx))(a);
+exports.itrAddPfx = (pfx) => (a) => exports.itrMap(exports.sAddPfx(pfx))(a);
+exports.itrAddSfx = (sfx) => (a) => exports.itrMap(exports.sAddSfx(sfx))(a);
+exports.itrWdt = (a) => exports.pipe(exports.itrMap(exports.vLen)(a))(exports.itrMax);
+exports.sitrWdt = (a) => exports.pipe(exports.itrMap(exports.sLen)(a))(exports.itrMax);
+exports.itrAlignL = (a) => exports.itrMap(exports.sAlignL(exports.itrWdt(a)))(a);
 exports.itrClone = (a) => exports.itrMap(i => i)(a);
 exports.itrFind = (p) => (a) => { for (let i of a)
     if (p(i))
@@ -636,14 +653,23 @@ exports.oCmlObj = (a) => {
     return z;
 };
 // ----------------------------------------------
+const funsExport = (...f) => f.forEach(funExport);
+const funExport = (f) => {
+    const funName = f.name;
+    if (exports.oHasPrp(funName)(exports)) {
+        exports.er('the {funName} already exported', { funName });
+    }
+    exports.funName = f;
+};
+// ----------------------------------------------
 exports.ayClone = (ay) => ay.slice(0, ay.length);
 // ----------------------------------------------
 exports.sdryColWdt = (colIx) => (a) => exports.sitrWdt(exports.dryCol(colIx)(a));
-exports.sdryColWdtAy = (a) => { let z = exports.itrMap(i => exports.sdryColWdt(i)(a))(exports.nItr(exports.dryColCnt(a))); return z; };
+exports.sdryColWdtAy = (a) => exports.itrMap(i => exports.sdryColWdt(i)(a))(exports.nItr(exports.dryColCnt(a)));
 exports.dryCol = (colIx) => (a) => exports.itrMap(exports.ayEleOrDft('')(colIx))(a);
-exports.dryColCnt = (a) => { let z = exports.itrMax(exports.itrMap(exports.vLen)(a)); return z; };
+exports.dryColCnt = (a) => exports.itrMax(exports.itrMap(exports.vLen)(a));
 exports.dryCellMdy = (f) => (a) => { exports.itrEach(exports.ayMdy(f))(a); };
-exports.dryClone = (a) => { let z = exports.itrMap(dr => exports.itrClone(dr))(a); return z; };
+exports.dryClone = (a) => exports.itrMap(dr => exports.itrClone(dr))(a);
 exports.dryColMdy = (colIx) => (f) => (a) => { exports.itrEach(exports.ayMdyEle(colIx)(f))(a); };
 exports.sdryLines = (a) => exports.sdryLy(a).join('\r\n');
 exports.wdtAyLin = (wdtAy) => "|-" + exports.itrMap(w => '-'.repeat(w))(wdtAy).join('-|-') + "-|";
@@ -660,8 +686,9 @@ exports.sdryLy = (a) => {
     let z = [h].concat(exports.itrMap(exports.sdrLin(w))(a), h);
     return z;
 };
-exports.aySy = (a) => { let z = exports.itrMap(String)(a); return z; };
-exports.drySdry = (a) => { let z = exports.itrMap(exports.aySy)(a); return z; };
+exports.itrSy = (a) => exports.itrMap(String)(a);
+exports.aySy = (a) => exports.itrMap(String)(a);
+exports.drySdry = exports.itrMap(exports.aySy);
 exports.dryLy = (a) => exports.sdryLy(exports.drySdry(a));
 exports.drsLy = (a) => {
     let { fny, dry } = a;
@@ -670,34 +697,44 @@ exports.drsLy = (a) => {
     let z = c.slice(0, 2).concat(c[0], c.slice(2));
     return z;
 };
+exports.drsBrw = (a) => exports.sBrw(exports.drsLines(a));
 exports.drsLines = (a) => exports.drsLy(a).join('\r\n');
+exports.drySrtCol = (colAy) => (a) => {
+    const x = (col) => {
+        return a;
+    };
+    let z = a;
+    for (let i = 0; i++; i < colAy.length)
+        z = x(i);
+};
 exports.drySrt = (fun_of_dr_to_key) => (a) => a.sort((dr_A, dr_B) => exports.vvCompare(fun_of_dr_to_key(dr_A), fun_of_dr_to_key(dr_B)));
 //-----------------------------------------------------------------------
 exports.oyPrpCol = prpNm => oy => { const oo = []; for (let o of oy)
     oo.push(o[prpNm]); return oo; };
 exports.oyPrpDry = prpNy => oy => { const oo = []; for (let o of oy)
     oo.push(exports.oPrpAy(prpNy)(o)); return oo; };
-//---------------------------------------
-const _isEsc = i => { for (let spec of "()[]{}/|.+")
-    if (i === spec)
-        return true; };
-const _escSpec = lik => exports.itrMap(i => i === '\\' ? '\\\\' : (_isEsc(i) ? '\\' + i : i))(lik).join(''); //; const xxx = _escSpec("abc?dd"); debugger
-const _escStar = lik => exports.itrMap(i => i === '*' ? '.*' : i)(lik).join('');
-const _escQ = lik => { const o = []; for (let i of lik)
-    o.push(i === '?' ? '.' : i); return o.join(''); };
-const _esc = lik => "^" + exports.pipe(lik)(_escSpec, _escStar, _escQ) + "$";
-const _likRe = lik => new RegExp(_esc(lik));
-const _isEscSbs = i => { for (let spec of "()[]{}/|.+?*")
-    if (i === spec)
-        return true; };
-const _escSbs = c => c === '\\' ? '\\\\' : (_isEscSbs(c) ? '\\' + c : c);
-exports.sLik = (lik) => (a) => _likRe(a).test(a); // strictEqual(sLik("abc?dd")("abcxdd"), true); debugger
-exports.sHasSbs = (sbs) => (a) => {
-    const _escSpec = exports.itrMap(_escSbs)(sbs).join("");
-    const _sbsRe = new RegExp(_escSpec);
-    let o = _sbsRe.test(a);
-    return o;
-};
+{
+    const _isEsc = i => { for (let spec of "()[]{}/|.+")
+        if (i === spec)
+            return true; };
+    const _escSpec = lik => exports.itrMap(i => i === '\\' ? '\\\\' : (_isEsc(i) ? '\\' + i : i))(lik).join(''); //; const xxx = _escSpec("abc?dd"); debugger
+    const _escStar = lik => exports.itrMap(i => i === '*' ? '.*' : i)(lik).join('');
+    const _escQ = lik => { const o = []; for (let i of lik)
+        o.push(i === '?' ? '.' : i); return o.join(''); };
+    const _esc = lik => "^" + exports.pipe(lik)(_escSpec, _escStar, _escQ) + "$";
+    const _likRe = lik => new RegExp(_esc(lik));
+    const _isEscSbs = i => { for (let spec of "()[]{}/|.+?*")
+        if (i === spec)
+            return true; };
+    const _escSbs = c => c === '\\' ? '\\\\' : (_isEscSbs(c) ? '\\' + c : c);
+    exports.sLik = (lik) => (a) => _likRe(a).test(a);
+    exports.sHasSbs = (sbs) => (a) => {
+        const _escSpec = exports.itrMap(_escSbs)(sbs).join("");
+        const _sbsRe = new RegExp(_escSpec);
+        let o = _sbsRe.test(a);
+        return o;
+    };
+}
 //---------------------------------------
 exports.pthFnAy = (pth, lik) => {
     if (!fs.existsSync(pth))
@@ -709,14 +746,26 @@ exports.pthFnAy = (pth, lik) => {
     return o;
 }; // const xxx = pthFnAy("c:\\users\\user\\", "sdfdf*.*"); debugger;
 exports.ayZip = (a, b) => exports.itrMap(i => [a[i], b[i]])(exports.nItr(a.length));
+exports.entryStatPm = async (a) => {
+};
 exports.pthFnAyPm = async (a, lik) => {
-    const entries = await exports.pm(fs.readdir, a);
-    const stat = entry => exports.pm(fs.stat, path.join(a, entry));
-    let b = (lik === undefined) ? entries : exports.itrWhere(exports.sLik(lik))(entries);
-    let c = await Promise.all(exports.itrMap(stat)(a));
-    let d = exports.pipe(exports.nItr(entries.length))(exports.itrWhere(i => b[i].isFile()), exports.itrMap(i => entries[i]));
+    const b = await pthStatAyPm(a, lik);
+    let d = exports.pipe(exports.nItr(b.length))(exports.itrWhere(i => b[i].isFile()), exports.itrMap(i => entries[i]));
     debugger;
     return d;
+};
+exports.pthStatOptAyPm = async (a, lik) => {
+    const b = await exports.pm(fs.readdir, a);
+    const b1 = (lik === undefined) ? b : exports.itrWhere(exports.sLik(lik))(b);
+    const j = b => path.join(a, b);
+    const b2 = exports.itrMap(j)(b1);
+    const stat = entry => exports.pmRsltOpt(fs.stat, entry);
+    const c = exports.itrMap(stat)(b2);
+    const z = await Promise.all(c);
+    return z;
+};
+exports.pthStatOptAyPm(__dirname).then(a => { exports.dmp(a); debugger; });
+exports.pthFdrAyPm = async (a, lik) => {
 };
 //---------------------------------------
 exports.nMultiply = x => a => a * x;
@@ -735,12 +784,55 @@ exports.lazy = vf => { let v, done = false; return () => { if (!done) {
 } ; return v; }; };
 //---------------------------------------------------------------------------
 exports.optMap = (f) => (a) => a !== null ? f(a) : a;
+exports.ffn = (a) => new Ffn(a);
+class Ffn {
+    constructor(a) {
+        this._ffn = a;
+        this._dotPos = a.lastIndexOf('.');
+        this._sepPos = a.lastIndexOf(exports.pthsep);
+    }
+    zmid(at) { return exports.sMid(at)(this.ffn); }
+    zleft(at) { return exports.sLeft(at)(this.ffn); }
+    get ffn() { return this._ffn; }
+    get pth() { const at = this._sepPos; return at === -1 ? '' : this.zleft(at + 1); }
+    get fn() { const at = this._sepPos; return at === -1 ? this.ffn : this.zmid(at + 1); }
+    get ext() { const at = this._dotPos; return at === -1 ? '' : this.zmid(at); }
+    get noExt() { const at = this._dotPos; return at === -1 ? this.ffn : this.zleft(at); }
+    get ffnn() { return this.noExt; }
+    get fnn() { return exports.ffn(this.noExt).fn; }
+    addFnSfx(sfx) { return this.ffnn + sfx + this.ext; }
+    rplExt(ext) { return this.ffnn + ext; }
+    makBackup() {
+        const ext = this.ext;
+        const ffnn = this.ffnn;
+        const pth = this.pth;
+        const ffn = this.ffn;
+        let b = exports.sRight(12)(ffnn);
+        const isBackupFfn = (exports.sHasPfx("(backup-")(ffn)) && (exports.sHasSfx(")")(ffn));
+        const fn = this.fn;
+        const backupSubFdr = `.backup\\${fn}\\`;
+        const backupPth = pth + backupSubFdr;
+        if (ext === '.backup')
+            exports.er("given [ext] cannot be '.backup", { ext, ffnn });
+        if (isBackupFfn)
+            exports.er("{ffn} cannot be a backup file name", { ffn: this.ffn });
+        let c = exports.pthFnAy(backupPth, ffnn + '(backup-???)' + ext);
+        let nxtBackupNNN = c === null || exports.isEmp(b) ? '000' :
+            exports.pipe(c)(exports.itrMax, exports.ffnRmvExt, exports.sRmvLasChr, exports.sRight(3), Number.parseInt, exports.nIncr, exports.nPadZero(3));
+        const backupFfn = backupPth + exports.ffnAddFnSfx(`(backup-${nxtBackupNNN})`)(fn);
+        exports.pthEnsSubFdr(backupSubFdr)(pth);
+        fs.copyFileSync(this.ffn, backupFfn);
+    }
+}
+exports.Ffn = Ffn;
+const xxx = exports.ffn(__filename);
+debugger;
 exports.ffnMakBackup = (a) => {
     const ext = exports.ffnExt(a);
     const ffnn = exports.ffnRmvExt(a);
     const pth = exports.ffnPth(a);
     let b = exports.sRight(12)(ffnn);
-    const isBackupFfn = (exports.swLinEr_stmtSwLinError("(backup-")(a)) && (exports.sHasSfx(")")(a));
+    const isBackupFfn = (exports.sHasPfx("(backup-")(a)) && (exports.sHasSfx(")")(a));
     const fn = exports.ffnFn(a);
     const backupSubFdr = `.backup\\${fn}\\`;
     const backupPth = pth + backupSubFdr;
@@ -756,20 +848,20 @@ exports.ffnMakBackup = (a) => {
     fs.copyFileSync(a, backupFfn);
 };
 exports.lyExpStmt = (a) => {
-    let ny = exports.lyConstNy(a);
-    ny = exports.itrWhere(exports.predNot(exports.swLinEr_stmtSwLinError("_")))(ny).sort();
+    let ny = exports.lyExpConstNy(a);
+    ny = exports.itrWhere(exports.predNot(exports.sHasPfx("_")))(ny).sort();
     if (exports.isEmp(ny))
         return null;
     const x = exports.ayJnAsLines(", ", 4, 120)(ny);
     let z = "export {\r\n" + x + "\r\n}";
     return z;
 };
-exports.curExpStmt = () => { let z = exports.pipe(__filename)(exports.ftLy, exports.lyExpStmt); return z; };
+exports.curExpStmt = () => exports.pipe(__filename)(exports.ftLy, exports.lyExpStmt);
 // dmp(curExpStmt); debugger
 exports.fjsRplExpStmt = fjs => {
     const oldLy = exports.ftLy(fjs);
     const newLin = exports.lyExpStmt(oldLy);
-    let oldBegIx = exports.ayFindIx(exports.swLinEr_stmtSwLinError("exports {"))(oldLy);
+    let oldBegIx = exports.ayFindIx(exports.sHasPfx("exports {"))(oldLy);
     let oldEndIx = (() => {
         if (oldBegIx !== null) {
             for (let i = oldBegIx; i < oldLy.length; i++) {
@@ -844,7 +936,113 @@ exports.ftWrt = (s) => (a) => fs.writeFileSync(a, s);
 exports.cmdShell = (a) => child_process.exec(a);
 exports.ftBrw = (a) => exports.cmdShell(`code.cmd "${a}"`);
 exports.sBrw = (a) => { exports.pipe(exports.tmpft())(exports.vTee(exports.ftWrt(a)), exports.ftBrw); };
+exports.lyBrw = (a) => exports.sBrw(a.join('\r\n'));
 exports.oBrw = (a) => exports.sBrw(exports.oJsonLines(a));
 exports.oJsonLines = (a) => JSON.stringify(a);
-//fjsRplExpStmt(ffnRplExt(".ts")(__filename))
+//---------------------- ------------------
+exports.chrCd_isNm = (c) => true;
+exports.chrCd = (s) => s.charCodeAt(0);
+exports.chrCd_a = exports.chrCd('a');
+exports.chrCd_z = exports.chrCd('z');
+exports.chrCd_A = exports.chrCd('A');
+exports.chrCd_Z = exports.chrCd('Z');
+exports.chrCd_0 = exports.chrCd('0');
+exports.chrCd_9 = exports.chrCd('9');
+exports.chrCd_dollar = exports.chrCd('$');
+exports.chrCd_underScore = exports.chrCd('_');
+exports.chrCd_isSmallLetter = exports.vBET(exports.chrCd_a, exports.chrCd_z);
+exports.chrCd_isCapitalLetter = exports.vBET(exports.chrCd_A, exports.chrCd_Z);
+exports.chrCd_isLetter = exports.predsOr(exports.chrCd_isSmallLetter, exports.chrCd_isCapitalLetter);
+exports.chrCd_isDigit = exports.vBET(exports.chrCd_0, exports.chrCd_9);
+exports.chrCd_isDollar = exports.vEQ(exports.chrCd_dollar);
+exports.chrCd_isUnderScore = exports.vEQ(exports.chrCd_underScore);
+exports.chrCd_isFstNmChr = exports.predsOr(exports.chrCd_isLetter, exports.chrCd_isUnderScore, exports.chrCd_isDollar);
+exports.chrCd_isNmChr = exports.predsOr(exports.chrCd_isFstNmChr, exports.chrCd_isDigit);
+exports.aySrt = (a) => a.sort();
+exports.ssetSrtBrw = (a) => exports.pipe(a)(exports.itrAy, exports.aySrt, exports.lyBrw);
+exports.ssetBrw = (a) => exports.pipe(a)(exports.itrAy, exports.sBrw);
+exports.linExpConstNm = (a) => {
+    const m = a.match(exports.reExpConstNm);
+    if (m === null)
+        return null;
+    return m[1];
+};
+exports.nodeModuleSet = () => {
+    const z = new Set();
+    const _pushChildren = (m) => {
+        let c;
+        for (let c of m.children) {
+            if (!z.has(c)) {
+                z.add(c);
+                _pushChildren(c);
+            }
+        }
+    };
+    _pushChildren(module);
+    return z;
+};
+const x = (a) => {
+    const ay = exports.oPrpNy(a.exports);
+    const z = [];
+    const id = a.id;
+    for (let nm of ay) {
+        const itm = a.exports[nm];
+        const ty = typeof itm;
+        //const funNm = ty==='function'?itm.name:''
+        const m = [nm, typeof itm, id];
+        z.push(m);
+    }
+    return z;
+};
+exports.drsOf_exportFunctions = () => {
+    const fny = ['name', 'type', 'id'];
+    let dry = [];
+    let md;
+    const set = exports.nodeModuleSet();
+    for (md of set) {
+        dry = dry.concat(x(md));
+    }
+    const z = { fny, dry };
+    return z;
+};
+class Dry {
+    constructor(a) {
+        this.dry = a;
+        this._curCol = 0;
+    }
+    get curCol() { return this._curCol; }
+    set curCol(n) { this._curCol = n; }
+    get colCnt() { return exports.itrMax(exports.itrMap(exports.vLen)(this.dry)); }
+    get ly() { return exports.sdryLy(this.sdry); }
+    get lines() { return exports.sdryLines(this.sdry); }
+    get col() { return exports.itrMap(exports.ayEleOrDft('')(this.curCol))(this.dry); }
+    get sdry() { return exports.itrMap(exports.aySy)(this.dry); }
+    setCurCol(n) { this.curCol = n; return this; }
+    mdyAllCell(f) { exports.itrEach(exports.ayMdy(f))(this.dry); }
+    clone() { return new Dry(exports.itrMap(dr => exports.itrClone(dr))(this.dry)); }
+    mdyCol(f, colIx) { exports.itrEach(exports.ayMdyEle(colIx)(f))(this.dry); }
+    brw() { exports.sBrw(this.lines); }
+}
+exports.Dry = Dry;
+exports.dry = (a) => new Dry(a);
+if (module.id === '.') {
+    const tst__drsOf_exportFunctions = 1;
+    if (false) {
+        require('webpack');
+        require('curryfun');
+        const a = exports.drsOf_exportFunctions();
+        const xx = exports.dry(a.dry);
+        xx.setCurCol(1).brw();
+        debugger;
+        //drsBrw(a)
+    }
+    if (false) {
+        const tst__pthFnAyPm = exports.pthFnAyPm(__dirname).then(exports.dmp);
+        const tst__cmlSpcNm = exports.pipe(__filename)(exports.ffnRplExt('.ts'), exports.ftsExpConstNy, exports.itrMap(exports.cmlSpcNm), exports.lyBrw);
+        const tst__sNmSet = exports.pipe(__filename)(exports.ftLines, exports.sNmSet, exports.ssetSrtBrw);
+        const tst__cmlNy = exports.cmlNy('abAySpc');
+        const tst__sLik = exports.strictEqual(exports.sLik("abc?dd")("abcxdd"), true);
+        debugger;
+    }
+}
 //# sourceMappingURL=curryfun.js.map

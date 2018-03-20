@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const lyAddErAsLines_1 = require("./lyAddErAsLines");
 const x = require("./curryfun");
+const xx = module.id === '.';
 const sq_UPD = 'UPD';
 const sq_DIS = 'DIS';
 const sq_DRP = 'DRP';
@@ -13,25 +13,23 @@ const sq_LEF = 'LEF';
 const sq_WHE = 'WHE';
 const sq_AND = 'AND';
 const sq_OR = 'OR';
-const sqtprslt = ({ sqtp: a }) => {
+exports.sqtprslt = ({ sqtp: a }) => {
     const ly = x.sSplitLf(a);
     const ly1 = lyRmvMsg(ly);
     const gp = lyGp(ly1);
     const gp1 = gpRmvRmk(gp);
     const gpy = gpGpy(gp1, '==');
     const bky = gpyBky(gpy);
-    const aftRm_bky = x.itrWhere((bk) => bk.bkty !== 0 /* RM */)(bky);
+    const aftRm_bky = x.itrWhere((bk) => bk.bkty !== Bkty.RM)(bky);
     const [aftEr_er, aftEr_bky] = er02(aftRm_bky);
     const [aftPm_er, aftPm_bky, pm] = pm03(aftEr_bky);
     const [aftSw_er, aftSw_bky, sw] = sw04(aftPm_bky, pm);
-    debugger;
     const [aftSq_er, sql] = sq05(aftSw_bky, pm, sw);
     const er = aftEr_er.concat(aftPm_er, aftSw_er, aftSq_er);
     const vtp = lyAddErAsLines_1.lyAddErAsLines(ly1, er);
     const z = { vtp, sql };
     return z;
 };
-exports.sqtprslt = sqtprslt;
 const linRmvMsg = (a) => {
     const b = a.match(/(.*)---/);
     const c = b === null ? a : a[1];
@@ -79,11 +77,17 @@ const sqsellyIsSkip = (a, sqStmtSw) => {
     if (tblFmLin === null)
         return false;
     const tblNm = x.sSplitSpc(tblFmLin)[1];
-    if (sqStmtSw.has(tblNm))
-        return sqStmtSw.get(tblNm);
-    else
-        return false;
+    const key = '?' + tblNm;
+    const z = sqStmtSw.get(key);
+    return z === undefined
+        ? false
+        : z;
 };
+if (xx) {
+    const ly = ['fm #aa'];
+    const sqStmtSw = new Map([['?#aa', false]]);
+    const aa = sqsellyIsSkip(ly, sqStmtSw);
+}
 const sqselBrkSel = (a, term) => {
     return [a, a];
 };
@@ -164,7 +168,7 @@ const sqgp_sqFldExprSdic = (a) => {
     const z = [lySdic(ly), gp];
     return z;
 };
-const sqgpEvlSel = (a, term, pm, { sqFldSw, sqStmtSw }) => {
+const sqsel = (a, term, pm, { sqFldSw, sqStmtSw }) => {
     const ly = gpLy(a);
     let z;
     if (sqsellyIsSkip(ly, sqStmtSw)) {
@@ -182,9 +186,9 @@ const sqgpEvlSel = (a, term, pm, { sqFldSw, sqStmtSw }) => {
     z = [er, sql];
     return z;
 };
-const sqgpEvlDrp = (a) => {
-    const emptySqevl = [[], ''];
-    return emptySqevl;
+const sqdrp = (a) => {
+    const z = [[], ''];
+    return z;
 };
 const squpdgpIsSkip = (a, sqStmtSw) => {
     const tblNm = '';
@@ -193,7 +197,7 @@ const squpdgpIsSkip = (a, sqStmtSw) => {
     else
         return false;
 };
-const sqgpEvlUpd = (a, pm, { sqFldSw, sqStmtSw }) => {
+const squpd = (a, pm, { sqFldSw, sqStmtSw }) => {
     let z;
     if (squpdgpIsSkip(a, sqStmtSw)) {
         z = [[], ''];
@@ -207,20 +211,20 @@ const sqgpEvlUpd = (a, pm, { sqFldSw, sqStmtSw }) => {
     z = [er, sql];
     return z;
 };
-const sqgpEvl = (a, pm, sw) => {
+const sqevl = (a, pm, sw) => {
     const fstLin = a[0].lin;
     const term = x.sRmvPfx("?")(x.linFstTerm(fstLin).toUpperCase());
     let z;
     switch (term) {
         case sq_DRP:
-            z = sqgpEvlDrp(a);
+            z = sqdrp(a);
             break;
         case sq_SEL:
         case sq_DIS:
-            z = sqgpEvlSel(a, term, pm, sw);
+            z = sqsel(a, term, pm, sw);
             break;
         case sq_UPD:
-            z = sqgpEvlUpd(a, pm, sw);
+            z = squpd(a, pm, sw);
             break;
         default:
             x.er('impossible: {bk} should have {term} be one of [Drp | Sel | Dis | Upd]', { term, bk: a });
@@ -232,7 +236,7 @@ const sq05 = (a, pm, sw) => {
     let er = [];
     let sql = "";
     for (let { bkty, gp } of a) {
-        let [i_er, i_sql] = sqgpEvl(gp, pm, sw);
+        let [i_er, i_sql] = sqevl(gp, pm, sw);
         er = er.concat(i_er);
         sql = sql === ""
             ? i_sql
@@ -718,9 +722,9 @@ const lySw = (a, pm) => {
     }
     if (ly1.length !== 0)
         x.er('ly1 should has 0-length', { ly1 });
-    return swSplit(sw);
+    return bdicSw(sw);
 };
-const swSplit = (a) => {
+const bdicSw = (a) => {
     const sqFldSw = new Map();
     const sqStmtSw = new Map();
     for (let [k, b] of a) {
@@ -732,4 +736,8 @@ const swSplit = (a) => {
     const z = { sqFldSw, sqStmtSw };
     return z;
 };
+var tst__swSplit = 1;
+if (xx) {
+    debugger;
+}
 //# sourceMappingURL=sqtp.js.map

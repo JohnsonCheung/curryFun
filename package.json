@@ -2,7 +2,7 @@
   "name": "curryfun",
   "version": "0.1.0",
   "description": "some javascript functions written in curry form",
-  "main": "curryfun.js",
+  "main": "./scripts/curryfun.js",
   "scripts": {
     "test": "jasmine",
     "t-sqtp": "jasmine ./scripts/spec/sqtp_spec.js",

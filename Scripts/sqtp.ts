@@ -1,11 +1,11 @@
-/// <reference path="./curryfun.d.ts"/>
+//// <reference path="./curryfun.d.ts"/>
 import { ix, sset, sdic, p, pfx, cnt, n, s, ay, lin, b, ly } from './curryfun'
 import { lyAddErAsLines } from './lyAddErAsLines'
 import * as x from './curryfun'
 export interface eritm { ix: n, sfxMsg: s[], endMsg: s[] }
 export interface poswdt { pos: n, wdt: n }
 export type er = eritm[]
-export { sqtprslt }
+const xx = module.id === '.'
 interface sqtp { sqtp: s }
 interface bk { bkty: Bkty, gp: gp }
 interface sqgp extends gp { }
@@ -17,6 +17,9 @@ interface termprslt { term: s, plin: plin }
 const enum Bkty { RM, PM, SW, SQ, ER }
 type gp = ixlin[]
 type sqevl = [er, sql]
+type sqdrp = sqevl
+type sqsel = sqevl
+type squpd = sqevl
 type bdic = Map<s, boolean>
 type sw = { sqFldSw: bdic, sqStmtSw: bdic }
 type pm = Map<s, s>
@@ -33,7 +36,7 @@ const sq_LEF = 'LEF'
 const sq_WHE = 'WHE'
 const sq_AND = 'AND'
 const sq_OR = 'OR'
-const sqtprslt = ({ sqtp: a }: sqtp) => {
+export const sqtprslt = ({ sqtp: a }: sqtp) => {
     const ly = x.sSplitLf(a)
     const ly1 = lyRmvMsg(ly)
     const gp = lyGp(ly1)
@@ -44,7 +47,6 @@ const sqtprslt = ({ sqtp: a }: sqtp) => {
     const [aftEr_er, aftEr_bky] = er02(aftRm_bky)
     const [aftPm_er, aftPm_bky, pm] = pm03(aftEr_bky)
     const [aftSw_er, aftSw_bky, sw] = sw04(aftPm_bky, pm)
-    debugger
     const [aftSq_er, sql] = sq05(aftSw_bky, pm, sw)
     const er = aftEr_er.concat(aftPm_er, aftSw_er, aftSq_er)
     const vtp = lyAddErAsLines(ly1, er)
@@ -102,10 +104,16 @@ const sqsellyIsSkip = (a: ly, sqStmtSw: bdic) => {
     const tblFmLin = x.itrFind(x.sHasPfxIgnCas(sq_FRO))(a)
     if (tblFmLin === null) return false
     const tblNm = x.sSplitSpc(tblFmLin)[1]
-    if (sqStmtSw.has(tblNm))
-        return sqStmtSw.get(tblNm)
-    else
-        return false
+    const key = '?' + tblNm
+    const z = sqStmtSw.get(key)
+    return z===undefined 
+        ? false 
+        : z
+}
+if (xx) {
+    const ly = ['fm #aa']
+    const sqStmtSw = new Map<s, b>([['?#aa', false]])
+    const aa = sqsellyIsSkip(ly, sqStmtSw)
 }
 const sqselBrkSel = (a: sqgp, term: s) => {
     return [a, a]
@@ -188,9 +196,9 @@ const sqgp_sqFldExprSdic = (a: sqgp) => {
     const z: [sdic, sqgp] = [lySdic(ly), gp]
     return z
 }
-const sqgpEvlSel = (a: sqgp, term: s, pm: pm, { sqFldSw, sqStmtSw }: sw) => {
+const sqsel = (a: sqgp, term: s, pm: pm, { sqFldSw, sqStmtSw }: sw) => {
     const ly = gpLy(a)
-    let z: sqevl
+    let z: sqsel
     if (sqsellyIsSkip(ly, sqStmtSw)) {
         z = [[], '']
         return z
@@ -206,9 +214,9 @@ const sqgpEvlSel = (a: sqgp, term: s, pm: pm, { sqFldSw, sqStmtSw }: sw) => {
     z = [er, sql]
     return z
 }
-const sqgpEvlDrp = (a: sqgp) => {
-    const emptySqevl: [er, sql] = [[], '']
-    return emptySqevl
+const sqdrp = (a: sqgp) => {
+    const z: sqdrp = [[], '']
+    return z
 }
 const squpdgpIsSkip = (a: sqgp, sqStmtSw: bdic) => {
     const tblNm = ''
@@ -217,7 +225,7 @@ const squpdgpIsSkip = (a: sqgp, sqStmtSw: bdic) => {
     else
         return false
 }
-const sqgpEvlUpd = (a: sqgp, pm: pm, { sqFldSw, sqStmtSw }: sw) => {
+const squpd = (a: sqgp, pm: pm, { sqFldSw, sqStmtSw }: sw) => {
     let z: sqevl
     if (squpdgpIsSkip(a, sqStmtSw)) {
         z = [[], '']
@@ -231,15 +239,15 @@ const sqgpEvlUpd = (a: sqgp, pm: pm, { sqFldSw, sqStmtSw }: sw) => {
     z = [er, sql]
     return z
 }
-const sqgpEvl = (a: sqgp, pm: pm, sw: sw) => {
+const sqevl = (a: sqgp, pm: pm, sw: sw) => {
     const fstLin = a[0].lin
     const term = x.sRmvPfx("?")(x.linFstTerm(fstLin).toUpperCase())
     let z: sqevl
     switch (term) {
-        case sq_DRP: z = sqgpEvlDrp(a); break
+        case sq_DRP: z = sqdrp(a); break
         case sq_SEL:
-        case sq_DIS: z = sqgpEvlSel(a, term, pm, sw); break
-        case sq_UPD: z = sqgpEvlUpd(a, pm, sw); break
+        case sq_DIS: z = sqsel(a, term, pm, sw); break
+        case sq_UPD: z = squpd(a, pm, sw); break
         default:
             x.er('impossible: {bk} should have {term} be one of [Drp | Sel | Dis | Upd]', { term, bk: a })
             z = [[], '']
@@ -251,7 +259,7 @@ const sq05 = (a: bk[], pm: pm, sw: sw) => {
     let er: er = []
     let sql = ""
     for (let { bkty, gp } of a) {
-        let [i_er, i_sql] = sqgpEvl(gp, pm, sw)
+        let [i_er, i_sql] = sqevl(gp, pm, sw)
         er = er.concat(i_er)
         sql = sql === ""
             ? i_sql
@@ -635,9 +643,9 @@ const swChkr_FmT3Dup: ixlinchkr = {
     erFun: a => [{ ix: a.ix, endMsg: [linFmT3DupTermMrkLin(a.lin)], sfxMsg: [] }]
 }
 const linIsStmtSwError = (a: lin) => {
-    if(x.sHasPfx('?#')(a)) {
-         if(x.sHasPfx('?#SEL#')(a)) return false
-         if(x.sHasPfx('?#UPD#')(a)) return false
+    if (x.sHasPfx('?#')(a)) {
+        if (x.sHasPfx('?#SEL#')(a)) return false
+        if (x.sHasPfx('?#UPD#')(a)) return false
     }
     return true
 }
@@ -646,8 +654,8 @@ const swChkr_StmtSwLin_mustBeEither_SEL_or_UPD: ixlinchkr = {
     erFun: a => [{ ix: a.ix, endMsg: [linT1MarkerLin(a.lin, '')], sfxMsg: [] }]
 }
 
-const opIsErr = (op:s) => {
-    const z:b = !['AND', 'OR', 'EQ', 'NE'].includes(op.toUpperCase())
+const opIsErr = (op: s) => {
+    const z: b = !['AND', 'OR', 'EQ', 'NE'].includes(op.toUpperCase())
     return z
 }
 
@@ -732,10 +740,11 @@ const lySw = (a: ly, pm: pm) => {
         }
         ly = ly1
     }
-    if (ly1.length !== 0) x.er('ly1 should has 0-length', { ly1 })
-    return swSplit(sw)
+    if (ly1.length !== 0)
+        x.er('ly1 should has 0-length', { ly1 })
+    return bdicSw(sw)
 }
-const swSplit = (a: bdic) => {
+const bdicSw = (a: bdic) => {
     const sqFldSw = new Map<s, b>()
     const sqStmtSw = new Map<s, b>()
     for (let [k, b] of a) {
@@ -746,4 +755,8 @@ const swSplit = (a: bdic) => {
     }
     const z: sw = { sqFldSw, sqStmtSw }
     return z
+}
+var tst__swSplit = 1
+if (xx) {
+    debugger
 }
