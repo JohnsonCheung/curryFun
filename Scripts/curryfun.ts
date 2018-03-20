@@ -45,6 +45,7 @@ export type set = Set<any>
 export type sset = Set<s>
 export type bdic = Map<s, b>
 export type ly = s[]
+export type src = ly
 export type col = any[]
 export type scol = s[]
 export type sy = s[]
@@ -365,15 +366,15 @@ export const pm = <T>(f, ...p) => new Promise<T>(
         })
     }
 )
-export const pmErRslt = (f, ...p) => new Promise<{er, rslt}>(
+export const pmErRslt = (f, ...p) => new Promise<{ er, rslt }>(
     (rs, rj) => {
         f(...p, (er, rslt) => {
-            let z = er ? {er, rslt:null} : {er, rslt}
+            let z = er ? { er, rslt: null } : { er, rslt }
             rs(z)
         })
     }
 )
-export const pmRsltOpt = (f, ...p) => new Promise<T|null>(
+export const pmRsltOpt = (f, ...p) => new Promise<T | null>(
     (rs, rj) => {
         f(...p, (er, rslt) => {
             let z = er ? null : rslt
@@ -479,21 +480,21 @@ export const lySdic = (a: ly) => {
     itrEach(x)(a)
     return o
 };
-export const lyReDry = (re: re) => (a: ly) => itrMap(matchDr)(lyMatchAy(re)(a)) as dry
-export const lyReCol = (re: re) => (a: ly) => matchAyFstCol(lyMatchAy(re)(a)).sort() as col
+export const srcDry = (re: re) => (a: src) => itrMap(matchDr)(srcMatchAy(re)(a)) as dry
+export const srcCol = (re: re) => (a: src) => matchAyFstCol(srcMatchAy(re)(a)).sort() as col
 export const matchAySdry = (a: RegExpMatchArray[]) => itrMap(matchDr)(a) as dry
 export const matchFstItm = (a: RegExpMatchArray) => a[1]
 export const matchAyFstCol = (a: RegExpMatchArray[]) => itrMap(matchFstItm)(a) as col
 export const lyPfxCnt = (pfx: s) => (a: ly) => { let z = 0; itrEach(lin => { if (sHasPfx(pfx)(lin)) z++ })(a); return z }
 export const lyHasMajPfx = (pfx: s) => (a: ly) => 2 * lyPfxCnt(pfx)(a) > a.length
-export const lyMatchAy = (re: re) => (a: ly) => itrRmvEmp(itrMap(sMatch(re))(a)) as RegExpMatchArray[]
+export const srcMatchAy = (re: re) => (a: src) => itrRmvEmp(itrMap(sMatch(re))(a)) as RegExpMatchArray[]
 export const matchDr = (a: match) => [...a].splice(1)
 export const reExpConstNm = /^export\s+const\s+([\w][\$_0-9\w_]*)/
 export const reExpDollarConstNm = /^export\s+const\s+([\$\w][\$_0-9\w_]*)/
-export const lyExpConstNy = (a: ly) => lyReCol(reExpConstNm)(a) as ny
-export const lyExpConstDollarNy = (a: ly) => lyReCol(reExpDollarConstNm)(a) as ny
-export const ftsExpConstNy = (a: fts) => pipe(a)(ftLy, lyExpConstNy) as ny
-export const ftsExpConstDollarNy = (a: fts) => pipe(a)(ftLy, lyExpConstDollarNy) as ny
+export const srcExpConstNy = (a: src) => srcCol(reExpConstNm)(a) as ny
+export const srcExpConstDollarNy = (a: src) => srcCol(reExpDollarConstNm)(a) as ny
+export const ftsExpConstNy = (a: fts) => pipe(a)(ftLy, srcExpConstNy) as ny
+export const ftsExpConstDollarNy = (a: fts) => pipe(a)(ftLy, srcExpConstDollarNy) as ny
 //---------------------------------------------------------------------------
 export const isStr = v => typeof v === 'string'
 export const isNum = v => typeof v === 'number'
@@ -603,6 +604,7 @@ export const oBringUpDollarPrp = o => {
     }
     return o
 }
+export const nyCmlSdry = (a: ny) => itrMap(cmlNy)(a) as sdry
 export const oCmlDry = (a: o) => {
     let z = itrMap(n => [cmlNm(n), n])(oPrpNy(a))
     drySrt(ayEle(0))(z)
@@ -678,7 +680,6 @@ export const drsLy = (a: drs) => {
     let z: ly = c.slice(0, 2).concat(c[0], c.slice(2))
     return z
 }
-export const drsBrw = (a: drs) => sBrw(drsLines(a))
 export const drsLines = (a: drs) => drsLy(a).join('\r\n')
 export const drySrtCol = (colAy: n[]) => (a: dry) => {
     const x = (col: n) => {
@@ -739,9 +740,9 @@ export const pthStatOptAyPm = async (a: pth, lik?: s) => {
     const stat = entry => pmRsltOpt(fs.stat, entry)
     const c = itrMap(stat)(b2)
     const z = await Promise.all(c)
-    return z as (fs.Stats|null)[]
+    return z as (fs.Stats | null)[]
 }
-pthStatOptAyPm(__dirname).then(a=>{dmp(a);debugger})
+pthStatOptAyPm(__dirname).then(a => { dmp(a); debugger })
 export const pthFdrAyPm = async (a: pth, lik?: s) => {
 
 }
@@ -758,19 +759,19 @@ export const vvCompare = (a, b) => a === b ? 0 : a > b ? 1 : -1
 export const lazy = vf => { let v, done = false; return () => { if (!done) { v = vf(); done = true }; return v } }
 //---------------------------------------------------------------------------
 export const optMap = <T, U>(f: (a: T) => U) => (a: T | null) => a !== null ? f(a) : a
-export const ffn = (a:ffn) => new Ffn(a)
+export const ffn = (a: ffn) => new Ffn(a)
 export class Ffn {
-    private _ffn:ffn
-    private _dotPos:n
-    private _sepPos:n
-    constructor(a:ffn) { 
+    private _ffn: ffn
+    private _dotPos: n
+    private _sepPos: n
+    constructor(a: ffn) {
         this._ffn = a
         this._dotPos = a.lastIndexOf('.')
         this._sepPos = a.lastIndexOf(pthsep)
     }
-    private zmid(at:n) { return sMid(at)(this.ffn)}
-    private zleft(at:n) { return sLeft(at)(this.ffn)}
-    get ffn() { return this._ffn}
+    private zmid(at: n) { return sMid(at)(this.ffn) }
+    private zleft(at: n) { return sLeft(at)(this.ffn) }
+    get ffn() { return this._ffn }
     get pth() { const at = this._sepPos; return at === -1 ? '' : this.zleft(at + 1) }
     get fn() { const at = this._sepPos; return at === -1 ? this.ffn : this.zmid(at + 1) }
     get ext() { const at = this._dotPos; return at === -1 ? '' : this.zmid(at) }
@@ -789,10 +790,10 @@ export class Ffn {
         const fn = this.fn
         const backupSubFdr = `.backup\\${fn}\\`
         const backupPth = pth + backupSubFdr
-    
+
         if (ext === '.backup') er("given [ext] cannot be '.backup", { ext, ffnn })
         if (isBackupFfn) er("{ffn} cannot be a backup file name", { ffn: this.ffn })
-    
+
         let c = pthFnAy(backupPth, ffnn + '(backup-???)' + ext)
         let nxtBackupNNN =
             c === null || isEmp(b) ? '000' :
@@ -801,8 +802,7 @@ export class Ffn {
         pthEnsSubFdr(backupSubFdr)(pth); fs.copyFileSync(this.ffn, backupFfn)
     }
 }
-const xxx = ffn(__filename)
-debugger
+// const xxx = ffn(__filename); debugger
 export const ffnMakBackup = (a: ffn) => {
     const ext = ffnExt(a)
     const ffnn = ffnRmvExt(a)
@@ -823,19 +823,19 @@ export const ffnMakBackup = (a: ffn) => {
     const backupFfn = backupPth + ffnAddFnSfx(`(backup-${nxtBackupNNN})`)(fn)
     pthEnsSubFdr(backupSubFdr)(pth); fs.copyFileSync(a, backupFfn)
 }
-export const lyExpStmt = (a: ly) => {
-    let ny = lyExpConstNy(a)
+export const srcExpStmt = (a: ly) => {
+    let ny = srcExpConstNy(a)
     ny = itrWhere(predNot(sHasPfx("_")))(ny).sort()
     if (isEmp(ny)) return null
     const x = ayJnAsLines(", ", 4, 120)(ny)
     let z = "export {\r\n" + x + "\r\n}"
     return z as s
 }
-export const curExpStmt = () => pipe(__filename)(ftLy, lyExpStmt) as s
+export const curExpStmt = () => pipe(__filename)(ftLy, srcExpStmt) as s
 // dmp(curExpStmt); debugger
 export const fjsRplExpStmt = fjs => {
     const oldLy = ftLy(fjs)
-    const newLin = lyExpStmt(oldLy)
+    const newLin = srcExpStmt(oldLy)
 
     let oldBegIx = ayFindIx(sHasPfx("exports {"))(oldLy)
     let oldEndIx: n = (() => {
@@ -898,12 +898,18 @@ export const linesAyAlignL = (a: lines[]) => {
 
 export const vTee = <T>(f: (a: T) => void) => (a: T) => { f(a); return a }
 export const ftWrt = (s: s) => (a: ft) => fs.writeFileSync(a, s)
-export const cmdShell = (a: s) => child_process.exec(a)
+export const cmdShell = child_process.exec as (a:s) => void
 export const ftBrw = (a: ft) => cmdShell(`code.cmd "${a}"`)
 export const sBrw = (a: s) => { pipe(tmpft())(vTee(ftWrt(a)), ftBrw) }
-export const lyBrw = (a: ly) => sBrw(a.join('\r\n'))
-export const oBrw = (a: o) => sBrw(oJsonLines(a))
-export const oJsonLines = (a: o) => JSON.stringify(a)
+export const lyBrw = compose(ayJnCrLf, sBrw) as (a:ly) => void
+export const oJsonLines = JSON.stringify as (a:o) => lines
+export const sdryBrw = compose(sdryLines, sBrw) as (a: sdry) => void
+export const dryBrw = compose(drySdry, sdryBrw) as (a: dry) => void
+export const drsBrw = compose(sBrw, drsLines) as (a:drs) => void
+export const nyBrw = compose(itrMap(cmlNy), sdryBrw) as (a:ny) => void
+export const srcExpConstNyBrw = compose(srcExpConstNy, nyBrw)
+export const ftsExpConstNyBrw = compose(ftLy, srcExpConstNyBrw)
+export const oBrw = compose(sBrw, oJsonLines) as (a:o) => void
 //---------------------- ------------------
 export const chrCd_isNm = (c: n) => true
 export const chrCd = (s: s) => s.charCodeAt(0)
@@ -921,7 +927,7 @@ export const chrCd_isLetter = predsOr(chrCd_isSmallLetter, chrCd_isCapitalLetter
 export const chrCd_isDigit = vBET(chrCd_0, chrCd_9)
 export const chrCd_isDollar = vEQ(chrCd_dollar)
 export const chrCd_isUnderScore = vEQ(chrCd_underScore)
-export const chrCd_isFstNmChr = predsOr(chrCd_isLetter, chrCd_isUnderScore, chrCd_isDollar)
+export const chrCd_isFstNmChr = predsOr(chrCd_isLetter, chrCd_isUnderScore, chrCd_isDollar) as pred<n>
 export const chrCd_isNmChr = predsOr(chrCd_isFstNmChr, chrCd_isDigit)
 export const aySrt = (a: ay) => a.sort()
 export const ssetSrtBrw = (a: sset) => pipe(a)(itrAy, aySrt, lyBrw)
@@ -959,7 +965,7 @@ const x = (a: NodeModule) => {
     }
     return z
 }
-export const drsOf_exportFunctions = () => {
+export const drsof_exportFunctions = () => {
     const fny = ['name', 'type', 'id']
     let dry: dry = []
     let md: NodeModule
@@ -996,7 +1002,7 @@ if (module.id === '.') {
     if (false) {
         require('webpack')
         require('curryfun')
-        const a = drsOf_exportFunctions()
+        const a = drsof_exportFunctions()
         const xx = dry(a.dry)
         xx.setCurCol(1).brw()
         debugger
@@ -1010,3 +1016,6 @@ if (module.id === '.') {
         const tst__sLik = strictEqual(sLik("abc?dd")("abcxdd"), true); debugger
     }
 }
+export const tst__aa = 1
+
+pipe(__filename)(ffnRplExt('.ts'), ftsExpConstNyBrw); debugger

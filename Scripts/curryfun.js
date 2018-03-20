@@ -460,22 +460,22 @@ exports.lySdic = (a) => {
     exports.itrEach(x)(a);
     return o;
 };
-exports.lyReDry = (re) => (a) => exports.itrMap(exports.matchDr)(exports.lyMatchAy(re)(a));
-exports.lyReCol = (re) => (a) => exports.matchAyFstCol(exports.lyMatchAy(re)(a)).sort();
+exports.srcDry = (re) => (a) => exports.itrMap(exports.matchDr)(exports.srcMatchAy(re)(a));
+exports.srcCol = (re) => (a) => exports.matchAyFstCol(exports.srcMatchAy(re)(a)).sort();
 exports.matchAySdry = (a) => exports.itrMap(exports.matchDr)(a);
 exports.matchFstItm = (a) => a[1];
 exports.matchAyFstCol = (a) => exports.itrMap(exports.matchFstItm)(a);
 exports.lyPfxCnt = (pfx) => (a) => { let z = 0; exports.itrEach(lin => { if (exports.sHasPfx(pfx)(lin))
     z++; })(a); return z; };
 exports.lyHasMajPfx = (pfx) => (a) => 2 * exports.lyPfxCnt(pfx)(a) > a.length;
-exports.lyMatchAy = (re) => (a) => exports.itrRmvEmp(exports.itrMap(exports.sMatch(re))(a));
+exports.srcMatchAy = (re) => (a) => exports.itrRmvEmp(exports.itrMap(exports.sMatch(re))(a));
 exports.matchDr = (a) => [...a].splice(1);
 exports.reExpConstNm = /^export\s+const\s+([\w][\$_0-9\w_]*)/;
 exports.reExpDollarConstNm = /^export\s+const\s+([\$\w][\$_0-9\w_]*)/;
-exports.lyExpConstNy = (a) => exports.lyReCol(exports.reExpConstNm)(a);
-exports.lyExpConstDollarNy = (a) => exports.lyReCol(exports.reExpDollarConstNm)(a);
-exports.ftsExpConstNy = (a) => exports.pipe(a)(exports.ftLy, exports.lyExpConstNy);
-exports.ftsExpConstDollarNy = (a) => exports.pipe(a)(exports.ftLy, exports.lyExpConstDollarNy);
+exports.srcExpConstNy = (a) => exports.srcCol(exports.reExpConstNm)(a);
+exports.srcExpConstDollarNy = (a) => exports.srcCol(exports.reExpDollarConstNm)(a);
+exports.ftsExpConstNy = (a) => exports.pipe(a)(exports.ftLy, exports.srcExpConstNy);
+exports.ftsExpConstDollarNy = (a) => exports.pipe(a)(exports.ftLy, exports.srcExpConstDollarNy);
 //---------------------------------------------------------------------------
 exports.isStr = v => typeof v === 'string';
 exports.isNum = v => typeof v === 'number';
@@ -619,6 +619,7 @@ exports.oBringUpDollarPrp = o => {
     }
     return o;
 };
+exports.nyCmlSdry = (a) => exports.itrMap(exports.cmlNy)(a);
 exports.oCmlDry = (a) => {
     let z = exports.itrMap(n => [exports.cmlNm(n), n])(exports.oPrpNy(a));
     exports.drySrt(exports.ayEle(0))(z);
@@ -697,7 +698,6 @@ exports.drsLy = (a) => {
     let z = c.slice(0, 2).concat(c[0], c.slice(2));
     return z;
 };
-exports.drsBrw = (a) => exports.sBrw(exports.drsLines(a));
 exports.drsLines = (a) => exports.drsLy(a).join('\r\n');
 exports.drySrtCol = (colAy) => (a) => {
     const x = (col) => {
@@ -825,8 +825,7 @@ class Ffn {
     }
 }
 exports.Ffn = Ffn;
-const xxx = exports.ffn(__filename);
-debugger;
+// const xxx = ffn(__filename); debugger
 exports.ffnMakBackup = (a) => {
     const ext = exports.ffnExt(a);
     const ffnn = exports.ffnRmvExt(a);
@@ -847,8 +846,8 @@ exports.ffnMakBackup = (a) => {
     exports.pthEnsSubFdr(backupSubFdr)(pth);
     fs.copyFileSync(a, backupFfn);
 };
-exports.lyExpStmt = (a) => {
-    let ny = exports.lyExpConstNy(a);
+exports.srcExpStmt = (a) => {
+    let ny = exports.srcExpConstNy(a);
     ny = exports.itrWhere(exports.predNot(exports.sHasPfx("_")))(ny).sort();
     if (exports.isEmp(ny))
         return null;
@@ -856,11 +855,11 @@ exports.lyExpStmt = (a) => {
     let z = "export {\r\n" + x + "\r\n}";
     return z;
 };
-exports.curExpStmt = () => exports.pipe(__filename)(exports.ftLy, exports.lyExpStmt);
+exports.curExpStmt = () => exports.pipe(__filename)(exports.ftLy, exports.srcExpStmt);
 // dmp(curExpStmt); debugger
 exports.fjsRplExpStmt = fjs => {
     const oldLy = exports.ftLy(fjs);
-    const newLin = exports.lyExpStmt(oldLy);
+    const newLin = exports.srcExpStmt(oldLy);
     let oldBegIx = exports.ayFindIx(exports.sHasPfx("exports {"))(oldLy);
     let oldEndIx = (() => {
         if (oldBegIx !== null) {
@@ -933,12 +932,18 @@ exports.linesAyAlignL = (a) => {
 };
 exports.vTee = (f) => (a) => { f(a); return a; };
 exports.ftWrt = (s) => (a) => fs.writeFileSync(a, s);
-exports.cmdShell = (a) => child_process.exec(a);
+exports.cmdShell = child_process.exec;
 exports.ftBrw = (a) => exports.cmdShell(`code.cmd "${a}"`);
 exports.sBrw = (a) => { exports.pipe(exports.tmpft())(exports.vTee(exports.ftWrt(a)), exports.ftBrw); };
-exports.lyBrw = (a) => exports.sBrw(a.join('\r\n'));
-exports.oBrw = (a) => exports.sBrw(exports.oJsonLines(a));
-exports.oJsonLines = (a) => JSON.stringify(a);
+exports.lyBrw = exports.compose(exports.ayJnCrLf, exports.sBrw);
+exports.oJsonLines = JSON.stringify;
+exports.sdryBrw = exports.compose(exports.sdryLines, exports.sBrw);
+exports.dryBrw = exports.compose(exports.drySdry, exports.sdryBrw);
+exports.drsBrw = exports.compose(exports.sBrw, exports.drsLines);
+exports.nyBrw = exports.compose(exports.itrMap(exports.cmlNy), exports.sdryBrw);
+exports.srcExpConstNyBrw = exports.compose(exports.srcExpConstNy, exports.nyBrw);
+exports.ftsExpConstNyBrw = exports.compose(exports.ftLy, exports.srcExpConstNyBrw);
+exports.oBrw = exports.compose(exports.sBrw, exports.oJsonLines);
 //---------------------- ------------------
 exports.chrCd_isNm = (c) => true;
 exports.chrCd = (s) => s.charCodeAt(0);
@@ -994,7 +999,7 @@ const x = (a) => {
     }
     return z;
 };
-exports.drsOf_exportFunctions = () => {
+exports.drsof_exportFunctions = () => {
     const fny = ['name', 'type', 'id'];
     let dry = [];
     let md;
@@ -1030,7 +1035,7 @@ if (module.id === '.') {
     if (false) {
         require('webpack');
         require('curryfun');
-        const a = exports.drsOf_exportFunctions();
+        const a = exports.drsof_exportFunctions();
         const xx = exports.dry(a.dry);
         xx.setCurCol(1).brw();
         debugger;
@@ -1045,4 +1050,7 @@ if (module.id === '.') {
         debugger;
     }
 }
+exports.tst__aa = 1;
+exports.pipe(__filename)(exports.ffnRplExt('.ts'), exports.ftsExpConstNyBrw);
+debugger;
 //# sourceMappingURL=curryfun.js.map
