@@ -1358,7 +1358,8 @@ declare module "dgram" {
 declare module "fs" {
     import * as stream from "stream";
     import * as events from "events";
-
+    function copyFileSync(from: string, to: string) : void
+    function copyFile(from: string, to: string, callback: (er: NodeJS.ErrnoException) => void) : void
     interface Stats {
         isFile(): boolean;
         isDirectory(): boolean;
@@ -2236,6 +2237,11 @@ declare module "util" {
         colors?: boolean;
         customInspect?: boolean;
     }
+    export function isUndefined(object: any): boolean;
+    export function isNullOrUndefined(object: any): boolean;
+    export function isNull(object: any): boolean;
+    export function isPrimitive(object: any): boolean;
+    export function isFunction(object: any): boolean;
 
     export function format(format: any, ...param: any[]): string;
     export function debug(string: string): void;

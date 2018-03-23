@@ -1,19 +1,29 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /// <reference path="./typings/node/node.d.ts"/>
+//--------------------------------------------------
+const child_process = require("child_process");
 const fs = require("fs");
+const assert = require('assert');
+//import * as assert from 'assert'
 const path = require("path");
 const os = require("os");
-const child_process = require("child_process");
+const u = require("util");
 //---------------------------------------
-//---------------------------------------
-exports.strictEqual = require('assert').strictEqual;
-exports.eq = (exp, act) => { try {
-    exports.strictEqual(act, exp);
-}
-catch (e) {
-    debugger;
-} };
+exports.isEq = (exp, act) => {
+    try {
+        assert.deepStrictEqual(act, exp);
+        return true;
+    }
+    catch (e) {
+        return false;
+    }
+};
+exports.isNotEq = (exp, act) => !exports.isEq(exp, act);
+exports.assertIsEq = (exp, act) => { if (exports.isNotEq(exp, act))
+    debugger; };
+exports.assertIsNotEq = (exp, act) => { if (exports.isEq(exp, act))
+    debugger; };
 //---------------------------------------
 exports.vLT = x => a => a < x;
 exports.vGE = x => a => a >= x;
@@ -38,8 +48,9 @@ exports.funApply = v => (a) => a(v);
 exports.swap = (f) => a => b => f(b)(a);
 exports.compose = (...f) => v => exports.pipe(v)(...f);
 //----------------------------------
-exports.sdicSy = (a) => exports.itrMap(exports.ksLin)(a);
-exports.ksLin = ({ k, s }) => k + ' ' + s;
+exports.dicLy = (a) => exports.itrMap(exports.kvLin)(a);
+exports.dicLines = (a) => exports.dicLy(a).join('\r\n');
+exports.kvLin = ([k, v]) => k + ' ' + v;
 exports.dmp = global.console.log;
 exports.funDmp = (f) => exports.dmp(f.toString());
 exports.halt = () => { throw new Error(); };
@@ -50,7 +61,7 @@ exports.sEsc = exports.compose(exports.sEscLf, exports.sEscCr, exports.sEscTab);
 exports.sFmt = (qqStr, ...v) => {
     let z = qqStr;
     for (let i of v) {
-        z.replace(z, i);
+        z = z.replace('?', i);
     }
     return z;
 };
@@ -262,6 +273,7 @@ exports.isNonRmkLin = exports.predNot(exports.isRmkLin);
 exports.linRmvMsg = (a) => {
     const a1 = a.match(/(.*)---/);
     const a2 = a1 === null ? a : a1[1];
+    a2.trim;
     if (exports.sHasPfx("^")(a2.trimLeft()))
         return "";
     return a2;
@@ -309,6 +321,7 @@ exports.sRmvLasNChr = (n) => (a) => exports.sLeft(a.length - n)(a);
 exports.sRmvSubStr = (sbs) => (a) => { const re = new RegExp(sbs, 'g'); return a.replace(re, ''); };
 exports.sRmvColon = exports.sRmvSubStr(":");
 exports.pthsep = path.sep;
+exports.pthBrw = (a) => exports.cmdShell(exports.sFmt('explorer "?"', a));
 exports.ffnPth = (a) => { const at = a.lastIndexOf(exports.pthsep); return at === -1 ? '' : exports.sLeft(at + 1)(a); };
 exports.ffnFn = (a) => { const at = a.lastIndexOf(exports.pthsep); return at === -1 ? a : exports.sMid(at + 1)(a); };
 exports.ffnExt = (a) => { const at = a.lastIndexOf('.'); return at === -1 ? '' : exports.sMid(at)(a); };
@@ -324,11 +337,22 @@ exports.ftLy = (a) => exports.sSplitLines(exports.ftLines(a));
 exports.tmpnm = () => exports.sRmvColon(new Date().toJSON());
 exports.tmppth = os.tmpdir + exports.pthsep;
 exports.tmpffn = (pfx = "", ext) => exports.tmppth + pfx + exports.tmpnm() + ext;
+exports.tmpfdr = (fdr) => {
+    const a = exports.tmppth + 'Fdr/';
+    exports.pthEns(a);
+    const a1 = a + fdr + exports.pthsep;
+    exports.pthEns(a1);
+    const a2 = a1 + exports.tmpnm() + exports.pthsep;
+    exports.pthEns(a2);
+    return a2;
+};
+exports.tmpffnByFdrFn = (fdr, fn) => exports.tmpfdr(fdr) + fn;
 exports.tmpft = () => exports.tmpffn("T", ".txt");
 exports.tmpfjson = () => exports.tmpffn("T", ".json");
 exports.ffnCloneTmp = (a) => {
     const o = exports.tmpffn(undefined, exports.ffnExt(a));
     fs.copyFileSync(a, o);
+    fs.read;
     return o;
 };
 //-----------------------------------------------------------------------
@@ -386,8 +410,8 @@ exports.itrExclude = (p) => (a) => { const o = []; for (let i of a)
         o.push(i); return o; };
 exports.itrMap = (f) => (a) => { const o = []; for (let i of a)
     o.push(f(i)); return o; };
-exports.itrEach = (f) => (a) => { for (let i of a)
-    f(i); };
+exports.itrEach = (f) => (a) => { let i = 0; for (let itm of a)
+    f(itm, i++); };
 exports.itrFold = _itrFold => f => cum => a => { for (let i of a)
     cum = f(cum)(i); return cum; };
 exports.itrReduce = f => (a) => exports.itrFold(f)(exports.itrFst(a))(a);
@@ -460,22 +484,34 @@ exports.lySdic = (a) => {
     exports.itrEach(x)(a);
     return o;
 };
-exports.srcDry = (re) => (a) => exports.itrMap(exports.matchDr)(exports.srcMatchAy(re)(a));
-exports.srcCol = (re) => (a) => exports.matchAyFstCol(exports.srcMatchAy(re)(a)).sort();
-exports.matchAySdry = (a) => exports.itrMap(exports.matchDr)(a);
-exports.matchFstItm = (a) => a[1];
-exports.matchAyFstCol = (a) => exports.itrMap(exports.matchFstItm)(a);
+exports.itrRmvEmp = (a) => exports.itrWhere(exports.isNonEmp)(a);
 exports.lyPfxCnt = (pfx) => (a) => { let z = 0; exports.itrEach(lin => { if (exports.sHasPfx(pfx)(lin))
     z++; })(a); return z; };
 exports.lyHasMajPfx = (pfx) => (a) => 2 * exports.lyPfxCnt(pfx)(a) > a.length;
-exports.srcMatchAy = (re) => (a) => exports.itrRmvEmp(exports.itrMap(exports.sMatch(re))(a));
+//---------------------------------------------------------------------------
+const reExpConstNm = /^export\s+const\s+([\w][\$_0-9\w_]*)/;
+const reExpDollarConstNm = /^export\s+const\s+([\$\w][\$_0-9\w_]*)/;
+exports.srcDry = (re) => exports.compose(exports.srcMatchAy(re), exports.itrMap(exports.matchDr));
+exports.srcCol = (re) => (a) => {
+    const ay = exports.srcMatchAy(re)(a);
+    const c = exports.matchAyFstCol(ay);
+    const c1 = exports.itrRmvEmp(c);
+    const z = c1.sort();
+    return z;
+};
+exports.aySrt = (a) => a.sort();
 exports.matchDr = (a) => [...a].splice(1);
-exports.reExpConstNm = /^export\s+const\s+([\w][\$_0-9\w_]*)/;
-exports.reExpDollarConstNm = /^export\s+const\s+([\$\w][\$_0-9\w_]*)/;
-exports.srcExpConstNy = (a) => exports.srcCol(exports.reExpConstNm)(a);
-exports.srcExpConstDollarNy = (a) => exports.srcCol(exports.reExpDollarConstNm)(a);
-exports.ftsExpConstNy = (a) => exports.pipe(a)(exports.ftLy, exports.srcExpConstNy);
-exports.ftsExpConstDollarNy = (a) => exports.pipe(a)(exports.ftLy, exports.srcExpConstDollarNy);
+exports.matchAySdry = exports.itrMap(exports.matchDr);
+exports.matchFstItm = (a) => a === null ? null : a[1];
+exports.matchAyFstCol = exports.itrMap(exports.matchFstItm);
+exports.srcMatchAy = exports.compose(exports.sMatch, exports.itrMap);
+exports.srcExpConstNy = exports.srcCol(reExpConstNm);
+exports.srcExpConstDollarNy = exports.srcCol(reExpDollarConstNm);
+exports.ftsExpConstNy = exports.compose(exports.ftLy, exports.srcExpConstNy);
+exports.ftsExpConstDollarNy = exports.compose(exports.ftLy, exports.srcExpConstDollarNy);
+exports.ffnFts = exports.ffnRplExt('.ts');
+exports.fjsExpConstNy = exports.compose(exports.ffnFts, exports.ftsExpConstNy);
+exports.stop = () => { debugger; };
 //---------------------------------------------------------------------------
 exports.isStr = v => typeof v === 'string';
 exports.isNum = v => typeof v === 'number';
@@ -488,15 +524,17 @@ exports.isSy = v => {
         return true;
     return exports.isStr(v[0]);
 };
-exports.isAy = Array.isArray;
-exports.isDte = exports.vIsInstanceOf(Date);
-exports.isFun = exports.vIsInstanceOf(Function);
+exports.isAy = u.isArray;
+exports.isDte = u.isDate;
+exports.isFun = u.isFunction;
+exports.isPrim = u.isPrimitive;
 exports.isRe = v => exports.vIsInstanceOf(RegExp);
-exports.isNonNull = v => v !== null;
-exports.isNull = v => v === null;
-exports.isUndefined = v => v === undefined;
-exports.isTrue = v => !!v;
-exports.isFalse = v => !v;
+exports.isNonNull = v => !exports.isNull(v);
+exports.isNull = u.isNull;
+exports.isUndefined = u.isUndefined;
+exports.isNullOrUndefined = u.isNullOrUndefined;
+exports.isTrue = v => v ? true : false;
+exports.isFalse = v => v ? false : true;
 exports.isEmp = v => v ? false : true;
 exports.isNonEmp = v => v ? true : false;
 exports.isOdd = n => n % 2 === 1;
@@ -591,7 +629,6 @@ exports.itrMin = (a) => { let o = exports.itrFst(a); if (o === null)
     return null; for (let i of a)
     if (i < o)
         o = i; return o; };
-exports.itrRmvEmp = (a) => exports.itrWhere(exports.isNonEmp)(a);
 //-----------------------------------------------------------------------------------------
 exports.oBringUpDollarPrp = o => {
     /**
@@ -747,12 +784,18 @@ exports.pthFnAy = (pth, lik) => {
 }; // const xxx = pthFnAy("c:\\users\\user\\", "sdfdf*.*"); debugger;
 exports.ayZip = (a, b) => exports.itrMap(i => [a[i], b[i]])(exports.nItr(a.length));
 exports.entryStatPm = async (a) => {
+    debugger;
+    throw 0;
 };
 exports.pthFnAyPm = async (a, lik) => {
-    const b = await pthStatAyPm(a, lik);
-    let d = exports.pipe(exports.nItr(b.length))(exports.itrWhere(i => b[i].isFile()), exports.itrMap(i => entries[i]));
     debugger;
-    return d;
+    throw 0;
+    /*
+    const b = await pthStatAyPm(a, lik)
+    let d: fn[] = pipe(nItr(b.length))(itrWhere(i => b[i].isFile()), itrMap(i => entries[i]))
+    debugger
+    return d
+    */
 };
 exports.pthStatOptAyPm = async (a, lik) => {
     const b = await exports.pm(fs.readdir, a);
@@ -764,7 +807,6 @@ exports.pthStatOptAyPm = async (a, lik) => {
     const z = await Promise.all(c);
     return z;
 };
-exports.pthStatOptAyPm(__dirname).then(a => { exports.dmp(a); debugger; });
 exports.pthFdrAyPm = async (a, lik) => {
 };
 //---------------------------------------
@@ -935,7 +977,11 @@ exports.ftWrt = (s) => (a) => fs.writeFileSync(a, s);
 exports.cmdShell = child_process.exec;
 exports.ftBrw = (a) => exports.cmdShell(`code.cmd "${a}"`);
 exports.sBrw = (a) => { exports.pipe(exports.tmpft())(exports.vTee(exports.ftWrt(a)), exports.ftBrw); };
-exports.lyBrw = exports.compose(exports.ayJnCrLf, exports.sBrw);
+exports.sBrwAtFdrFn = (fdr, fn) => (a) => { exports.pipe(exports.tmpffnByFdrFn(fdr, fn))(exports.vTee(exports.ftWrt(a)), exports.ftBrw); };
+exports.sjsonBrw = (a) => { exports.pipe(exports.tmpfjson())(exports.vTee(exports.ftWrt(a)), exports.ftBrw); };
+exports.lyBrw = exports.compose(exports.ayJnLf, exports.sBrw);
+exports.lyBrwStop = exports.compose(exports.lyBrw, exports.stop);
+exports.dicBrw = exports.compose(exports.dicLy, exports.lyBrw);
 exports.oJsonLines = JSON.stringify;
 exports.sdryBrw = exports.compose(exports.sdryLines, exports.sBrw);
 exports.dryBrw = exports.compose(exports.drySdry, exports.sdryBrw);
@@ -943,7 +989,7 @@ exports.drsBrw = exports.compose(exports.sBrw, exports.drsLines);
 exports.nyBrw = exports.compose(exports.itrMap(exports.cmlNy), exports.sdryBrw);
 exports.srcExpConstNyBrw = exports.compose(exports.srcExpConstNy, exports.nyBrw);
 exports.ftsExpConstNyBrw = exports.compose(exports.ftLy, exports.srcExpConstNyBrw);
-exports.oBrw = exports.compose(exports.sBrw, exports.oJsonLines);
+exports.oBrw = exports.compose(exports.oJsonLines, exports.sjsonBrw);
 //---------------------- ------------------
 exports.chrCd_isNm = (c) => true;
 exports.chrCd = (s) => s.charCodeAt(0);
@@ -963,11 +1009,10 @@ exports.chrCd_isDollar = exports.vEQ(exports.chrCd_dollar);
 exports.chrCd_isUnderScore = exports.vEQ(exports.chrCd_underScore);
 exports.chrCd_isFstNmChr = exports.predsOr(exports.chrCd_isLetter, exports.chrCd_isUnderScore, exports.chrCd_isDollar);
 exports.chrCd_isNmChr = exports.predsOr(exports.chrCd_isFstNmChr, exports.chrCd_isDigit);
-exports.aySrt = (a) => a.sort();
 exports.ssetSrtBrw = (a) => exports.pipe(a)(exports.itrAy, exports.aySrt, exports.lyBrw);
 exports.ssetBrw = (a) => exports.pipe(a)(exports.itrAy, exports.sBrw);
 exports.linExpConstNm = (a) => {
-    const m = a.match(exports.reExpConstNm);
+    const m = a.match(reExpConstNm);
     if (m === null)
         return null;
     return m[1];
@@ -1030,9 +1075,13 @@ class Dry {
 }
 exports.Dry = Dry;
 exports.dry = (a) => new Dry(a);
+// ================
 if (module.id === '.') {
-    const tst__drsOf_exportFunctions = 1;
-    if (false) {
+    const tst__Dry = () => {
+        const a = new Dry(exports.nyCmlSdry(exports.srcExpConstNy(src())));
+        debugger;
+    };
+    const tst__drsOf_exportFunctions = () => {
         require('webpack');
         require('curryfun');
         const a = exports.drsof_exportFunctions();
@@ -1040,17 +1089,40 @@ if (module.id === '.') {
         xx.setCurCol(1).brw();
         debugger;
         //drsBrw(a)
-    }
-    if (false) {
-        const tst__pthFnAyPm = exports.pthFnAyPm(__dirname).then(exports.dmp);
-        const tst__cmlSpcNm = exports.pipe(__filename)(exports.ffnRplExt('.ts'), exports.ftsExpConstNy, exports.itrMap(exports.cmlSpcNm), exports.lyBrw);
-        const tst__sNmSet = exports.pipe(__filename)(exports.ftLines, exports.sNmSet, exports.ssetSrtBrw);
-        const tst__cmlNy = exports.cmlNy('abAySpc');
-        const tst__sLik = exports.strictEqual(exports.sLik("abc?dd")("abcxdd"), true);
+    };
+    const src = () => exports.ftLy(exports.ffnFts(__filename));
+    const tst__srcExpConstNy = () => exports.pipe(src())(exports.srcExpConstNy, exports.lyBrwStop);
+    const tst__pthFnAyPm = () => exports.pthFnAyPm(__dirname).then(exports.lyBrwStop);
+    const tst__cmlSpcNm = () => exports.pipe(__filename)(exports.ffnFts, exports.ftsExpConstNy, exports.itrMap(exports.cmlSpcNm), exports.lyBrwStop);
+    const tst__sNmSet = () => exports.pipe(__filename)(exports.ftLines, exports.sNmSet, exports.ssetSrtBrw, exports.stop);
+    const tst__cmlNy = () => exports.cmlNy('abAySpc');
+    const tst__sLik = () => { if (!exports.sLik("abc?dd")("abcxdd")) {
         debugger;
-    }
+    } };
+    const tst__ftsExpConstNyBrw = () => exports.pipe(__filename)(exports.ffnFts, exports.ftsExpConstNyBrw, exports.stop);
+    const tst__sBox = () => exports.sBrw(exports.sBox('johnson xx'));
+    const tst__pthBrw = () => exports.pthBrw(exports.tmppth);
+    const tst__sBrwAtFdrFn = () => exports.sBrwAtFdrFn('aa', '1.json')('[1,2]');
+    const tst__isEq = () => {
+        if (exports.isEq(1, '1'))
+            debugger;
+        if (!exports.isEq(1, 1))
+            debugger;
+        if (!exports.isEq({ a: 1 }, { a: 1 }))
+            debugger;
+    };
+    tst__isEq();
+    //tst__pthBrw()
+    //tst__sBrwAtFdrFn()
+    /*
+    tst__drsOf_exportFunctions()
+    tst__pthFnAyPm()
+    tst__cmlSpcNm ()
+    tst__sNmSet   ()
+    tst__cmlNy    ()
+    tst__sLik     ()
+    tst__ftsExpConstNyBrw()
+    tst__srcExpConstNy()
+    */
 }
-exports.tst__aa = 1;
-exports.pipe(__filename)(exports.ffnRplExt('.ts'), exports.ftsExpConstNyBrw);
-debugger;
 //# sourceMappingURL=curryfun.js.map

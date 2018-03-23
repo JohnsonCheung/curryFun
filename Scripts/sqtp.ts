@@ -1,20 +1,19 @@
 //// <reference path="./curryfun.d.ts"/>
 import { ix, sset, sdic, p, pfx, cnt, n, s, ay, lin, b, ly } from './curryfun'
-import { lyAddErAsLines } from './lyAddErAsLines'
 import * as x from './curryfun'
+import * as assert from 'assert'
 export interface eritm { ix: n, sfxMsg: s[], endMsg: s[] }
-export interface poswdt { pos: n, wdt: n }
-export type er = eritm[]
-const xx = module.id === '.'
-interface sqtp { sqtp: s }
+export type sqtp = s
+export interface sqtprslt { vtp: s, sql: s }
+interface poswdt { pos: n, wdt: n }
 interface bk { bkty: Bkty, gp: gp }
 interface sqgp extends gp { }
 interface ixlinchkr { hasEr: (a: ixlin) => b, erFun: (a: ixlin) => er }
 interface ixlin { ix: n, lin: lin }
-interface sqtprslt { vtp: s, sql: s }
 interface plin { pos: n, lin: s }
 interface termprslt { term: s, plin: plin }
 const enum Bkty { RM, PM, SW, SQ, ER }
+type er = eritm[]
 type gp = ixlin[]
 type sqevl = [er, sql]
 type sqdrp = sqevl
@@ -36,23 +35,68 @@ const sq_LEF = 'LEF'
 const sq_WHE = 'WHE'
 const sq_AND = 'AND'
 const sq_OR = 'OR'
-export const sqtprslt = ({ sqtp: a }: sqtp) => {
-    const ly = x.sSplitLf(a)
-    const ly1 = lyRmvMsg(ly)
-    const gp = lyGp(ly1)
-    const gp1 = gpRmvRmk(gp)
-    const gpy = gpGpy(gp1, '==')
-    const bky = gpyBky(gpy)
-    const aftRm_bky = x.itrWhere((bk: bk) => bk.bkty !== Bkty.RM)(bky)
-    const [aftEr_er, aftEr_bky] = er02(aftRm_bky)
-    const [aftPm_er, aftPm_bky, pm] = pm03(aftEr_bky)
-    const [aftSw_er, aftSw_bky, sw] = sw04(aftPm_bky, pm)
-    const [aftSq_er, sql] = sq05(aftSw_bky, pm, sw)
-    const er = aftEr_er.concat(aftPm_er, aftSw_er, aftSq_er)
-    const vtp = lyAddErAsLines(ly1, er)
+export const sqtprslt = (a: sqtp) => {
+    const ly = x.sSplitLines(a)
+    const clnly = lyRmvMsg(ly)
+    const bky = clnlyBky(clnly)
+    const [er2, bky2] = er02(bky)
+    const [er3, bky3, pm] = pm03(bky2)
+    const [er4, bky4, sw] = sw04(bky3, pm)
+    const [er5, sql] = sq05(bky4, pm, sw)
+    const er = er2.concat(er3, er4, er5)
+    //ersBrw(er2, er3, er4, er5)
+    dicsBrw(pm, sw)
+    debugger
+    const vtp = lyAddErAsLines(clnly, er)
     const z: sqtprslt = { vtp, sql }
     return z
 }
+const ersBrw = (er2: er, er3: er, er4: er, er5: er) => {
+
+}
+const dicsBrw = (pm: pm, { sqFldSw, sqStmtSw }: sw) => {
+    const pmStr = x.dicLines(pm)
+    const sqFldSwStr = x.dicLines(sqFldSw)
+    const sqStmtSwStr = x.dicLines(sqStmtSw)
+    x.sBrwAtFdrFn('Dic', 'pm')(pmStr)
+    x.sBrwAtFdrFn('Dic', 'sqFld sw')(sqFldSwStr)
+    x.sBrwAtFdrFn('Dic', 'sqStmt sw')(sqStmtSwStr)
+}
+const sqtpBky = (a: sqtp) => {
+    const ly = x.sSplitLines(a)
+    const clnly = lyRmvMsg(ly)
+    const bky = clnlyBky(clnly)
+    return bky
+}
+const clnlyBky = (a: ly) => {
+    const gp = lyGp(a)
+    const gp1 = gpRmvRmk(gp)
+    const gpy = gpGpy(gp1, '==')
+    const bky = gpyBky(gpy)
+    const bky1 = x.itrWhere(isNonRmkBk)(bky) as bk[]
+    return bky1
+}
+const bkLines = ({ bkty, gp }: bk) => bktyLin(bkty) + '\n' + gpLines(gp)
+const bkyLines = (a: bk[]) => x.itrMap(bkLines)(a).join('\n')
+const bktyStr = (a: Bkty) => {
+    switch (a) {
+        case Bkty.ER: return 'ER'
+        case Bkty.SQ: return 'SQ'
+        case Bkty.PM: return 'PM'
+        case Bkty.SW: return 'SW'
+        case Bkty.RM: return 'RM'
+    }
+    return '??'
+}
+const bktyLin = (a: Bkty) => x.sFmt('*Bkty=[?(?)]', bktyStr(a), a)
+const ixlinToStr = ({ ix, lin }) => x.sFmt('[?]?', ix, lin)
+const gpLines = (a: gp) => x.itrMap(ixlinToStr)(a).join('\n')
+const gpBrw = x.compose(gpLines, x.sBrw) as (a: gp) => void
+const bkBrw = (a: bk, i?: n) => x.sBrwAtFdrFn('bk', 'bk-' + (i === undefined ? 0 : i) + '.txt')(bkLines(a))
+const bkyBrw = x.itrEach(bkBrw) as (a: bk[]) => void
+const erLy = (er: er) => x.itrMap(erItmLin)(er) as ly
+const erItmLin = ({ ix, lin }) => x.sFmt('[?]?', ix, lin)
+const isNonRmkBk = (a: bk) => a.bkty !== Bkty.RM
 
 const linRmvMsg = (a: lin) => {
     const b = a.match(/(.*)---/)
@@ -61,15 +105,9 @@ const linRmvMsg = (a: lin) => {
     return c
 }
 
-const lyRmvMsg = (a: ly) => {
-    let z: ly = x.pipe(a)(x.itrMap(linRmvMsg), x.itrRmvEmp)
-    return z
-}
-
-const gpRmvRmk = (a: gp) => {
-    let z: gp = x.itrWhere(({ ix, lin }) => x.isNonRmkLin(lin))(a)
-    return z
-}
+const lyRmvMsg = x.compose(x.itrMap(linRmvMsg), x.itrRmvEmp) as (a: ly) => ly
+const ixlinIsNonRmkLin = (a: ixlin) => x.isNonRmkLin(a.lin)
+const gpRmvRmk = x.itrWhere(ixlinIsNonRmkLin) as (a: gp) => gp
 
 const lyGp = (a: ly) => {
     const z: ixlin[] = []
@@ -100,21 +138,25 @@ const sw04 = (a: bk[], pm: pm) => {
     let z: [er, bk[], sw] = [er, remain, sw]
     return z
 }
+
 const sqsellyIsSkip = (a: ly, sqStmtSw: bdic) => {
-    const tblFmLin = x.itrFind(x.sHasPfxIgnCas(sq_FRO))(a)
-    if (tblFmLin === null) return false
-    const tblNm = x.sSplitSpc(tblFmLin)[1]
-    const key = '?' + tblNm
+    const tblnm = sqsellyTblnm(a)
+    if (tblnm === null)
+        return false
+    const key = '?' + tblnm
     const z = sqStmtSw.get(key)
-    return z===undefined 
-        ? false 
+    return z === undefined
+        ? false
         : z
 }
-if (xx) {
-    const ly = ['fm #aa']
-    const sqStmtSw = new Map<s, b>([['?#aa', false]])
-    const aa = sqsellyIsSkip(ly, sqStmtSw)
+
+const sqsellyTblnm = (a: ly) => {
+    const tblFmLin = x.itrFind(x.sHasPfxIgnCas(sq_FRO))(a)
+    if (tblFmLin === null) return false
+    const z: s = x.sSplitSpc(tblFmLin)[1]
+    return z
 }
+
 const sqselBrkSel = (a: sqgp, term: s) => {
     return [a, a]
 }
@@ -178,10 +220,30 @@ const sqselWhe = (a: sqgp, pm: pm, sqFldSw: bdic) => {
     let z: [er, s, sqgp] = [[], whe, a]
     return z
 }
+const sqsel = (a: sqgp, term: s, pm: pm, { sqFldSw, sqStmtSw }: sw) => {
+    const ly = gpLy(a)
+    if (sqsellyIsSkip(ly, sqStmtSw))
+        return [[], ''] as sqsel
+    const [sqFldExprSdic, a0] = sqgpFldExprSdic(a)
+    const [e1, sel, a1] = sqselSel(a0, term, sqFldSw, sqFldExprSdic)
+    const [e2, fro, a2] = sqselFro(a1)
+    const [e3, joi, a3] = sqselJoi(a2)
+    const [e4, gro, a4] = sqselGro(a3, sqFldSw)
+    const [e5, whe, a5] = sqselWhe(a4, pm, sqFldSw)
+    const sql = sel + fro + joi + whe + gro
+    const er: er = e1.concat(e2, e3, e4, e5)
+    const z = [er, sql] as sqsel
+    return z
+}
+const sqgpFldExprSdic = (a: sqgp) => {
+    const [gp, ly] = sqgp_splitFor_ExprSdic(a)
+    const z: [sdic, sqgp] = [lySdic(ly), gp]
+    return z
+}
 const sqgp_splitFor_ExprSdic = (a: sqgp) => {
     const ly: ly = []
     const gp: gp = []
-    const isExprLin = lin => x.sHasPfx('$')
+    const isExprLin = x.sHasPfx('$')
     for (let { ix, lin } of a) {
         if (isExprLin(lin))
             ly.push(lin)
@@ -191,43 +253,17 @@ const sqgp_splitFor_ExprSdic = (a: sqgp) => {
     const z: [gp, ly] = [gp, ly]
     return z
 }
-const sqgp_sqFldExprSdic = (a: sqgp) => {
-    const [gp, ly] = sqgp_splitFor_ExprSdic(a)
-    const z: [sdic, sqgp] = [lySdic(ly), gp]
-    return z
-}
-const sqsel = (a: sqgp, term: s, pm: pm, { sqFldSw, sqStmtSw }: sw) => {
-    const ly = gpLy(a)
-    let z: sqsel
-    if (sqsellyIsSkip(ly, sqStmtSw)) {
-        z = [[], '']
-        return z
-    }
-    const [sqFldExprSdic, a0] = sqgp_sqFldExprSdic(a)
-    const [e1, sel, a1] = sqselSel(a0, term, sqFldSw, sqFldExprSdic)
-    const [e2, fro, a2] = sqselFro(a1)
-    const [e3, joi, a3] = sqselJoi(a2)
-    const [e4, gro, a4] = sqselGro(a3, sqFldSw)
-    const [e5, whe, a5] = sqselWhe(a4, pm, sqFldSw)
-    const sql = sel + fro + joi + whe + gro
-    const er: er = e1.concat(e2, e3, e4, e5)
-    z = [er, sql]
-    return z
-}
 const sqdrp = (a: sqgp) => {
     const z: sqdrp = [[], '']
     return z
 }
-const squpdgpIsSkip = (a: sqgp, sqStmtSw: bdic) => {
-    const tblNm = ''
-    if (sqStmtSw.has(tblNm))
-        return sqStmtSw.get(tblNm)
-    else
-        return false
-}
+
+const squpdlyTblnm = (a: ly) => { debugger; return '' }
+
 const squpd = (a: sqgp, pm: pm, { sqFldSw, sqStmtSw }: sw) => {
     let z: sqevl
-    if (squpdgpIsSkip(a, sqStmtSw)) {
+    let ly = gpLy(a)
+    if (squpdlyIsSkip(ly, sqStmtSw)) {
         z = [[], '']
         return z
     }
@@ -239,6 +275,15 @@ const squpd = (a: sqgp, pm: pm, { sqFldSw, sqStmtSw }: sw) => {
     z = [er, sql]
     return z
 }
+
+const squpdlyIsSkip = (a: ly, sqStmtSw: bdic) => {
+    const tblNm = squpdlyTblnm(a)
+    if (sqStmtSw.has(tblNm))
+        return sqStmtSw.get(tblNm)
+    else
+        return false
+}
+
 const sqevl = (a: sqgp, pm: pm, sw: sw) => {
     const fstLin = a[0].lin
     const term = x.sRmvPfx("?")(x.linFstTerm(fstLin).toUpperCase())
@@ -261,9 +306,11 @@ const sq05 = (a: bk[], pm: pm, sw: sw) => {
     for (let { bkty, gp } of a) {
         let [i_er, i_sql] = sqevl(gp, pm, sw)
         er = er.concat(i_er)
-        sql = sql === ""
-            ? i_sql
-            : sql += '\r\n\r\n' + i_sql
+        if (i_sql !== '') {
+            sql = sql === ""
+                ? i_sql
+                : sql += '\r\n\r\n' + i_sql
+        }
     }
     let z: [er, s] = [er, sql]
     return z
@@ -347,12 +394,12 @@ const gpyBky = (a: gp[]) => {
     let z: bk[] = x.itrMap(gpBk)(a)
     return z
 }
-const _x = x.sSplitSpc("DRP UPD SEL DIS")
 const isSqLy = (a: ly) => {
     const fstNonRmkLin: lin = x.itrFind(x.isNonEmp)(a)
     const fstTerm = x.linFstTerm(fstNonRmkLin)
     return x.vIN(_x)(x.sRmvPfx("?")(fstTerm).toUpperCase())
 }
+const _x = x.sSplitSpc("DRP UPD SEL DIS")
 const isRmLy = (a: ly) => x.itrPredIsAllTrue(x.isRmkLin)(a)
 const isPmLy = (a: ly) => x.lyHasMajPfx("%")(a)
 const isSwLy = (a: ly) => x.lyHasMajPfx("?")(a)
@@ -480,7 +527,7 @@ const plinParseTerm = ({ pos, lin }: plin) => {
     return z
 }
 
-export const linT2PosWdt = (a: lin) => {
+const linT2PosWdt = (a: lin) => {
     const a1 = plinParseSpc({ pos: 0, lin: a })
     const { term: t1, plin: a2 } = plinParseTerm(a1)
     const a3 = plinParseSpc(a2)
@@ -489,14 +536,14 @@ export const linT2PosWdt = (a: lin) => {
     const z: poswdt = { pos: a3.pos, wdt: t2.length }
     return z
 }
-export const linT1MarkerLin = (a: lin, msg: s) => {
+const linT1MarkerLin = (a: lin, msg: s) => {
     if (a.trimLeft() !== a)
         x.er('given {lin} must not have space in front', { lin: a })
     const { term, plin } = plinParseTerm({ pos: 0, lin: a })
     return '^'.repeat(term.length) + ' ' + msg
 }
 
-export const linT2MarkerLin = (a: lin, msg: s) => {
+const linT2MarkerLin = (a: lin, msg: s) => {
     const poswdt = linT2PosWdt(a)
     if (poswdt === null) {
         x.er('{lin} does have 2nd term', { lin: a })
@@ -601,7 +648,7 @@ const linTermPosWdtAy = (a: lin) => {
     } while (a.trim() !== "");
     return z
 }
-export const _termWdtPosAyRmkLin = (a: poswdt[]) => {
+const _termWdtPosAyRmkLin = (a: poswdt[]) => {
     let z: lin = ""
     for (let { pos, wdt } of a) {
         const n = 1
@@ -756,7 +803,114 @@ const bdicSw = (a: bdic) => {
     const z: sw = { sqFldSw, sqStmtSw }
     return z
 }
-var tst__swSplit = 1
-if (xx) {
-    debugger
+const lyAddErAsLines = (ly: ly, er: er) => {
+    const left = left_lyAy(ly, er)
+    const left1 = lyAyAlignL(left)
+    const right = right_lyAy(ly, er)
+    let o: ly = []
+    for (let i of x.nItr(left1.length)) {
+        let m = mge(left1[i], right[i])
+        o = o.concat(m)
+    }
+    let z: s = o.join('\r\n')
+    return z
+}
+
+const left_lyAy = (ly: ly, er: er) => {
+    const o: ly[] = []
+    for (let i of x.nItr(ly.length)) {
+        const m = [ly[i]].concat(endMsgEr(er, i))
+        o.push(m)
+    }
+    return o
+}
+const endMsgEr = (er: er, ix: n) => {
+    let o: s[] = []
+    for (let { ix: i, endMsg } of er) {
+        if (i === ix) o = o.concat(endMsg)
+    }
+    return o
+}
+
+const right_lyAy = (ly: ly, er: er) => {
+    const o: ly[] = []
+    for (let i of x.nItr(ly.length)) {
+        const m = sfxMsgEr(er, i)
+        o.push(m)
+    }
+    return o
+}
+const sfxMsgEr = (er: er, ix: n) => {
+    let o: s[] = []
+    for (let { ix: i, sfxMsg } of er) {
+        if (i === ix) o = o.concat(sfxMsg)
+    }
+    return o
+}
+
+const sep = ' --- '
+const mge = (left_ly: ly, right_ly: ly) => {
+    const llen = left_ly.length
+    const rlen = right_ly.length
+    const o: ly = []
+    const min = x.itrMin([llen, rlen])
+    for (let i of x.nItr(min)) {
+        const m = left_ly[i] + sep + right_ly[i]
+        o.push(m)
+    }
+    if (llen > rlen) {
+        for (let i = rlen; i < llen; i++)
+            o.push(left_ly[i].trim())
+    } else if (llen < rlen) {
+        const s = x.nSpc(left_ly[0].length)
+        for (let i = llen; i < rlen; i++)
+            o.push(s + sep + right_ly[i])
+    }
+    return o
+}
+const lyAyWdt = (a: ly[]) => {
+    const b = x.itrMap(x.itrWdt)(a)
+    return x.itrMax(b)
+}
+
+const lyAyAlignL = (a: ly[]) => {
+    const w = lyAyWdt(a)
+    const align = ly => x.itrMap(x.sAlignL(w))(ly)
+    const o: ly[] = x.itrMap(align)(a)
+    return o
+}
+//=============================================================
+if (module.id === '.') {
+    const bky = () => sqtpBky(sqtp())
+    const sqtp = () => x.ftLines(__dirname + '/spec/sample.sqtp.txt')
+    const tst__bkylines = () => x.sBrw(bkyLines(bky()))
+    const tst__bdicSw = () => {
+        const bdic = new Map<s, b>([['?#', true], ['b', false]])
+        const { sqFldSw, sqStmtSw } = bdicSw(bdic)
+        x.assertIsEq(sqFldSw, new Map<s, b>([['b', false]]))
+        x.assertIsEq(sqStmtSw, new Map<s, b>([['?#', true]]))
+    }
+    const tst__sqtprslt = () => {
+        const { vtp, sql } = sqtprslt(sqtp())
+        x.sBrw(vtp)
+        x.sBrw(sql)
+        debugger
+    }
+    const tst__sqsellyIsSkip = () => {
+        const ly = ['fm #aa']
+        const sqStmtSw = new Map<s, b>([['?#aa', false]])
+        const aa = sqsellyIsSkip(ly, sqStmtSw)
+    }
+    const tst__sqLy = () => ['sel xxx', 'fm aaa', '$xxx ka']
+    const tst__sqgp = () => lyGp(tst__sqLy())
+    const tst__sqgp_splitFor_ExprSdic = () => {
+        const sqgp = tst__sqgp()
+        const [gp, ly] = sqgp_splitFor_ExprSdic(sqgp)
+        assert.deepStrictEqual(ly, ['$xxx ka'])
+        assert.deepStrictEqual(gp, [{ ix: 0, lin: 'sel xxx' }, { ix: 1, lin: 'fm aaa' }])
+    }
+    const tst__bkyBrw = () => bkyBrw(bky())
+    //tst__bkyBrw()
+    tst__bkylines()
+    //tst__sqtprslt()
 }
