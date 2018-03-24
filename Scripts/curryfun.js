@@ -55,8 +55,9 @@ exports.dmp = global.console.log;
 exports.funDmp = (f) => exports.dmp(f.toString());
 exports.halt = () => { throw new Error(); };
 exports.sEscLf = (a) => a.replace('\n', '\\n');
-exports.sEscCr = (a) => a.replace('\r', '\\r');
-exports.sEscTab = (a) => a.replace('\t', '\\t');
+exports.sEscVbar = (a) => a.replace(/\|/g, '\\v');
+exports.sEscCr = (a) => a.replace(/\r/g, '\\r');
+exports.sEscTab = (a) => a.replace(/\t/g, '\\t');
 exports.sEsc = exports.compose(exports.sEscLf, exports.sEscCr, exports.sEscTab);
 exports.sFmt = (qqStr, ...v) => {
     let z = qqStr;
@@ -490,6 +491,7 @@ exports.lyPfxCnt = (pfx) => (a) => { let z = 0; exports.itrEach(lin => { if (exp
 exports.lyHasMajPfx = (pfx) => (a) => 2 * exports.lyPfxCnt(pfx)(a) > a.length;
 //---------------------------------------------------------------------------
 const reExpConstNm = /^export\s+const\s+([\w][\$_0-9\w_]*)/;
+const reConstNm = /^const\s+([\w][\$_0-9\w_]*)/;
 const reExpDollarConstNm = /^export\s+const\s+([\$\w][\$_0-9\w_]*)/;
 exports.srcDry = (re) => exports.compose(exports.srcMatchAy(re), exports.itrMap(exports.matchDr));
 exports.srcCol = (re) => (a) => {
@@ -506,11 +508,14 @@ exports.matchFstItm = (a) => a === null ? null : a[1];
 exports.matchAyFstCol = exports.itrMap(exports.matchFstItm);
 exports.srcMatchAy = exports.compose(exports.sMatch, exports.itrMap);
 exports.srcExpConstNy = exports.srcCol(reExpConstNm);
+exports.srcConstNy = exports.srcCol(reConstNm);
 exports.srcExpConstDollarNy = exports.srcCol(reExpDollarConstNm);
 exports.ftsExpConstNy = exports.compose(exports.ftLy, exports.srcExpConstNy);
+exports.ftsConstNy = exports.compose(exports.ftLy, exports.srcConstNy);
 exports.ftsExpConstDollarNy = exports.compose(exports.ftLy, exports.srcExpConstDollarNy);
 exports.ffnFts = exports.ffnRplExt('.ts');
 exports.fjsExpConstNy = exports.compose(exports.ffnFts, exports.ftsExpConstNy);
+exports.fjsConstNy = exports.compose(exports.ffnFts, exports.ftsConstNy);
 exports.stop = () => { debugger; };
 //---------------------------------------------------------------------------
 exports.isStr = v => typeof v === 'string';
@@ -949,6 +954,7 @@ exports.fjsRplExpStmt = fjs => {
         exports.sWrt(fjs)(newLines());
     }
 };
+exports.syLin = (a) => exports.itrMap(exports.sEscVbar)(a).join(' | ');
 exports.linesAlignL = (wdt) => (a) => {
     const a1 = exports.sSplitCrLf(a);
     const aLas = exports.ayLas(a1);
@@ -972,6 +978,19 @@ exports.linesAyAlignL = (a) => {
     const z = exports.itrMap(exports.linesAlignL(w))(a);
     return z;
 };
+exports.vSav = (vid) => (a) => exports.sWrt(exports.vidFjson(vid))(JSON.stringify(a));
+exports.vidpth = __dirname + exports.pthsep + 'vid' + exports.pthsep;
+exports.pthEns(exports.vidpth);
+exports.vidpthBrw = () => exports.pthBrw(exports.vidpth);
+exports.vidFjson = (a) => exports.vidpth + a + '.json';
+exports.fjsonVal = (a) => JSON.parse(exports.ftLines(a));
+exports.vidVal = (a) => exports.fjsonVal(exports.vidFjson(a));
+exports.sSav = (sid) => (a) => exports.sWrt(exports.sidFt(sid))(JSON.stringify(a));
+exports.sidpth = __dirname + exports.pthsep + 'sid' + exports.pthsep;
+exports.pthEns(exports.sidpth);
+exports.sidpthBrw = () => exports.pthBrw(exports.sidpth);
+exports.sidFt = (a) => exports.sidpth + a + '.txt';
+exports.sidStr = (a) => exports.ftLines(exports.sidFt(a));
 exports.vTee = (f) => (a) => { f(a); return a; };
 exports.ftWrt = (s) => (a) => fs.writeFileSync(a, s);
 exports.cmdShell = child_process.exec;
@@ -1111,7 +1130,25 @@ if (module.id === '.') {
         if (!exports.isEq({ a: 1 }, { a: 1 }))
             debugger;
     };
-    tst__isEq();
+    const tst__vidVal = () => {
+        const v = '234234';
+        exports.vSav('a')(v);
+        const v1 = exports.vidVal('a');
+        exports.assertIsEq(v, v1);
+    };
+    const tst__sidStr = () => {
+        const s = '234234';
+        exports.sSav('a')(s);
+        const s1 = exports.vidVal('a');
+        exports.assertIsEq(s, s1);
+    };
+    const tst__vidpthBrw = () => exports.vidpthBrw();
+    const tst__sidpthBrw = () => exports.sidpthBrw();
+    tst__srcExpConstNy();
+    //tst__vidVal()
+    //tst__sidStr()
+    //tst__vidpthBrw()
+    //tst__isEq()
     //tst__pthBrw()
     //tst__sBrwAtFdrFn()
     /*
@@ -1122,7 +1159,6 @@ if (module.id === '.') {
     tst__cmlNy    ()
     tst__sLik     ()
     tst__ftsExpConstNyBrw()
-    tst__srcExpConstNy()
     */
 }
 //# sourceMappingURL=curryfun.js.map

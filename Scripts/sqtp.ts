@@ -1,26 +1,42 @@
 //// <reference path="./curryfun.d.ts"/>
-import { ix, sset, sdic, p, pfx, cnt, n, s, ay, lin, b, ly } from './curryfun'
+import { sy, ix, sset, sdic, p, pfx, cnt, n, s, ay, lin, b, ly } from './curryfun'
 import * as x from './curryfun'
 import * as assert from 'assert'
-export interface eritm { ix: n, sfxMsg: s[], endMsg: s[] }
+export interface erItm { ix: n, sfxMsg: s[], endMsg: s[] }
 export type sqtp = s
-export interface sqtprslt { vtp: s, sql: s }
-interface poswdt { pos: n, wdt: n }
-interface bk { bkty: Bkty, gp: gp }
-interface sqgp extends gp { }
-interface ixlinchkr { hasEr: (a: ixlin) => b, erFun: (a: ixlin) => er }
+export interface sqtpRslt { vtp: s, sql: s }
+interface posWdt { pos: n, wdt: n }
+interface ixLinChkr { hasEr: (a: ixlin) => b, erFun: (a: ixlin) => er }
 interface ixlin { ix: n, lin: lin }
-interface plin { pos: n, lin: s }
-interface termprslt { term: s, plin: plin }
-const enum Bkty { RM, PM, SW, SQ, ER }
-type er = eritm[]
+interface posLin { pos: n, lin: s }
+interface termprslt { term: s, posLin: posLin }
+type fldNm = s
+type lines = s
+type tblNm = s | null
+type fldSw = bdic
+type stmtSw = bdic
+type exprDic = sdic
+type updLines = lines
+type setLines = lines
+type wheLines = lines
+type selLines = lines
+type groLines = lines
+type joiLines = lines
+type froLines = lines
+type sqGp = gp
+type exprGp = gp
+type pmGp = gp
+type swGp = gp
+type selGp = sqGp
+type updGp = sqGp
+type drpGp = sqGp
+type er = erItm[]
 type gp = ixlin[]
-type sqevl = [er, sql]
-type sqdrp = sqevl
-type sqsel = sqevl
-type squpd = sqevl
+type stmt = lines | null
+type clnLy = ly
+type gpBrk = { swGp: swGp, pmGp: pmGp, sqGpy: sqGp[], swExcessGpy: gp[], pmExcessGpy: gp[], erGpy: gp[] }
 type bdic = Map<s, boolean>
-type sw = { sqFldSw: bdic, sqStmtSw: bdic }
+type sw = { fldSw: bdic, stmtSw: bdic }
 type pm = Map<s, s>
 type term = s
 type sql = s
@@ -35,143 +51,262 @@ const sq_LEF = 'LEF'
 const sq_WHE = 'WHE'
 const sq_AND = 'AND'
 const sq_OR = 'OR'
-export const sqtprslt = (a: sqtp) => {
+const enum eBkTy { RM, PM, SW, SQ, ER }
+const enum eSelTy { SEL, DIS }
+const enum eStmtTy { SEL, DIS, UPD, DRP }
+const sqtpRslt = (a: sqtp): { vtp: s, sql: s } => {
     const ly = x.sSplitLines(a)
-    const clnly = lyRmvMsg(ly)
-    const bky = clnlyBky(clnly)
-    const [er2, bky2] = er02(bky)
-    const [er3, bky3, pm] = pm03(bky2)
-    const [er4, bky4, sw] = sw04(bky3, pm)
-    const [er5, sql] = sq05(bky4, pm, sw)
-    const er = er2.concat(er3, er4, er5)
-    //ersBrw(er2, er3, er4, er5)
-    dicsBrw(pm, sw)
-    debugger
-    const vtp = lyAddErAsLines(clnly, er)
-    const z: sqtprslt = { vtp, sql }
+    const clnLy = x1_clnLy(ly)
+    const { pmGp, swGp, sqGpy, pmExcessGpy, swExcessGpy, erGpy } =
+        x2_gpBrk(clnLy)
+    const e1 = gpy_endMsgEr('--- this block is [error], it is none of block of [remark | parameter | switch | sql]')(erGpy)
+    const e2 = gpy_endMsgEr('--- this is excess [parameter] block')(pmExcessGpy)
+    const e3 = gpy_endMsgEr('--- this is excess [switch] block')(swExcessGpy)
+    const [e4, pm] = x3_pm(pmGp) // x3_fnd_erPm(pmGp)
+    const [e5, sw] = x4_sw(swGp, pm)
+    const [e6, sql] = x5_sql(sqGpy, pm, sw)
+    const er = e1.concat(e2, e3, e4, e5, e6)
+    // sw_Brw(swGp, sw); debugger
+    const vtp = x6_vtp(clnLy, er)
+    return { sql, vtp }
+}
+
+const x512_upd = (_updGp: updGp, _sw: sw): [er, stmt] => {
+    const { fldSw, stmtSw } = _sw
+    const ly = gp_ly(_updGp)
+    if (updLy_isSkipStmt(ly, stmtSw))
+        return [[], null]
+    const [exprDic, a0] = sqGp_exprDic(_updGp)
+    const er: er = []
+    const [e1, upd, a1] = x5121_updLines(a0, fldSw, exprDic)
+    const [e2, set, a2] = x5122_setLines(a1, fldSw, exprDic)
+    const [e3, whe, a3] = x5123_wheLines(a2, exprDic)
+    const sql = upd + set + whe
+    return [er, sql]
+}
+const x511_selOrDis = (a: selGp, selTy: eSelTy, pm: pm, { fldSw, stmtSw }: sw): [er, sql] => {
+    const ly = gp_ly(a)
+    if (selLy_isSkipStmt(ly, stmtSw))
+        return [[], '']
+    const [exprDic, a0] = sqGp_exprDic(a)
+    const [e1, sel, a1] = x5111_selLines(a0, selTy, fldSw, exprDic)
+    const [e2, fro, a2] = x5112_froLines(a1)
+    const [e3, joi, a3] = x5113_joiLines(a2)
+    const [e4, gro, a4] = x5114_groLines(a3, fldSw)
+    const [e5, whe, a5] = x5115_wheLines(a4, pm, fldSw)
+    const sql = sel + fro + joi + whe + gro
+    const er: er = e1.concat(e2, e3, e4, e5)
+    return [er, sql]
+}
+
+const x5_sql = (a: sqGp[], pm: pm, sw: sw): [er, sql] => {
+    let er: er = []
+    let sql = ""
+    for (let sqGp of a) {
+        let [e, stmt] = x51_stmt(sqGp, pm, sw)
+        er = er.concat(e)
+        if (stmt !== null) {
+            sql = sql === ""
+                ? stmt
+                : sql += '\r\n\r\n' + stmt
+        }
+    }
+    return [er, sql]
+}
+
+const x51_stmt = (_sqGp: sqGp, _pm: pm, _sw: sw): [er, stmt] => {
+    const fstLin = _sqGp[0].lin
+    const stmtTyStr = x.sRmvPfx("?")(x.linFstTerm(fstLin).toUpperCase())
+    const stmtTy = stmtTyStr_eStmtTy(stmtTyStr)
+    let z: [er, stmt]
+    switch (stmtTy) {
+        case eStmtTy.DIS: z = x511_selOrDis(_sqGp, eSelTy.DIS, _pm, _sw); break
+        case eStmtTy.SEL: z = x511_selOrDis(_sqGp, eSelTy.SEL, _pm, _sw); break
+        case eStmtTy.UPD: z = x512_upd(_sqGp, _sw); break
+        case eStmtTy.DRP: z = x513_drp(_sqGp); break
+        default:
+            const ix = _sqGp[0].ix
+            const lin = _sqGp[0].lin
+            const m = x.sFmt(' must be [? | ? | ? | ?]', sq_SEL, sq_UPD, sq_DIS, sq_DRP)
+            const endMsg = [lin_t1MrkrLin(lin, m)]
+            const sfxMsg = []
+            const erItm: erItm = { ix, endMsg, sfxMsg }
+            const er: er = [erItm]
+            z = [er, null]
+    }
     return z
 }
-const ersBrw = (er2: er, er3: er, er4: er, er5: er) => {
 
-}
-const dicsBrw = (pm: pm, { sqFldSw, sqStmtSw }: sw) => {
-    const pmStr = x.dicLines(pm)
-    const sqFldSwStr = x.dicLines(sqFldSw)
-    const sqStmtSwStr = x.dicLines(sqStmtSw)
-    x.sBrwAtFdrFn('Dic', 'pm')(pmStr)
-    x.sBrwAtFdrFn('Dic', 'sqFld sw')(sqFldSwStr)
-    x.sBrwAtFdrFn('Dic', 'sqStmt sw')(sqStmtSwStr)
-}
-const sqtpBky = (a: sqtp) => {
-    const ly = x.sSplitLines(a)
-    const clnly = lyRmvMsg(ly)
-    const bky = clnlyBky(clnly)
-    return bky
-}
-const clnlyBky = (a: ly) => {
-    const gp = lyGp(a)
-    const gp1 = gpRmvRmk(gp)
-    const gpy = gpGpy(gp1, '==')
-    const bky = gpyBky(gpy)
-    const bky1 = x.itrWhere(isNonRmkBk)(bky) as bk[]
-    return bky1
-}
-const bkLines = ({ bkty, gp }: bk) => bktyLin(bkty) + '\n' + gpLines(gp)
-const bkyLines = (a: bk[]) => x.itrMap(bkLines)(a).join('\n')
-const bktyStr = (a: Bkty) => {
-    switch (a) {
-        case Bkty.ER: return 'ER'
-        case Bkty.SQ: return 'SQ'
-        case Bkty.PM: return 'PM'
-        case Bkty.SW: return 'SW'
-        case Bkty.RM: return 'RM'
+const gp_endMsgErItm = (endMsg: s) => (a: gp): erItm => endMsgErItm(x.ayLas(a).ix, endMsg)
+
+const gpy_endMsgEr = (endMsg: s) => (a: gp[]): er => x.itrMap(gp_endMsgErItm(endMsg))(a)
+
+const x2_gpBrk = (a: clnLy): gpBrk => {
+    let pmGp: gp = []
+    let swGp: gp = []
+    const swExcessGpy: gp[] = []
+    const pmExcessGpy: gp[] = []
+    const erGpy: gp[] = []
+    const sqGpy: gp[] = []
+    const gp = ly_gp(a)
+    const gp1 = gp_RmvRmk(gp)
+    const gpy = gp_gpy(gp1, '==')
+    const gpy1 = gpy_RmvRmkLin(gpy)
+    for (let gp of gpy1) {
+        let ly = gp_ly(gp)
+        const bkty = ly_bkty(ly)
+        switch (bkty) {
+            case eBkTy.ER: erGpy.push(gp); break
+            case eBkTy.RM: erGpy.push(gp); break
+            case eBkTy.SW:
+                if (swGp.length === 0)
+                    swGp = gp
+                else
+                    swExcessGpy.push(gp)
+                break
+            case eBkTy.PM:
+                if (pmGp.length === 0)
+                    pmGp = gp
+                else
+                    pmExcessGpy.push(gp)
+                break
+            case eBkTy.SQ: sqGpy.push(gp); break
+            default: x.er('ly_bkty return unexpected bkty', { ly, bkty })
+        }
     }
-    return '??'
+    return { pmGp, swGp, sqGpy, pmExcessGpy, swExcessGpy, erGpy }
 }
-const bktyLin = (a: Bkty) => x.sFmt('*Bkty=[?(?)]', bktyStr(a), a)
-const ixlinToStr = ({ ix, lin }) => x.sFmt('[?]?', ix, lin)
-const gpLines = (a: gp) => x.itrMap(ixlinToStr)(a).join('\n')
-const gpBrw = x.compose(gpLines, x.sBrw) as (a: gp) => void
-const bkBrw = (a: bk, i?: n) => x.sBrwAtFdrFn('bk', 'bk-' + (i === undefined ? 0 : i) + '.txt')(bkLines(a))
-const bkyBrw = x.itrEach(bkBrw) as (a: bk[]) => void
-const erLy = (er: er) => x.itrMap(erItmLin)(er) as ly
-const erItmLin = ({ ix, lin }) => x.sFmt('[?]?', ix, lin)
-const isNonRmkBk = (a: bk) => a.bkty !== Bkty.RM
-
-const linRmvMsg = (a: lin) => {
+const curExpConstNy = x.fjsExpConstNy(__filename)
+const curConstNy = x.fjsConstNy(__filename)
+const er_lines = (a: er) => x.itrMap(erItm_lin)(a).join('\r\n')
+const er_Brw = (a: er) => x.sBrw(er_lines(a))
+const sw_Brw = (swGp: swGp, { fldSw, stmtSw }: sw) => {
+    const p = gp_lines(swGp)
+    const s1 = x.dicLines(fldSw)
+    const s2 = x.dicLines(stmtSw)
+    x.sBrwAtFdrFn('Sw', 'gp')(p)
+    x.sBrwAtFdrFn('Sw', 'fldSw')(s1)
+    x.sBrwAtFdrFn('Sw', 'stmtSw')(s2)
+}
+const ixlin_lin = ({ ix, lin }) => x.sFmt('[?]?', ix, lin)
+const gp_lines = (a: gp) => x.itrMap(ixlin_lin)(a).join('\n')
+const gp_Brw = x.compose(gp_lines, x.sBrw) as (a: gp) => void
+const er_ly = (er: er) => x.itrMap(erItm_lin)(er) as ly
+const erItm_lin = ({ ix, endMsg, sfxMsg }) => x.sFmt('?: endMsg[?] sfxMsg[?]', ix, x.syLin(endMsg), x.syLin(sfxMsg))
+const lin_RmvMsg = (a: lin) => {
     const b = a.match(/(.*)---/)
     const c: lin = b === null ? a : a[1]
     if (x.sHasPfx("^")(c.trimLeft())) return ""
     return c
 }
 
-const lyRmvMsg = x.compose(x.itrMap(linRmvMsg), x.itrRmvEmp) as (a: ly) => ly
-const ixlinIsNonRmkLin = (a: ixlin) => x.isNonRmkLin(a.lin)
-const gpRmvRmk = x.itrWhere(ixlinIsNonRmkLin) as (a: gp) => gp
+const x1_clnLy = x.compose(x.itrMap(lin_RmvMsg), x.itrRmvEmp) as (a: ly) => ly
+const ixlin_isNonRmkLin = (a: ixlin) => x.isNonRmkLin(a.lin)
+const gp_RmvRmk = x.itrWhere(ixlin_isNonRmkLin) as (a: gp) => gp
 
-const lyGp = (a: ly) => {
+const ly_gp = (a: ly) => {
     const z: ixlin[] = []
     let i = 0
     for (let lin of a)
         z.push({ ix: i++, lin })
     return z
 }
-
-const pm03 = (a: bk[]) => {
-    const { t, f } = x.itrBrkForTrueFalse((a: bk) => a.bkty === Bkty.PM)(a)
-    const pmBky: bk[] = t
-    const remain: bk[] = f
-    const e1 = bkyEr_forExcessBk(pmBky, 'parameter')
-    const [e2, pm] = bkPm(pmBky[0])
-    const er = e1.concat(e2)
-    let z: [er, bk[], pm] = [er, remain, pm]
-    return z
-}
-
-const sw04 = (a: bk[], pm: pm) => {
-    const { t, f } = x.itrBrkForTrueFalse((a: bk) => a.bkty === Bkty.SW)(a)
-    const swBky: bk[] = t
-    const remain: bk[] = f
-    const e1 = bkyEr_forExcessBk(swBky, 'switch')
-    const [e2, sw] = bkSw(swBky[0], pm)
-    const er = e1.concat(e2)
-    let z: [er, bk[], sw] = [er, remain, sw]
-    return z
-}
-
-const sqsellyIsSkip = (a: ly, sqStmtSw: bdic) => {
-    const tblnm = sqsellyTblnm(a)
-    if (tblnm === null)
+const tblNm_isSkipStmt = (a: tblNm, stmtSw: stmtSw): b => {
+    if (a === null)
         return false
-    const key = '?' + tblnm
-    const z = sqStmtSw.get(key)
+    const key = '?' + a
+    const z = stmtSw.get(key)
     return z === undefined
         ? false
         : z
-}
 
-const sqsellyTblnm = (a: ly) => {
-    const tblFmLin = x.itrFind(x.sHasPfxIgnCas(sq_FRO))(a)
-    if (tblFmLin === null) return false
-    const z: s = x.sSplitSpc(tblFmLin)[1]
+}
+const updLy_isSkipStmt = (a: ly, stmtSw: stmtSw): b => tblNm_isSkipStmt(updLy_tblNm(a), stmtSw)
+const selLy_isSkipStmt = (a: ly, stmtSw: stmtSw): b => tblNm_isSkipStmt(selLy_tblNm(a), stmtSw)
+
+const updLy_tblNm = (a: ly): tblNm => {
+    const a1 = a[0]
+    const a2 = x.sRmvPfx("?")(a1)
+    const a3 = x.sHasPfxIgnCas(sq_UPD)(a2)
+    if (!a3)
+        return null
+    let z = x.linT2(a2)
     return z
 }
+const selLy_tblNm = (a: ly): tblNm => {
+    const tblNmLin = x.itrFind(x.sHasPfxIgnCas(sq_FRO))(a)
+    if (tblNmLin === null)
+        return null
+    const z = x.linT2(tblNmLin)
+    return z
+}
+const selTy_selTyStr = (a: eSelTy): s | null => {
+    switch (a) {
+        case eSelTy.DIS: return sq_DIS
+        case eSelTy.SEL: return sq_SEL
+    }
+    return null
+}
 
-const sqselBrkSel = (a: sqgp, term: s) => {
-    return [a, a]
+const x51112_selLines = (a: sqGp, selTy: eSelTy, fldSw: bdic, exprDic: sdic): [er, s] => {
+    let distinct: s
+    switch (selTy) {
+        case eSelTy.SEL: distinct = ''; break
+        case eSelTy.DIS: distinct = ' distinct'; break
+        default:
+            x.er(x.sFmt('{selTy} must be [? | ?]', eSelTy.SEL, eSelTy.DIS), { sqGp: a, selTy })
+            let z = ''
+            return [[], '']
+    }
+    const fldNy = x511121_flds(a)
+    const fldsLines = x511122_fldsLines(fldNy, fldSw, exprDic)
+    const sel = 'select' + distinct + '\r\n' + fldsLines
+    return [[], '']
 }
-const xflds_fny = (a: sqgp, sqFldSw: bdic) => {
-    return []
+const x511121_flds = (a: sqGp): fldNm[] => []
+const x51111_split = (a: sqGp, selTy: eSelTy): [sqGp, exprGp] => {
+    const isExprLin = x.sHasPfx('$')
+    for (let { ix, lin } of a) {
+        if (isExprLin(lin)) { }
+        //ly.push(lin)
+        else { }
+        //gp.push({ ix, lin })
+    }
+    const lyNoExpr: ly = []
+    return [[], []]
+
+    // return [selGp, remain] from {a}
+    // where selGp is first n-lines of {a} of first-term-pfx-?-removed-line = SEL | DIS
+    const selTyStr = selTy_selTyStr(selTy) // 'SEL' | 'DIS' | null
+    switch (selTyStr) {
+        case null: return [[], a]
+    }
+    const selGp: sqGp = []
+    const remain = a
+    while (remain.length > 0) {
+        const lin = remain[0].lin
+        const fstTerm = x.linFstTerm(lin)
+        const fstTerm1 = x.sRmvPfx('?')(fstTerm).toUpperCase()
+        if (fstTerm1 === selTyStr) {
+            selGp.push(remain[0])
+            remain.shift()
+        } else
+            break
+    }
+    return [selGp, remain]
 }
-const xflds_l_r_ay = (a: sqgp, sqFldSw: bdic) => {
-    const fny: s[] = xflds_fny(a, sqFldSw)
-    const l: s[] = []
+
+const x511122_l_r_ay = (a: fldNm[], fldSw: fldSw, exprDic: exprDic): [ly, ly] => {
+    const fny: fldNm[] = x.itrMap(fldNm => fldSw.has(fldNm))(a)
+    const l: s[] = x.itrMap(fldNm => exprDic.has(fldNm) ? exprDic.get(fldNm) : fldNm)(fny)
+    const l1: s[] = x.itrMap(x.sRmvPfx("?"))(l)
     const r: s[] = x.itrAlignL(fny)
-    const z: [ly, ly] = [l, r]
+    const z: [ly, ly] = [l1, r]
     return z
 }
-const xflds_lines = (a: sqgp, sqFldSw: bdic, sqFldExprDic: sdic) => {
-    let [l, r] = xflds_l_r_ay(a, sqFldSw)
+const x511122_fldsLines = (_fny: fldNm[], _fldSw: fldSw, _exprDic: exprDic): lines => {
+    // {a} is all gp-lines started with either SEL | DIS
+    let [l, r] = x511122_l_r_ay(_fny, _fldSw, _exprDic)
     const z: s[] = []
     for (let i = 0; i < l.length; i++) {
         z.push(l[i] + r[i])
@@ -179,179 +314,94 @@ const xflds_lines = (a: sqgp, sqFldSw: bdic, sqFldExprDic: sdic) => {
     return z.join(',\r\n') + '\r\n'
 }
 
-const sqselSel = (a: sqgp, term: s, sqFldSw: bdic, sqFldExprDic: sdic) => {
-    let z: [er, s, sqgp]
-    let distinct: s
-    switch (term) {
-        case sq_SEL: distinct = ''; break
-        case sq_DIS: distinct = ' distinct'; break
-        default:
-            x.er(x.sFmt('{term} must be [? | ?]', sq_SEL, sq_DIS), { sqgp: a, term })
-            z = [[], '', a]
-            return z
-    }
-
-    let [a1, remain] = sqselBrkSel(a, term)
-    let flds = xflds_lines(a1, sqFldSw, sqFldExprDic)
-    const sel = 'select' + distinct + '\r\n' + flds
-
-    z = [[], sel, remain]
-    return z
+const x5121_updLines = (_updGp: updGp, _fldSw: fldSw, _exprDic: exprDic): [er, updLines, updGp] => {
+    const updLin = _updGp[0].lin
+    _updGp.shift()
+    let [er, updLines] = x51211_updLines(updLin, _fldSw, _exprDic)
+    return [er, updLines, _updGp]
+}
+const x51211_updLines = (_updLin: lin, _fldSw: fldSw, _exprDic: exprDic): [er, updLines] => {
+    return [[], '']
+}
+const x5122_setLines = (_updGp: updGp, _fldSw: fldSw, _exprDic: exprDic): [er, setLines, updGp] => {
+    let [fny, remain] = x51221_split(_updGp)
+    let [er, selLines] = x51112_setLines(fny, _exprDic)
+    return [er, selLines, remain]
+}
+const x51221_split = (a: updGp): [fldNm[], updGp] => {
+    return [[], a]
+}
+const x51112_setLines = (_fny: fldNm[], _exprDic: exprDic): [er, selLines] => {
+    return [[], '']
+}
+const x5123_wheLines = (_updGp: updGp, _exprDic: exprDic): [er, wheLines, updGp] => {
+    //    let [a1, remain] = x51111_split(a)
+    //    let [er, selLines] = x51112_selLines(a1, fldSw, exprDic)
+    //    return [er, selLines, remain]
+    return [[], '', _updGp]
 }
 
-const sqselFro = (a: sqgp) => {
+const x5111_selLines = (a: selGp, selTy: eSelTy, fldSw: fldSw, exprDic: exprDic): [er, selLines, selGp] => {
+    let [a1, remain] = x51111_split(a, selTy)
+    let [er, selLines] = x51112_selLines(a1, selTy, fldSw, exprDic)
+    return [er, selLines, remain]
+}
+
+const x5112_froLines = (a: selGp): [er, froLines, selGp] => {
     let fro = ''
-    let z: [er, s, sqgp] = [[], fro, a]
-    return z
+    return [[], fro, a]
 }
 
-const sqselJoi = (a: sqgp) => {
-    let joi = ''
-    let z: [er, s, sqgp] = [[], joi, a]
-    return z
+const x5113_joiLines = (a: selGp): [er, joiLines, sqGp] => {
+    const joi = ''
+    return [[], joi, a]
 }
-const sqselGro = (a: sqgp, sqFldSw: bdic) => {
+const x5114_groLines = (a: selGp, fldSw: fldSw): [er, groLines, sqGp] => {
     let gro = ''
-    let z: [er, s, sqgp] = [[], gro, a]
+    let z: [er, s, sqGp] = [[], gro, a]
     return z
 }
-const sqselWhe = (a: sqgp, pm: pm, sqFldSw: bdic) => {
+const x5115_wheLines = (a: selGp, pm: pm, fldSw: bdic): [er, wheLines, sqGp] => {
     let whe = ''
-    let z: [er, s, sqgp] = [[], whe, a]
+    let z: [er, s, sqGp] = [[], whe, a]
     return z
 }
-const sqsel = (a: sqgp, term: s, pm: pm, { sqFldSw, sqStmtSw }: sw) => {
-    const ly = gpLy(a)
-    if (sqsellyIsSkip(ly, sqStmtSw))
-        return [[], ''] as sqsel
-    const [sqFldExprSdic, a0] = sqgpFldExprSdic(a)
-    const [e1, sel, a1] = sqselSel(a0, term, sqFldSw, sqFldExprSdic)
-    const [e2, fro, a2] = sqselFro(a1)
-    const [e3, joi, a3] = sqselJoi(a2)
-    const [e4, gro, a4] = sqselGro(a3, sqFldSw)
-    const [e5, whe, a5] = sqselWhe(a4, pm, sqFldSw)
-    const sql = sel + fro + joi + whe + gro
-    const er: er = e1.concat(e2, e3, e4, e5)
-    const z = [er, sql] as sqsel
+
+const sqGp_exprDic = (a: sqGp): [exprDic, sqGp] => {
+    //    const [gp, ly] = sqGp_SplitForExprSdic(a)
+    //    const z: [sdic, sqGp] = [lySdic(ly), gp]
+    //    return z
+    return [new Map<s, s>(), a]
+}
+const x513_drp = (a: drpGp): [er, stmt] => {
+    const z: [er, stmt] = [[], '']
     return z
 }
-const sqgpFldExprSdic = (a: sqgp) => {
-    const [gp, ly] = sqgp_splitFor_ExprSdic(a)
-    const z: [sdic, sqgp] = [lySdic(ly), gp]
-    return z
+
+const selTyStr_eSelTy = (a: s) => {
+
 }
-const sqgp_splitFor_ExprSdic = (a: sqgp) => {
-    const ly: ly = []
-    const gp: gp = []
-    const isExprLin = x.sHasPfx('$')
-    for (let { ix, lin } of a) {
-        if (isExprLin(lin))
-            ly.push(lin)
-        else
-            gp.push({ ix, lin })
+const stmtTyStr_eStmtTy = (a: s) => {
+    switch (a.toLocaleUpperCase()) {
+        case sq_SEL: return eStmtTy.SEL
+        case sq_DRP: return eStmtTy.DRP
+        case sq_UPD: return eStmtTy.UPD
+        case sq_DIS: return eStmtTy.DIS
     }
-    const z: [gp, ly] = [gp, ly]
-    return z
-}
-const sqdrp = (a: sqgp) => {
-    const z: sqdrp = [[], '']
-    return z
+    return null
 }
 
-const squpdlyTblnm = (a: ly) => { debugger; return '' }
 
-const squpd = (a: sqgp, pm: pm, { sqFldSw, sqStmtSw }: sw) => {
-    let z: sqevl
-    let ly = gpLy(a)
-    if (squpdlyIsSkip(ly, sqStmtSw)) {
-        z = [[], '']
-        return z
-    }
-    const er: er = []
-    const upd = ''
-    const set = ''
-    const where = ''
-    const sql = upd + set + where
-    z = [er, sql]
-    return z
-}
-
-const squpdlyIsSkip = (a: ly, sqStmtSw: bdic) => {
-    const tblNm = squpdlyTblnm(a)
-    if (sqStmtSw.has(tblNm))
-        return sqStmtSw.get(tblNm)
-    else
-        return false
-}
-
-const sqevl = (a: sqgp, pm: pm, sw: sw) => {
-    const fstLin = a[0].lin
-    const term = x.sRmvPfx("?")(x.linFstTerm(fstLin).toUpperCase())
-    let z: sqevl
-    switch (term) {
-        case sq_DRP: z = sqdrp(a); break
-        case sq_SEL:
-        case sq_DIS: z = sqsel(a, term, pm, sw); break
-        case sq_UPD: z = squpd(a, pm, sw); break
-        default:
-            x.er('impossible: {bk} should have {term} be one of [Drp | Sel | Dis | Upd]', { term, bk: a })
-            z = [[], '']
-    }
-    return z
-}
-
-const sq05 = (a: bk[], pm: pm, sw: sw) => {
-    let er: er = []
-    let sql = ""
-    for (let { bkty, gp } of a) {
-        let [i_er, i_sql] = sqevl(gp, pm, sw)
-        er = er.concat(i_er)
-        if (i_sql !== '') {
-            sql = sql === ""
-                ? i_sql
-                : sql += '\r\n\r\n' + i_sql
-        }
-    }
-    let z: [er, s] = [er, sql]
-    return z
-}
-
-const er02 = (a: bk[]) => {
-    let { t: erBky, f: bky } = x.itrBrkForTrueFalse((a: bk) => a.bkty === Bkty.ER)(a)
-    let er = bkyEr_forErBky(erBky)
-    let z: [er, bk[]] = [er, bky]
-    return z
-}
-
-const bkyEr_forErBky = (a: bk[]) => {
+const gp_endMsgEr = (a: gp, endMsgStr: s) => {
     let z: er = []
     for (let bk of a) {
-        const ix = x.ayLas(bk.gp).ix
-        z.push(endmsgstrEr(ix, '^^^ this block is error'))
+        const ix = x.ayLas(a).ix
+        z.push(endMsgErItm(ix, endMsgStr))
     }
     return z
 }
 
-const endmsgstrEr = (ix: n, endMsgStr: s) => {
-    const sfxMsg = []
-    const endMsg = [endMsgStr]
-    let z: eritm = { ix, endMsg, sfxMsg }
-    return z
-}
-
-const bkyEr_forExcessBk = (a: bk[], bkNm: s) => {
-    const excessbky = a.slice(1)
-    const z: er = []
-    if (excessbky.length === 0) return z
-    const endMsgStr = `^^^ Three is already [${bkNm}] block.  This block is ignored`
-    for (let bk of excessbky) {
-        const ix = x.ayLas(bk.gp).ix
-        z.push(endmsgstrEr(ix, endMsgStr))
-    }
-    return z
-}
-
-const gpGpy = (a: gp, linPfxSep: s) => {
+const gp_gpy = (a: gp, linPfxSep: s) => {
     let { ix, lin } = a[0]
     const z: gp[] = []
     let curGp: gp = []
@@ -374,26 +424,13 @@ const gpRmvRmkLin = (a: gp) => {
     return z
 }
 
-const gpyRmvRmkLin: (a: gp[]) => gp[] = x.itrMap(gpRmvRmkLin)
+const gpy_RmvRmkLin: (a: gp[]) => gp[] = x.itrMap(gpRmvRmkLin)
 
 const assertAyIsEqLen = (ay1: ay, ay2: ay) => {
     if (ay1.length !== ay2.length)
         x.er('two ay are diff len', { ay1, ay2 })
 }
-const gpLy = (a: gp) => {
-    const z: ly = x.itrMap(x.oPrp("lin"))(a);
-    return z
-}
-const gpBk = (a: gp) => {
-    const ly = gpLy(a)
-    const bkty = lyBkty(ly)
-    let z: bk = { bkty, gp: a }
-    return z
-}
-const gpyBky = (a: gp[]) => {
-    let z: bk[] = x.itrMap(gpBk)(a)
-    return z
-}
+const gp_ly = (a: gp) => x.itrMap(x.oPrp("lin"))(a) as ly
 const isSqLy = (a: ly) => {
     const fstNonRmkLin: lin = x.itrFind(x.isNonEmp)(a)
     const fstTerm = x.linFstTerm(fstNonRmkLin)
@@ -403,23 +440,23 @@ const _x = x.sSplitSpc("DRP UPD SEL DIS")
 const isRmLy = (a: ly) => x.itrPredIsAllTrue(x.isRmkLin)(a)
 const isPmLy = (a: ly) => x.lyHasMajPfx("%")(a)
 const isSwLy = (a: ly) => x.lyHasMajPfx("?")(a)
-const lyBkty = (a: ly) => {
-    let o: Bkty
+const ly_bkty = (a: ly) => {
+    let o: eBkTy
     switch (true) {
         case (isRmLy(a)):
-            o = Bkty.RM
+            o = eBkTy.RM
             break
         case (isPmLy(a)):
-            o = Bkty.PM
+            o = eBkTy.PM
             break
         case (isSwLy(a)):
-            o = Bkty.SW
+            o = eBkTy.SW
             break
         case (isSqLy(a)):
-            o = Bkty.SQ
+            o = eBkTy.SQ
             break
         default:
-            o = Bkty.ER
+            o = eBkTy.ER
     }
     return o
 }
@@ -446,7 +483,7 @@ const lyFstTermDupSet = (a: ly) => {
 // remove all, except after, lines in {a} with {fstTerm} as [gp] and 
 // put the removed lines as er
 // return [er,gp]
-const _x1 = (a: gp, fstTerm: s) => {
+const _x2 = (a: gp, fstTerm: s) => {
     const ixay: n[] = []
     for (let { ix, lin } of a) {
         let fst = x.linFstTerm(lin)
@@ -454,9 +491,9 @@ const _x1 = (a: gp, fstTerm: s) => {
     }
     ixay.pop()
     const ixset = new Set<n>(ixay)
-    return _x2(a, ixset)
+    return _x3(a, ixset)
 }
-const _x2 = (a: gp, ixset: Set<n>) => {
+const _x3 = (a: gp, ixset: Set<n>) => {
     // return [er, gp]
     const er: er = []
     const gp: gp = []
@@ -475,13 +512,13 @@ const _x2 = (a: gp, ixset: Set<n>) => {
     return z
 }
 
-const gpDupFstTermEr = (a: gp) => {
-    const ly = gpLy(a)
+const gp_dupFstTermEr = (a: gp) => {
+    const ly = gp_ly(a)
     const dup = lyFstTermDupSet(ly)
     let er: er = []
     let gp = a
     for (let itm of dup) {
-        let [e, g] = _x1(gp, itm)
+        let [e, g] = _x2(gp, itm)
         er = er.concat(e)
         gp = g
     }
@@ -489,14 +526,14 @@ const gpDupFstTermEr = (a: gp) => {
     return z
 }
 
-const gpPfxEr = (a: gp, pfx: s) => {
+const gp_pfxEr = (a: gp, pfx: s) => {
     const er: er = []
     const gp: gp = []
     const sfxMsg = []
     for (let { ix, lin } of a) {
         if (!x.sHasPfx(pfx)(lin)) {
             const endMsg = ['^---- prefix must be (' + pfx + ')']
-            const m: eritm = { ix, endMsg, sfxMsg }
+            const m: erItm = { ix, endMsg, sfxMsg }
             er.push(m)
         } else {
             gp.push({ ix, lin })
@@ -505,16 +542,16 @@ const gpPfxEr = (a: gp, pfx: s) => {
     const z: [er, gp] = [er, gp]
     return z
 }
-const plinParseSpc = ({ pos, lin }: plin) => {
+const posLinParseSpc = ({ pos, lin }: posLin): posLin => {
     for (var p = pos; p < lin.length; p++) {
         if (!x.isSpc(lin[p]))
             break
     }
-    let z: plin = { pos: p, lin }
+    let z: posLin = { pos: p, lin }
     return z
 }
 
-const plinParseTerm = ({ pos, lin }: plin) => {
+const posLin_ParseTerm = ({ pos, lin }: posLin): [term, posLin] => {
     let term = ''
     for (var p = pos; p < lin.length; p++) {
         const c = lin[p]
@@ -523,105 +560,77 @@ const plinParseTerm = ({ pos, lin }: plin) => {
         else
             term += c
     }
-    let z: termprslt = { term, plin: { pos: p, lin } }
-    return z
+    return [term, { pos: p, lin }]
 }
-
-const linT2PosWdt = (a: lin) => {
-    const a1 = plinParseSpc({ pos: 0, lin: a })
-    const { term: t1, plin: a2 } = plinParseTerm(a1)
-    const a3 = plinParseSpc(a2)
-    const { term: t2, plin: a4 } = plinParseTerm(a3)
-    if (t2 === null) return null
-    const z: poswdt = { pos: a3.pos, wdt: t2.length }
-    return z
-}
-const linT1MarkerLin = (a: lin, msg: s) => {
+const lin_t1MrkrLin = (a: lin, msg: s) => {
     if (a.trimLeft() !== a)
-        x.er('given {lin} must not have space in front', { lin: a })
-    const { term, plin } = plinParseTerm({ pos: 0, lin: a })
+        a.trim
+    x.er('given {lin} must not have space in front', { lin: a })
+    const [term, posLin] = posLin_ParseTerm({ pos: 0, lin: a })
     return '^'.repeat(term.length) + ' ' + msg
 }
 
-const linT2MarkerLin = (a: lin, msg: s) => {
-    const poswdt = linT2PosWdt(a)
-    if (poswdt === null) {
+const lin_t2MrkrLin = (a: lin, msg: s) => {
+    const a1 = lin_t2PosWdt(a)
+    if (a1 === null) {
         x.er('{lin} does have 2nd term', { lin: a })
         return '{lin} does not have 2nd term: [' + a + ']'
     }
-    const { pos, wdt } = poswdt
+    const { pos, wdt } = a1
     const chr = pos >= 3 ? '-' : ' '
     const z = chr.repeat(pos) + '^'.repeat(wdt) + ' ' + msg
     return z
 }
 
-const gpPfxPrmSwEr = (a: gp) => {
+const pmGp_pmSwPfxEr = (a: gp) => {
     const er: er = []
     const gp: gp = []
     for (const { ix, lin } of a) {
         let endMsg: s[] = []
         let sfxMsg: s[] = []
-        const isPrmSw = x.sHasPfx('%?')(lin)
-        let erNo = 0
-        if (isPrmSw) {
+        const isPrmSwLin = x.sHasPfx('%?')(lin)
+        if (isPrmSwLin) {
             const ay = x.sSplitSpc(lin)
             if (ay.length !== 2) {
-                erNo = 1
-            } else if (ay[1] !== '0' && ay[1] !== '1') {
-                erNo = 2
-            }
-        }
-        switch (erNo) {
-            case 1:
                 sfxMsg = ['must have 2 terms for prefix being [%?]']
                 er.push({ ix, endMsg, sfxMsg })
-                break
-            case 2:
-                endMsg = [linT2MarkerLin(lin, 'must be 0 or 1 for prefix is [%?]')]
+            } else if (ay[1] !== '0' && ay[1] !== '1') {
+                endMsg = [lin_t2MrkrLin(lin, 'must be 0 or 1 for prefix is [%?]')]
                 er.push({ ix, endMsg, sfxMsg })
-                break
-            default:
-                gp.push({ ix, lin })
+            }
+        } else {
+            gp.push({ ix, lin })
         }
     }
     const z: [er, gp] = [er, gp]
     return z
 }
-const bkPm = (a: bk) => {
+
+const x3_pm = (_pmGp: pmGp): [er, pm] => {
     let z: [er, pm]
-    if (a === undefined) {
-        z = [[], new Map<s, s>()]
-        return z
-    }
-    const [e1, g0] = gpPfxEr(a.gp, "%")
-    const [e2, g1] = gpDupFstTermEr(g0)
-    const [e3, g2] = gpPfxPrmSwEr(g1)
+    const [e1, g0] = gp_dupFstTermEr(_pmGp)
+    const [e2, g1] = gp_pfxEr(g0, "%")
+    const [e3, g2] = pmGp_pmSwPfxEr(g1)
     const er = e1.concat(e2, e3)
-    const pm = x.lySdic(gpLy(g1))
+    const pm = x.lySdic(gp_ly(g1))
     z = [er, pm]
     return z
 }
 
-const vdt = ([itmErPred, itmErMap]) => ([ery, itr]) => {
-    const { t: er, f: remainingAy } = x.itrBrkForTrueFalse(itmErPred)(itr)
-    const ery1 = x.itrMap(itmErMap)(er)
-    const ery2 = ery.concat(ery1)
-    return [ery2, remainingAy]
-}
 
-const linTermAy = (a: lin) => {
-    let z: s[] = a.trim().split(/\s+/)
+const lin_termAy = (_lin: lin): term[] => {
+    let z = _lin.trim().split(/\s+/)
     return z
 }
-const linFmT3DupTermSet = (a: lin) => {
-    let termAy = linTermAy(a)
+const lin_fmT3DupTermSet = (_lin: lin): sset => {
+    let termAy = lin_termAy(_lin)
     termAy.shift()
     termAy.shift()
     let z: sset = x.itrDupSet(termAy)
     return z
 }
-const linTermPosWdtAy = (a: lin) => {
-    const z: poswdt[] = []
+const lin_termPosWdtAy = (a: lin): posWdt[] => {
+    const z: posWdt[] = []
     let j = 0
     let pos: n = 0
     let wdt: n
@@ -648,94 +657,92 @@ const linTermPosWdtAy = (a: lin) => {
     } while (a.trim() !== "");
     return z
 }
-const _termWdtPosAyRmkLin = (a: poswdt[]) => {
-    let z: lin = ""
-    for (let { pos, wdt } of a) {
-        const n = 1
-        const s = x.nSpc(n)
-        z = z + s + '^'.repeat(wdt)
-    }
+
+const lin_t2PosWdt = (a: lin) => {
+    const a1 = posLinParseSpc({ pos: 0, lin: a })
+    const [t1, a2] = posLin_ParseTerm(a1)
+    const a3 = posLinParseSpc(a2)
+    const [t2, a4] = posLin_ParseTerm(a3)
+    if (t2 === null) return null
+    const z: posWdt = { pos: a3.pos, wdt: t2.length }
     return z
 }
-//const xx  = linTermPosAy(" sdf lk fdf d  ")
-const linAddMrk = (lin, pos, len) => {
-    const s = x.nSpc(pos - lin.length)
+
+const lin_AddMrk = (a: lin, pos: n, len: n): lin => {
+    const s = x.nSpc(pos - a.length)
     const m = '^'.repeat(len)
-    return lin + s + m
+    return a + s + m
 }
-const linFmT3DupTermMrkLin = lin => {
-    const dup = linFmT3DupTermSet(lin)
-    const termPosAy = linTermPosWdtAy(lin)
-    const termAy = linTermAy(lin)
-    let o = ""
+const lin_fmT3DupTermMrkLin = (a: lin): lin => {
+    const dup = lin_fmT3DupTermSet(a)
+    const termPosWdtAy = lin_termPosWdtAy(a)
+    const termAy = lin_termAy(a)
+    let z = ""
     for (let j = 2; j < termAy.length; j++) {
         let term = termAy[j]
         if (dup.has(term)) {
-            const pos = termPosAy[j]
+            const pos = termPosWdtAy[j].pos
             const len = term.length
-            o = linAddMrk(o, pos, len)
+            z = lin_AddMrk(z, pos, len)
         }
     }
-    return o
-}
-const gpVdt = (a: gp, chkr: ixlinchkr) => {
-    const p = chkr.hasEr
-    const m = chkr.erFun
-    const { t: erGp, f: remainGp } = x.itrBrkForTrueFalse(p)(a)
-    const z: [er, gp] = [x.itrMap(m)(erGp), remainGp]
     return z
 }
-const swChkr_FmT3Dup: ixlinchkr = {
-    hasEr: a => linFmT3DupTermSet(a.lin).size > 0,
-    erFun: a => [{ ix: a.ix, endMsg: [linFmT3DupTermMrkLin(a.lin)], sfxMsg: [] }]
-}
-const linIsStmtSwError = (a: lin) => {
-    if (x.sHasPfx('?#')(a)) {
-        if (x.sHasPfx('?#SEL#')(a)) return false
-        if (x.sHasPfx('?#UPD#')(a)) return false
-    }
-    return true
-}
-const swChkr_StmtSwLin_mustBeEither_SEL_or_UPD: ixlinchkr = {
-    hasEr: a => linIsStmtSwError(a.lin),
-    erFun: a => [{ ix: a.ix, endMsg: [linT1MarkerLin(a.lin, '')], sfxMsg: [] }]
+const gp_vdt = (a: gp, { hasEr, erFun }: ixLinChkr): [er, gp] => {
+    const { t: erGp, f: remainGp } = x.itrBrkForTrueFalse(hasEr)(a)
+    const z: [er, gp] = [x.itrMap(erFun)(erGp), remainGp]
+    return z
 }
 
-const opIsErr = (op: s) => {
+const swChkr_fmT3Dup: ixLinChkr = {
+    hasEr: a => lin_fmT3DupTermSet(a.lin).size > 0,
+    erFun: a => [{ ix: a.ix, endMsg: [lin_fmT3DupTermMrkLin(a.lin)], sfxMsg: [] }]
+}
+
+const lin_isStmtSwEr = (a: lin) => {
+    if (!x.sHasPfx('?#')(a)) return false
+    if (x.sHasPfx('?#SEL#')(a)) return false
+    if (x.sHasPfx('?#UPD#')(a)) return false
+    return true
+}
+
+const swChkr_stmtSwLin_mustBeEither_SEL_or_UPD: ixLinChkr = {
+    hasEr: a => lin_isStmtSwEr(a.lin),
+    erFun: a => [{ ix: a.ix, endMsg: [lin_t1MrkrLin(a.lin, '')], sfxMsg: [] }]
+}
+
+const op_isErr = (op: s): b => {
     const z: b = !['AND', 'OR', 'EQ', 'NE'].includes(op.toUpperCase())
     return z
 }
 
-const swChkr_SwLinOp_mustBeAny_AND_OR_EQ_NE: ixlinchkr = {
-    hasEr: a => opIsErr(x.linT2(a.lin)),
+const swChkr_swLinOp_mustBeAny_AND_OR_EQ_NE: ixLinChkr = {
+    hasEr: a => op_isErr(x.linT2(a.lin)),
     erFun: a => [{
         ix: a.ix,
-        endMsg: [linT2MarkerLin(a.lin, 'switch line 2nd term must be [ AND | OR | EQ | NE ]')],
+        endMsg: [lin_t2MrkrLin(a.lin, 'switch line 2nd term must be [ AND | OR | EQ | NE ]')],
         sfxMsg: []
     }]
 }
 
-const bkSw = (a: bk, pm: pm) => {
+const x4_sw = (a: gp, pm: pm): [er, sw] => {
     let emptyBdic = new Map<s, b>()
-    let z: [er, sw] = [[], { sqFldSw: emptyBdic, sqStmtSw: emptyBdic }]
-    if (a === undefined || a === null) {
-        return z
-    }
-    const [e0, g0] = gpDupFstTermEr(a.gp)
-    const [e1, g1] = gpVdt(g0, swChkr_FmT3Dup)
-    const [e2, g2] = gpVdt(g1, swChkr_StmtSwLin_mustBeEither_SEL_or_UPD)
-    const [e3, g3] = gpVdt(g2, swChkr_SwLinOp_mustBeAny_AND_OR_EQ_NE)
-    const ly = gpLy(g3)
-    const er = e0.concat(e1, e2, e3)
-    const sw = lySw(ly, pm)
+    let z: [er, sw]
+    const [e0, g0] = gp_dupFstTermEr(a)
+    const [e1, g1] = gp_pfxEr(g0, "?")
+    const [e2, g2] = gp_vdt(g1, swChkr_fmT3Dup)
+    const [e3, g3] = gp_vdt(g2, swChkr_stmtSwLin_mustBeEither_SEL_or_UPD)
+    const [e4, g4] = gp_vdt(g3, swChkr_swLinOp_mustBeAny_AND_OR_EQ_NE)
+    const ly = gp_ly(g4)
+    const er = e0.concat(e1, e2, e3, e4)
+    const sw = x41_sw(ly, pm)
     z = [er, sw]
+    // x.oBrw({ inp: { a, pm }, oup: z, srcLy: x.sSplitLines(x4_fnd_erSw.toString()), e0, e1, e2, e3, e4, g0, g1, g2, g3, g4, ly }); debugger
     return z
 }
-const lySw = (a: ly, pm: pm) => {
+
+const x41_sw = (a: ly, pm: pm): sw => {
     const sw = new Map<s, b>()
-    let isEvaluated = true
-    let j = 0
-    let ly = x.itrClone(a)
     const isSomeNull = itr => { for (let i of itr) if (i === null) return true; return false }
     const someTrue = itr => { for (let i of itr) if (i === true) return true; return false }
     const allTrue = itr => { for (let i of itr) if (i !== true) return false; return true }
@@ -773,58 +780,76 @@ const lySw = (a: ly, pm: pm) => {
         let o = { key, boolOpt }
         return o
     }
-    let ly1: ly = []
-    while (isEvaluated && j++ < 100) {
-        isEvaluated = false
-        ly1 = []
-        for (let lin of ly) {
-            let { key, boolOpt } = evlLin(lin)
-            if (boolOpt !== null) {
-                sw.set(key, boolOpt)
-                isEvaluated = true
-            } else
-                ly1.push(lin)
+    const main = () => {
+        let ly1: ly = []
+        let isEvaluated = true
+        let j = 0
+        let ly = x.itrClone(a)
+        while (isEvaluated && j++ < 100) {
+            isEvaluated = false
+            ly1 = []
+            for (let lin of ly) {
+                let { key, boolOpt } = evlLin(lin)
+                if (boolOpt !== null) {
+                    sw.set(key, boolOpt)
+                    isEvaluated = true
+                } else
+                    ly1.push(lin)
+            }
+            ly = ly1
         }
-        ly = ly1
+        if (ly1.length !== 0)
+            x.er('ly1 should has 0-length', { ly1 })
+        let z: sw = x411_sw(sw)
+        //x.oBrw({ inp: { a, pm: x.dicLy(pm) }, oup_stmtSw: x.dicLy(z.stmtSw), oup_fldSw: x.dicLy(z.fldSw), sw: x.dicLy(sw) }); debugger
+        return z
     }
-    if (ly1.length !== 0)
-        x.er('ly1 should has 0-length', { ly1 })
-    return bdicSw(sw)
+    return main()
 }
-const bdicSw = (a: bdic) => {
-    const sqFldSw = new Map<s, b>()
-    const sqStmtSw = new Map<s, b>()
+const x411_sw = (a: bdic) => {
+    //    x.dicBrw(a)
+    //    debugger
+    const fldSw = new Map<s, b>()
+    const stmtSw = new Map<s, b>()
     for (let [k, b] of a) {
         if (x.sHasPfx('?#')(k))
-            sqStmtSw.set(k, b)
+            stmtSw.set(k, b)
         else
-            sqFldSw.set(k, b)
+            fldSw.set(k, b)
     }
-    const z: sw = { sqFldSw, sqStmtSw }
-    return z
-}
-const lyAddErAsLines = (ly: ly, er: er) => {
-    const left = left_lyAy(ly, er)
-    const left1 = lyAyAlignL(left)
-    const right = right_lyAy(ly, er)
-    let o: ly = []
-    for (let i of x.nItr(left1.length)) {
-        let m = mge(left1[i], right[i])
-        o = o.concat(m)
-    }
-    let z: s = o.join('\r\n')
+    const z: sw = { fldSw, stmtSw }
     return z
 }
 
-const left_lyAy = (ly: ly, er: er) => {
+const x6_vtp = (ly: ly, er: er): s => {
+    const l = x61_leftLyAy(er, ly)
+    const l1 = x62_AlignL(l)
+    const r = x63_rightLyAy(er, ly)
+    let o: ly = []
+    for (let i of x.nItr(l1.length)) {
+        let m = x64_Mge(l1[i], r[i])
+        o = o.concat(m)
+    }
+    let z = o.join('\r\n')
+    return z
+}
+
+const x61_leftLyAy = (er: er, ly: ly) => {
     const o: ly[] = []
     for (let i of x.nItr(ly.length)) {
-        const m = [ly[i]].concat(endMsgEr(er, i))
+        const m = [ly[i]].concat(erIx_endMsgEr(er, i))
         o.push(m)
     }
     return o
 }
-const endMsgEr = (er: er, ix: n) => {
+
+const endMsgErItm = (ix: n, endMsgStr: s): erItm => {
+    const sfxMsg = []
+    const endMsg = [endMsgStr]
+    return { ix, endMsg, sfxMsg }
+}
+
+const erIx_endMsgEr = (er: er, ix: n) => {
     let o: s[] = []
     for (let { ix: i, endMsg } of er) {
         if (i === ix) o = o.concat(endMsg)
@@ -832,7 +857,7 @@ const endMsgEr = (er: er, ix: n) => {
     return o
 }
 
-const right_lyAy = (ly: ly, er: er) => {
+const x63_rightLyAy = (er: er, ly: ly) => {
     const o: ly[] = []
     for (let i of x.nItr(ly.length)) {
         const m = sfxMsgEr(er, i)
@@ -849,7 +874,7 @@ const sfxMsgEr = (er: er, ix: n) => {
 }
 
 const sep = ' --- '
-const mge = (left_ly: ly, right_ly: ly) => {
+const x64_Mge = (left_ly: ly, right_ly: ly) => {
     const llen = left_ly.length
     const rlen = right_ly.length
     const o: ly = []
@@ -868,49 +893,134 @@ const mge = (left_ly: ly, right_ly: ly) => {
     }
     return o
 }
-const lyAyWdt = (a: ly[]) => {
+const lyAy_wdt = (a: ly[]) => {
     const b = x.itrMap(x.itrWdt)(a)
     return x.itrMax(b)
 }
 
-const lyAyAlignL = (a: ly[]) => {
-    const w = lyAyWdt(a)
+const x62_AlignL = (a: ly[]) => {
+    const w = lyAy_wdt(a)
     const align = ly => x.itrMap(x.sAlignL(w))(ly)
     const o: ly[] = x.itrMap(align)(a)
     return o
 }
+
 //=============================================================
 if (module.id === '.') {
-    const bky = () => sqtpBky(sqtp())
-    const sqtp = () => x.ftLines(__dirname + '/spec/sample.sqtp.txt')
-    const tst__bkylines = () => x.sBrw(bkyLines(bky()))
-    const tst__bdicSw = () => {
+    const sqtp = x.ftLines(__dirname + '/spec/sample.sqtp.txt')
+    const tst__x411_sw = () => {
         const bdic = new Map<s, b>([['?#', true], ['b', false]])
-        const { sqFldSw, sqStmtSw } = bdicSw(bdic)
-        x.assertIsEq(sqFldSw, new Map<s, b>([['b', false]]))
-        x.assertIsEq(sqStmtSw, new Map<s, b>([['?#', true]]))
+        const { fldSw, stmtSw } = x411_sw(bdic)
+        x.assertIsEq(fldSw, new Map<s, b>([['b', false]]))
+        x.assertIsEq(stmtSw, new Map<s, b>([['?#', true]]))
     }
-    const tst__sqtprslt = () => {
-        const { vtp, sql } = sqtprslt(sqtp())
+    const tst__sqtpRslt = () => {
+        const { vtp, sql } = sqtpRslt(sqtp)
         x.sBrw(vtp)
         x.sBrw(sql)
         debugger
     }
-    const tst__sqsellyIsSkip = () => {
+    const tst__selLy_isSkipStmt = () => {
         const ly = ['fm #aa']
-        const sqStmtSw = new Map<s, b>([['?#aa', false]])
-        const aa = sqsellyIsSkip(ly, sqStmtSw)
+        const stmtSw = new Map<s, b>([['?#aa', false]])
+        const aa = selLy_isSkipStmt(ly, stmtSw)
     }
-    const tst__sqLy = () => ['sel xxx', 'fm aaa', '$xxx ka']
-    const tst__sqgp = () => lyGp(tst__sqLy())
-    const tst__sqgp_splitFor_ExprSdic = () => {
-        const sqgp = tst__sqgp()
-        const [gp, ly] = sqgp_splitFor_ExprSdic(sqgp)
-        assert.deepStrictEqual(ly, ['$xxx ka'])
-        assert.deepStrictEqual(gp, [{ ix: 0, lin: 'sel xxx' }, { ix: 1, lin: 'fm aaa' }])
+    const tst__sqLy = () => ['sel xxx', 'fm ', '$xxx ka']
+    const tst__sqGp = () => ly_gp(tst__sqLy())
+    const tst__sqGp_splitFor_ExprSdic = () => {
+        const sqGp = tst__sqGp()
+        //const [gp, ly] = sqGp_SplitForExprSdic(sqGp)
+        //assert.deepStrictEqual(ly, ['$xxx ka'])
+        //assert.deepStrictEqual(gp, [{ ix: 0, lin: 'sel xxx' }, { ix: 1, lin: 'fm aaa' }])
     }
-    const tst__bkyBrw = () => bkyBrw(bky())
-    //tst__bkyBrw()
-    tst__bkylines()
-    //tst__sqtprslt()
+    const tst__lin_t2PosWdt = () => {
+        const lin = 'aaa  bb'
+        const act = lin_t2PosWdt(lin)
+        expect(act).toEqual({ pos: 5, wdt: 2 })
+    }
+    const tst__lin_t2MrkLin = () => {
+        const lin = 'aaa  bb'
+        const act = lin_t2MrkrLin(lin, 'aa')
+        expect(act).toEqual('-----^^ aa')
+    }
+
+    const tst__sqtpRslt_1 = () => {
+        const sqtp =
+            '%?BrkMbr 0\n' +
+            '?BrkMbr 0\n' +
+            '%?BrkMbr 0\n' +
+            '??BrkSto 0\n'
+        const { vtp, sql } = sqtpRslt(sqtp)
+        x.sBrw(vtp + '\n***\nsqtp' + sqtp)
+        debugger
+    }
+    const tst__sqtpRslt_2 = () => {
+        const sqtp =
+            '%?BrkMbr 0\n' +
+            '%?BrkXX 0\n' +
+            '%BrkMbr 0\n' +
+            '#?BrkMbr 0\n' +
+            '??BrkSto 0\n'
+        const { vtp, sql } = sqtpRslt(sqtp)
+        const exp =
+            '%?BrkMbr 0\r\n' +
+            '%?BrkXX 0\r\n' +
+            '%BrkMbr 0\r\n' +
+            '#?BrkMbr 0\r\n' +
+            '^---- prefix must be (%)\r\n' +
+            '??BrkSto 0\r\n' +
+            '^---- prefix must be (%)'
+        expect(vtp).toEqual(exp)
+    }
+    const tst__sqtpRslt_3 = () => {
+        const sqtp =
+            '%?BrkDiv  XX\n' +
+            '%SumLvl  Y\n' +
+            '%?MbrEmail 1'
+        const { vtp, sql } = sqtpRslt(sqtp)
+        //x.sBrw(vtp + '\n***\n' + sqtp)
+        const exp =
+            '%?BrkDiv  XX\r\n' +
+            '----------^^ must be 0 or 1 for prefix is [%?]\r\n' +
+            '%SumLvl  Y\r\n' +
+            '%?MbrEmail 1'
+        const rslt = vtp === exp
+        expect(rslt).toBeTruthy()
+    }
+
+    const tst__sqtpRslt_4 = () => {
+        const sqtp =
+            '?#SEL#aa 1\n' +
+            '?#UPD#bb OR 1\n' +
+            '?AA AND 1'
+        const { vtp, sql } = sqtpRslt(sqtp)
+        //x.sBrw(vtp + '\n***\n' + sqtp)
+        const exp =
+            '%?BrkDiv  XX\r\n' +
+            '----------^^ must be 0 or 1 for prefix is [%?]\r\n' +
+            '%SumLvl  Y\r\n' +
+            '%?MbrEmail 1'
+        const rslt = vtp === exp
+        debugger
+        expect(rslt).toBeTruthy()
+    }
+    const tst__sqtpRslt_5 = () => {
+        //=====================================================
+        const sqtp = x.ftLines('./sample.sqtp.txt')
+        const { vtp, sql } = sqtpRslt(sqtp)
+        x.sBrw(vtp)
+        debugger
+        expect(true).toBe(true)
+        debugger
+        //    x.dryCol(1)([[1, 2], [2, 3]])
+    }
+    const tst__x4_sw = () => {
+        const t = { swGp: [], pm: new Map<s, s>(), exp: {} }
+        const a = t.swGp
+        const pm = t.pm
+        const exp = t.exp
+        const act = x4_sw(a, pm)
+        x.assertIsEq(exp, act)
+    }
+    tst__sqtpRslt()
 }

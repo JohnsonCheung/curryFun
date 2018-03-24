@@ -17,6 +17,8 @@ export interface quote { q1: s, q2: s }
 export type match = RegExpMatchArray
 export type kv = [s, s]
 export type s = string
+export type vid = s // vid = value-id
+export type sid = s // sid = string-id
 export type lin = s
 export type re = RegExp
 export type n = number
@@ -77,8 +79,8 @@ export const isEq = (exp, act) => {
     }
 }
 export const isNotEq = (exp, act) => !isEq(exp, act)
-export const assertIsEq = (exp, act) => { if(isNotEq(exp, act)) debugger }
-export const assertIsNotEq = (exp, act) => { if(isEq(exp, act)) debugger }
+export const assertIsEq = (exp, act) => { if (isNotEq(exp, act)) debugger }
+export const assertIsNotEq = (exp, act) => { if (isEq(exp, act)) debugger }
 //---------------------------------------
 export const vLT = x => a => a < x
 export const vGE = x => a => a >= x
@@ -107,8 +109,9 @@ export const dmp = global.console.log
 export const funDmp = (f: Function) => dmp(f.toString())
 export const halt = () => { throw new Error() }
 export const sEscLf = (a: s) => a.replace('\n', '\\n')
-export const sEscCr = (a: s) => a.replace('\r', '\\r')
-export const sEscTab = (a: s) => a.replace('\t', '\\t')
+export const sEscVbar = (a: s) => a.replace(/\|/g, '\\v')
+export const sEscCr = (a: s) => a.replace(/\r/g, '\\r')
+export const sEscTab = (a: s) => a.replace(/\t/g, '\\t')
 export const sEsc: ((a: s) => s) = compose(sEscLf, sEscCr, sEscTab)
 export const sFmt = (qqStr: s, ...v) => {
     let z = qqStr
@@ -428,7 +431,7 @@ export const pthEnsSubFdr = (subFdr: s) => (a: pth) => {
 export const itrWhere = (p: p) => (a: itr) => { const o: ay = []; for (let i of a) if (p(i)) o.push(i); return o }
 export const itrExclude = (p: p) => (a: itr) => { const o: ay = []; for (let i of a) if (!p(i)) o.push(i); return o }
 export const itrMap = (f: f) => (a: itr) => { const o: ay = []; for (let i of a) o.push(f(i)); return o }
-export const itrEach = (f: (a, i?:n) => void) => (a: itr) => { let i=0; for (let itm of a) f(itm, i++) }
+export const itrEach = (f: (a, i?: n) => void) => (a: itr) => { let i = 0; for (let itm of a) f(itm, i++) }
 export const itrFold = _itrFold => f => cum => a => { for (let i of a) cum = f(cum)(i); return cum }
 export const itrReduce = f => (a: itr) => itrFold(f)(itrFst(a))(a)
 //---------------------------------------------------------------------------
@@ -509,6 +512,7 @@ export const lyPfxCnt = (pfx: s) => (a: ly) => { let z = 0; itrEach(lin => { if 
 export const lyHasMajPfx = (pfx: s) => (a: ly) => 2 * lyPfxCnt(pfx)(a) > a.length
 //---------------------------------------------------------------------------
 const reExpConstNm = /^export\s+const\s+([\w][\$_0-9\w_]*)/
+const reConstNm = /^const\s+([\w][\$_0-9\w_]*)/
 const reExpDollarConstNm = /^export\s+const\s+([\$\w][\$_0-9\w_]*)/
 export const srcDry = (re: re) => compose(srcMatchAy(re), itrMap(matchDr)) as (a: src) => dry
 export const srcCol = (re: re) => (a: src) => {
@@ -525,11 +529,14 @@ export const matchFstItm = (a: RegExpMatchArray) => a === null ? null : a[1] as 
 export const matchAyFstCol = itrMap(matchFstItm) as (a: RegExpMatchArray[]) => s[]
 export const srcMatchAy = compose(sMatch, itrMap) as (_: re) => (_: src) => RegExpMatchArray[]
 export const srcExpConstNy = srcCol(reExpConstNm)
+export const srcConstNy = srcCol(reConstNm)
 export const srcExpConstDollarNy = srcCol(reExpDollarConstNm)
 export const ftsExpConstNy = compose(ftLy, srcExpConstNy) as (a: fts) => ny
+export const ftsConstNy = compose(ftLy, srcConstNy) as (a: fts) => ny
 export const ftsExpConstDollarNy = compose(ftLy, srcExpConstDollarNy) as (a: fts) => ny
 export const ffnFts = ffnRplExt('.ts') as (_: s) => s
 export const fjsExpConstNy = compose(ffnFts, ftsExpConstNy)
+export const fjsConstNy = compose(ffnFts, ftsConstNy)
 export const stop = () => { debugger }
 //---------------------------------------------------------------------------
 export const isStr = v => typeof v === 'string'
@@ -801,6 +808,7 @@ export const lazy = vf => { let v, done = false; return () => { if (!done) { v =
 //---------------------------------------------------------------------------
 export const optMap = <T, U>(f: (a: T) => U) => (a: T | null) => a !== null ? f(a) : a
 export const ffn = (a: ffn) => new Ffn(a)
+
 export class Ffn {
     private _ffn: ffn
     private _dotPos: n
@@ -910,6 +918,8 @@ export const fjsRplExpStmt = fjs => {
     if (oldLin !== newLin) { debugger; ffnMakBackup(fjs); sWrt(fjs)(newLines()) }
 }
 
+export const syLin = (a: sy) => itrMap(sEscVbar)(a).join(' | ')
+
 export const linesAlignL = (wdt: n) => (a: lines) => {
     const a1 = sSplitCrLf(a)
     const aLas = ayLas(a1)
@@ -936,6 +946,20 @@ export const linesAyAlignL = (a: lines[]) => {
     const z: lines[] = itrMap(linesAlignL(w))(a)
     return z
 }
+export const vSav = (vid: vid) => (a) => sWrt(vidFjson(vid))(JSON.stringify(a))
+export const vidpth = __dirname + pthsep + 'vid' + pthsep
+pthEns(vidpth)
+export const vidpthBrw = () => pthBrw(vidpth)
+export const vidFjson = (a: vid) => vidpth + a + '.json'
+export const fjsonVal = (a: ffn) => JSON.parse(ftLines(a))
+export const vidVal = (a: vid) => fjsonVal(vidFjson(a))
+
+export const sSav = (sid: vid) => (a: s) => sWrt(sidFt(sid))(JSON.stringify(a))
+export const sidpth = __dirname + pthsep + 'sid' + pthsep
+pthEns(sidpth)
+export const sidpthBrw = () => pthBrw(sidpth)
+export const sidFt = (a: sid) => sidpth + a + '.txt'
+export const sidStr = (a: sid) => ftLines(sidFt(a))
 
 export const vTee = <T>(f: (a: T) => void) => (a: T) => { f(a); return a }
 export const ftWrt = (s: s) => (a: ft) => fs.writeFileSync(a, s)
@@ -1075,7 +1099,25 @@ if (module.id === '.') {
         if (!isEq({ a: 1 }, { a: 1 }))
             debugger
     }
-    tst__isEq()
+    const tst__vidVal = () => {
+        const v = '234234'
+        vSav('a')(v)
+        const v1 = vidVal('a')
+        assertIsEq(v, v1)
+    }
+    const tst__sidStr = () => {
+        const s = '234234'
+        sSav('a')(s)
+        const s1 = vidVal('a')
+        assertIsEq(s, s1)
+    }
+    const tst__vidpthBrw = () => vidpthBrw()
+    const tst__sidpthBrw = () => sidpthBrw()
+    tst__srcExpConstNy()
+    //tst__vidVal()
+    //tst__sidStr()
+    //tst__vidpthBrw()
+    //tst__isEq()
     //tst__pthBrw()
     //tst__sBrwAtFdrFn()
     /*
@@ -1086,6 +1128,5 @@ if (module.id === '.') {
     tst__cmlNy    ()
     tst__sLik     ()
     tst__ftsExpConstNyBrw()
-    tst__srcExpConstNy()
     */
 }

@@ -1,0 +1,348 @@
+assertIsEq       assert_isEq
+assertIsNotEq    assert_isNotEq
+assertIsPthExist assert_isPathExist
+ayClone         ay_clone
+ayEle           ay_ele
+ayEleOrDft      ay_eleOrDft
+ayFindIx        ay_FndIx
+ayFindIxOrDft   ay_FndIxOrDft
+ayFst           ay_fst
+ayJn            ay_Jn
+ayJnAsLines     ay_JnLines
+ayJnComma       ay_JnComma
+ayJnCommaSpc    ay_JnCommaSpc
+ayJnCrLf        ay_JnCrLf
+ayJnLf          ay_JnLf
+ayJnSpc         ay_JnSpace
+ayLas           ay_las
+ayMdy           ay_Mdy
+ayMdyEle        ay_MdyEle
+aySetEle        ay_SetEle
+aySnd           ay_2ndElement
+aySrt           ay_srt
+aySy            ay_sy
+ayZip           ay_zip
+chrCd      
+chrCd_0
+chrCd_9
+chrCd_A
+chrCd_Z
+chrCd_a
+chrCd_dollar
+chrCd_isCapitalLetter
+chrCd_isDigit
+chrCd_isDollar
+chrCd_isFstNmChr
+chrCd_isLetter
+chrCd_isNmChr 
+chrCd_isSmallLetter
+chrCd_isUnderScore
+chrCd_underScore
+chrCd_z
+cmdShell    
+cmlNm       cml_nm
+cmlNy       cml_ny
+cmlSpcNm    cml_spcNm
+compose
+curExpStmt
+dicBrw      dic_brw
+dicLines    dic_lines
+dicLy       dic_ly
+dmp
+drsBrw      drs_Brw
+drsLines    drs_lines
+drsLy   drs_ly
+drsof_exportFunctions
+dry
+dryBrw      dry_Brw
+dryCellMdy  dry_MdyCell
+dryClone    dry_Clone
+dryCol      dry_col
+dryColCnt   dry_colCnt
+dryColMdy   dry_MdyCol
+dryLy       dry_ly
+drySdry     dry_sdry
+drySrt      dry_Sort
+drySrtCol   dry_SortCol
+empSdic     empsdic
+ensRe       v_EnsRe
+ensSy       v_EnsSy
+entryStatPm entry_statPm
+er
+ffn
+ffnAddFnSfx ffn_AddFnSfx
+ffnCloneTmp fullFileName_CloneTmp
+ffnExt ffn_ext
+ffnFfnn ffn_ffnn
+ffnFn ffn_fn
+ffnFnn  ffn_fnn
+ffnFts  ffn_fts
+ffnMakBackup ffn_MakBackup
+ffnPth ffn_pth
+ffnRmvExt ffn_RmvExt
+ffnRplExt ffn_RplExt
+fjsExpConstNy fjs_expConstNy
+fjsRplExpStmt fjs_rplExpStmt
+fjsonVal fjson_val
+ftBrw ft_brw
+ftLines ft_lines
+ftLinesPm ft_linesPm
+ftLy ft_ly
+ftLyPm ft_lyPm
+ftWrt ft_Wrt
+ftsExpConstDollarNy ft_expConstDollarNy
+ftsExpConstNy fts_expConstNy
+ftsExpConstNyBrw fts_BrwExpConstNy
+funApply fun_Apply
+funDmp fun_Dmp
+halt
+isAy
+isBool
+isDte
+isEmp
+isEq
+isEven
+isFalse
+isFun
+isNm
+isNonEmp
+isNonNull
+isNonRmkLin
+isNotEq
+isNull
+isNullOrUndefined
+isNum
+isObj
+isOdd
+isPrim
+isPthExist
+isRe
+isRmkLin
+isSpc
+isStr
+isSy
+isTrue
+isUndefined 
+itrAddPfx   itr_addPfx
+itrAddPfxSfx    itr_AddPfxSfx
+itrAddSfx   itr_AddSuffix
+itrAlignL   itr_AlignLeft
+itrAy       itr_ay
+itrBrkForTrueFalse  
+itrClone    itr_clone
+itrDupSet   itr_dupSet
+itrEach     itr_each
+itrExclude  itr_exclude
+itrFind     itr_find
+itrFold     itr_fold
+itrFst      itr_1stItem
+itrHasDup       itr_hasDup
+itrIsAllFalse   itr_isAllFalse
+itrIsAllTrue    itr_isAllTrue
+itrIsSomeFalse  itr_isSomeFalse
+itrIsSomeTrue   itr_isSomeTrue
+itrMap      itr_map
+itrMax      itr_maxItem
+itrMin      itr_minItem
+itrPredIsAllFalse   predItr_IsAllFalse
+itrPredIsAllTrue    predItr_IsAllTrue
+itrPredIsSomeFalse  predItr_hasSomeFalse
+itrPredIsSomeTrue   predItr_hasSomeTrue
+itrReduce       itr_reduce
+itrRmvEmp       itr_removeEmptyElement
+itrSet          itr_set
+itrSy           itr_strAy
+itrTfmSet       itr_set_transform
+itrWdt          itr_width
+itrWhere        itr_where
+kvLin           keyValue_line
+lazy            lazy
+linExpConstNm   line_exportConstName
+linFstTerm      line_1stTerm
+linRmvMsg       line_removeMessage
+linShift        line_shift
+linT2           line_2ndTerm
+linesAlignL     lines_alignLeft
+linesAyAlignL   linesAy_alignLieft
+linesAyWdt
+linesWdt
+lyBrw
+lyBrwStop
+lyHasMajPfx
+lyPfxCnt
+lySdic
+mapKset
+mapKvy
+mapKy
+mapVy
+matchAyFstCol
+matchAySdry
+matchDr
+matchFstItm
+nDecr
+nDivide
+nIncr
+nItr
+nMinus
+nMultiply
+nPadZero
+nSpc
+nodeModuleSet
+nyBrw
+nyCmlSdry
+oBringUpDollarPrp
+oBrw
+oCmlDry
+oCmlObj
+oCtorNm
+oHasCtorNm
+oHasLen
+oHasPrp
+oIsInstance
+oJsonLines
+oPrp        o_prp
+oPrpAy      o_prpAy
+oPrpNy      o_prpNy
+optMap      opt_Map
+oyPrpCol    oy_prpCol
+oyPrpDry    oy_prpDry
+pipe
+pm
+pmErRslt
+pmRsltOpt
+predNot     pred_not
+predsAnd    pred_and
+predsOr     pred_or
+pthBrw      pth_Brw
+pthEns      pth_Ens
+pthEnsSfxSep    pth_EnsSfxSep
+pthEnsSubFdr    pth_EnsSubFdr
+pthFdrAyPm      pth_FdrAyPm
+pthFnAy         pth_FnAy
+pthFnAyPm       pth_FnAyPm
+pthStatOptAyPm  pth_StatOptAyPm
+pthsep  
+quoteStrBrk     quoteStr_Brk
+sAddPfx         s_AddPfx
+sAddPfxSfx      s_AddPfxSfx
+sAddSfx         s_AddSfx
+sAlignL         s_AlignL
+sAlignR         s_AlignR
+sBox            s_Box
+sBrk            s_Brk
+sBrk1           s_Brk1
+sBrk2           s_Brk2
+sBrkAt          s_BrkAt
+sBrkP123        s_BrkP123
+sBrw            s_Brw
+sBrwAtFdrFn     s_BrwAtFdrFn
+sEsc            s_Esc
+sEscCr          s_EscCr
+sEscLf          s_EscLf
+sEscTab         s_Tab
+sFmt            s_Fmt
+sFstChr         s_fstChr
+sHasPfx         s_HasPfx
+sHasPfxIgnCas   s_HasPfxIgnCas
+sHasSfx         s_HasSfx
+sLasChr         s_lasChr
+sLeft           s_left
+sLen            s_len
+sMatch          s_match
+sMid            s_mid
+sMidN           s_midN
+sNmSet          s_nmSet
+sQuote          s_Quote
+sRevBrk         s_BrkRev
+sRevBrk1        s_Brk1Rev
+sRevBrk2        s_Brk2Rev
+sRevTakAft      s_TakAftRev
+sRevTakBef      s_TakBefRev
+sRight          s_right
+sRmvColon       s_RmvColon
+sRmvCr          s_RmvCr
+sRmvFstChr      s_RmvFstChr
+sRmvLasChr      s_RmvLasChr
+sRmvLasNChr     s_RmvLasNChr
+sRmvPfx         s_RmvPfx
+sRmvSfx         s_RmvSfx
+sRmvSubStr      s_RmvSbs
+sRplNonNmChr    s_RplNonNmChr
+sSav            s_Sav
+sSbsPos         s_sbsPos
+sSbsRevPos      s_sbsPosRev
+sSearch         s_Search
+sSplit          s_Split
+sSplitCommaSpc  s_SplitCommaSpc
+sSplitCrLf      s_SplitCrLf
+sSplitLf        s_SplitLf
+sSplitLines     s_SplitLines
+sSplitSpc       s_SplitSpc
+sTakAft         s_TakAft
+sTakBef         s_TakBef
+sTrim           s_Trim
+sWrt            s_Wrt
+sdrLin          sdr_lin
+sdryBrw         sdry_Brw
+sdryColWdt      sdry_colWdt
+sdryColWdtAy    sdry_colWdtAy
+sdryLines       sdry_lines
+sdryLy          sdry_ly
+setAdd          set_Add
+setAft          set_aft
+setAftIncl      set_aftIncl
+setAy           set_ay
+setClone        set_Clone
+setMinus        set_Minus
+setWhere        set_where
+sidFt           sid_ft
+sidStr          sid_str
+sidpth          sidpth
+sidpthBrw       sidpth_Brw
+sitrWdt         sitr_wdt
+sjsonBrw        sjson_Brw
+srcCol          src_col
+srcDry          src_dry
+srcExpConstDollarNy src_ExpConstDollarNy
+srcExpConstNy       src_ExpConstNy
+srcExpConstNyBrw    src_BrwExpConstNy
+srcExpStmt  src_expStmt
+srcMatchAy  src_matchAy
+ssetBrw     sset_Brw
+ssetSrtBrw  sset_BrwSrt
+stack
+stop
+swap
+tmpfdr
+tmpffn
+tmpffnByFdrFn
+tmpfjson
+tmpft
+tmpnm
+tmppth
+vAdd        v_Add
+vBET        v_Bet
+vDft        v_dftUpper
+vDftLower   v_dftLower
+vDftStr     v_dftStr
+vDftUpper   v_dftUpper
+vEQ         v_eq
+vGE         v_ge    
+vGT         v_gt
+vIN         v_in
+vIsInstanceOf v_isInstanceOf
+vLE         v_le
+vLT         v_lt
+vLen        v_len
+vMap        v_Map
+vNE         v_ne
+vNotBet     v_notBet
+vNotIn      v_notIn
+vSav        v_Sav
+vTee        v_Tee
+vidFjson    vid_fjson
+vidVal      vid_val
+vidpth      
+vidpthBrw   vidpth_Brw
+vvCompare   vv_Cmp
+wdtAyLin    wdtAy_lin

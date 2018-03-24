@@ -1,12 +1,11 @@
 import { n, s } from './curryfun';
-export interface eritm {
+export interface erItm {
     ix: n;
     sfxMsg: s[];
     endMsg: s[];
 }
 export declare type sqtp = s;
-export interface sqtprslt {
+export interface sqtpRslt {
     vtp: s;
     sql: s;
 }
-export declare const sqtprslt: (a: string) => sqtprslt;

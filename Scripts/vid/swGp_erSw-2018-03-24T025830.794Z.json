@@ -1,0 +1,82 @@
+{
+    "inp": {
+        "a": [
+            {
+                "ix": 42,
+                "lin": "?LvlY    EQ %SumLvl Y"
+            },
+            {
+                "ix": 43,
+                "lin": "?LvlM    EQ %SumLvl M"
+            },
+            {
+                "ix": 44,
+                "lin": "?LvlW    EQ %SumLvl W"
+            },
+            {
+                "ix": 45,
+                "lin": "?LvlD    EQ %SumLvl D"
+            },
+            {
+                "ix": 46,
+                "lin": "?Y       OR ?LvlD ?LvlW ?LvlM ?LvlY"
+            },
+            {
+                "ix": 47,
+                "lin": "?M       OR ?LvlD ?LvlW ?LvlM"
+            },
+            {
+                "ix": 48,
+                "lin": "?W       OR ?LvlD ?LvlW"
+            },
+            {
+                "ix": 49,
+                "lin": "?D       OR ?LvlD"
+            },
+            {
+                "ix": 50,
+                "lin": "?Dte     OR ?LvlD"
+            },
+            {
+                "ix": 51,
+                "lin": "?Mbr     OR %?BrkMbr"
+            },
+            {
+                "ix": 52,
+                "lin": "?MbrCnt  OR %?BrkMbr"
+            },
+            {
+                "ix": 53,
+                "lin": "?Div     OR %?BrkDiv"
+            },
+            {
+                "ix": 54,
+                "lin": "?Sto     OR %?BrkSto"
+            },
+            {
+                "ix": 55,
+                "lin": "?Crd     OR %?BrkCrd"
+            },
+            {
+                "ix": 56,
+                "lin": "?#SEL#Div NE %LisDiv *blank"
+            },
+            {
+                "ix": 57,
+                "lin": "?#SEL#Sto NE %LisSto *blank"
+            },
+            {
+                "ix": 58,
+                "lin": "?#SEL#Crd NE %LisCrd *blank"
+            }
+        ],
+        "pm": {}
+    },
+    "oup": [
+        [],
+        {
+            "fldSw": {},
+            "stmtSw": {}
+        }
+    ]
+}
