@@ -428,9 +428,9 @@ export const pthEnsSubFdr = (subFdr: s) => (a: pth) => {
     itrEach(pthEns)(e)
 }
 //-----------------------------------------------------------------------
-export const itrWhere = (p: p) => (a: itr) => { const o: ay = []; for (let i of a) if (p(i)) o.push(i); return o }
+export const itrWhere = <A>(p: pred<A>) => (a: itr) => { const o: A[] = []; for (let i of a) if (p(i)) o.push(i); return o }
 export const itrExclude = (p: p) => (a: itr) => { const o: ay = []; for (let i of a) if (!p(i)) o.push(i); return o }
-export const itrMap = (f: f) => (a: itr) => { const o: ay = []; for (let i of a) o.push(f(i)); return o }
+export const itrMap = <A, B>(f: (a: A, i?: n) => B) => (a: itr): B[] => { let i = 0; const o: ay = []; for (let itm of a) o.push(f(itm, i++)); return o }
 export const itrEach = (f: (a, i?: n) => void) => (a: itr) => { let i = 0; for (let itm of a) f(itm, i++) }
 export const itrFold = _itrFold => f => cum => a => { for (let i of a) cum = f(cum)(i); return cum }
 export const itrReduce = f => (a: itr) => itrFold(f)(itrFst(a))(a)
@@ -592,7 +592,7 @@ export const itrPredIsAllTrue = (p: p) => (a: itr) => { for (let i of a) if (!p(
 export const itrPredIsAllFalse = (p: p) => (a: itr) => { for (let i of a) if (p(i)) return false; return true }
 export const itrPredIsSomeFalse = (p: p) => (a: itr) => { for (let i of a) if (!p(i)) return true; return false }
 export const itrPredIsSomeTrue = (p: p) => (a: itr) => { for (let i of a) if (p(i)) return true; return false }
-export const itrBrkForTrueFalse = <T>(p: (a: T) => b) => (a: Iterable<T>) => {
+export const itrBrkForTrueFalse = <T>(p: (a: T) => b) => (a: Itr<T>) => {
     const t: T[] = [], f: T[] = [];
     for (let i of a)
         p(i) ? t.push(i) : f.push(i);
@@ -606,7 +606,7 @@ export const itrAddSfx = (sfx: s) => (a: itr) => itrMap(sAddSfx(sfx))(a) as s[]
 export const itrWdt = (a: itr) => pipe(itrMap(vLen)(a))(itrMax) as n
 export const sitrWdt = (a: sItr) => pipe(itrMap(sLen)(a))(itrMax) as n
 export const itrAlignL = (a: itr) => itrMap(sAlignL(itrWdt(a)))(a) as s[]
-export const itrClone = (a: itr) => itrMap(i => i)(a)
+export const itrClone = (a: itr) => itrMap(i => i)(a) as ay
 export const itrFind = <T>(p: (a: T) => b) => (a: Itr<T>) => { for (let i of a) if (p(i)) return i; return null }
 export const itrHasDup = (a: itr) => { const set = new Set(); for (let i of a) if (set.has(i)) { return true } else set.add(i); return false }
 export const itrDupSet = <T>(a: Itr<T>) => {
@@ -650,7 +650,7 @@ export const oBringUpDollarPrp = o => {
 }
 export const nyCmlSdry = (a: ny) => itrMap(cmlNy)(a) as sdry
 export const oCmlDry = (a: o) => {
-    let z = itrMap(n => [cmlNm(n), n])(oPrpNy(a))
+    let z = itrMap((nm: s) => [cmlNm(nm), nm])(oPrpNy(a))
     drySrt(ayEle(0))(z)
     const w = sdryColWdt(0)(z)
     dryColMdy(0)(sAlignL(w))(z)
@@ -667,9 +667,15 @@ export const oPrp = (prpPth: s) => (a: o) => {
  * const a = {b: {c:{1}}
  * require('assert').equal(prp('b.c')(o), 1) 
  */
-    for (let nm of prpPth.split('.')) if ((a = a[nm]) === undefined) return undefined; return a
+    let v
+    for (let nm of prpPth.split('.')) {
+        let v = a[nm]
+        if (v === undefined)
+            return undefined;
+    }
+    return v
 }
-export const oPrpAy = (prpNy: nm[]) => (a: o) => itrMap(nm => oPrp(nm)(a))(prpNy)
+export const oPrpAy = (prpNy: nm[]) => (a: o) => itrMap((nm: s) => oPrp(nm)(a))(prpNy)
 export const oPrpNy = (a: o) => Object.getOwnPropertyNames(a)
 export const oHasPrp = (prpNm: nm) => (a: o) => a.hasOwnProperty(prpNm)
 export const oHasLen = oHasPrp('length')
@@ -692,14 +698,14 @@ const funExport = (f: Function) => {
 export const ayClone = (ay: ay) => ay.slice(0, ay.length)
 // ----------------------------------------------
 export const sdryColWdt = (colIx: n) => (a: sdry) => sitrWdt(dryCol(colIx)(a))
-export const sdryColWdtAy = (a: sdry) => itrMap(i => sdryColWdt(i)(a))(nItr(dryColCnt(a))) as n[]
+export const sdryColWdtAy = (a: sdry) => itrMap((i: n) => sdryColWdt(i)(a))(nItr(dryColCnt(a))) as n[]
 export const dryCol = (colIx: n) => (a: dry) => itrMap(ayEleOrDft('')(colIx))(a)
 export const dryColCnt = (a: dry) => itrMax(itrMap(vLen)(a)) as n
 export const dryCellMdy = (f: f) => (a: dry) => { itrEach(ayMdy(f))(a) }
-export const dryClone = (a: dry) => itrMap(dr => itrClone(dr))(a) as dry
+export const dryClone = (a: dry) => itrMap((dr: dr) => itrClone(dr))(a) as dry
 export const dryColMdy = (colIx: n) => (f: f) => (a: dry) => { itrEach(ayMdyEle(colIx)(f))(a) }
 export const sdryLines = (a: sdry) => sdryLy(a).join('\r\n')
-export const wdtAyLin = (wdtAy: n[]) => "|-" + itrMap(w => '-'.repeat(w))(wdtAy).join('-|-') + "-|"
+export const wdtAyLin = (wdtAy: n[]) => "|-" + itrMap((w: n) => '-'.repeat(w))(wdtAy).join('-|-') + "-|"
 export const sdrLin = (wdtAy: n[]) => (a: sdr) => {
     let m = ([w, s]) => sAlignL(w)(s)
     let z = ayZip(wdtAy, a)
@@ -766,7 +772,7 @@ export const pthFnAy = (pth: s, lik?: s) => {
     let o: s[] = itrWhere(isFil)(entries)
     return o
 }; // const xxx = pthFnAy("c:\\users\\user\\", "sdfdf*.*"); debugger;
-export const ayZip = (a: ay, b: ay) => itrMap(i => [a[i], b[i]])(nItr(a.length))
+export const ayZip = (a: ay, b: ay) => itrMap((i: n) => [a[i], b[i]])(nItr(a.length))
 export const entryStatPm = async (a) => {
     debugger
     throw 0
@@ -937,8 +943,8 @@ export const linesWdt = (a: lines) => {
 
 export const linesAyWdt = (a: lines[]) => {
     const a1 = itrMap(linesWdt)(a)
-    const z: n = itrMax(a1)
-    return z
+    const z: n | null = itrMax(a1)
+    return z === null ? 0 : z
 }
 
 export const linesAyAlignL = (a: lines[]) => {
@@ -970,6 +976,19 @@ export const sBrwAtFdrFn = (fdr: s, fn: s) => (a: s) => { pipe(tmpffnByFdrFn(fdr
 export const sjsonBrw = (a: s) => { pipe(tmpfjson())(vTee(ftWrt(a)), ftBrw) }
 export const lyBrw = compose(ayJnLf, sBrw) as (a: ly) => void
 export const lyBrwStop = compose(lyBrw, stop) as (a: ly) => void
+export type tfPair<V> = { t: V, f: V }
+export type _dicSplitPred<V> = ([s, V]) => b
+export const dicBrkForTrueFalse = <V>(_dicSplitFun: _dicSplitPred<V>) => (_dic: dic<V>): tfPair<dic<V>> => {
+    const t = new Map<s, any>()
+    const f = new Map<s, any>()
+    for (let [k, v] of _dic) {
+        if (_dicSplitFun([k, v]))
+            t.set(k, v)
+        else
+            f.set(k, v)
+    }
+    return { t, f }
+}
 export const dicBrw = compose(dicLy, lyBrw) as <T>(a: dic<T>) => void
 export const oJsonLines = JSON.stringify as (a: o) => lines
 export const sdryBrw = compose(sdryLines, sBrw) as (a: sdry) => void
@@ -1060,7 +1079,7 @@ export class Dry {
     get sdry() { return itrMap(aySy)(this.dry) as sdry }
     setCurCol(n: n) { this.curCol = n; return this }
     mdyAllCell(f: f) { itrEach(ayMdy(f))(this.dry) }
-    clone() { return new Dry(itrMap(dr => itrClone(dr))(this.dry)) }
+    //clone() { return new Dry(itrMap(dr => itrClone(dr)(this.dry))}
     mdyCol(f: f, colIx: n) { itrEach(ayMdyEle(colIx)(f))(this.dry) }
     brw() { sBrw(this.lines) }
 }

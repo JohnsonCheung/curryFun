@@ -409,8 +409,8 @@ exports.itrWhere = (p) => (a) => { const o = []; for (let i of a)
 exports.itrExclude = (p) => (a) => { const o = []; for (let i of a)
     if (!p(i))
         o.push(i); return o; };
-exports.itrMap = (f) => (a) => { const o = []; for (let i of a)
-    o.push(f(i)); return o; };
+exports.itrMap = (f) => (a) => { let i = 0; const o = []; for (let itm of a)
+    o.push(f(itm, i++)); return o; };
 exports.itrEach = (f) => (a) => { let i = 0; for (let itm of a)
     f(itm, i++); };
 exports.itrFold = _itrFold => f => cum => a => { for (let i of a)
@@ -663,7 +663,7 @@ exports.oBringUpDollarPrp = o => {
 };
 exports.nyCmlSdry = (a) => exports.itrMap(exports.cmlNy)(a);
 exports.oCmlDry = (a) => {
-    let z = exports.itrMap(n => [exports.cmlNm(n), n])(exports.oPrpNy(a));
+    let z = exports.itrMap((nm) => [exports.cmlNm(nm), nm])(exports.oPrpNy(a));
     exports.drySrt(exports.ayEle(0))(z);
     const w = exports.sdryColWdt(0)(z);
     exports.dryColMdy(0)(exports.sAlignL(w))(z);
@@ -680,12 +680,15 @@ exports.oPrp = (prpPth) => (a) => {
  * const a = {b: {c:{1}}
  * require('assert').equal(prp('b.c')(o), 1)
  */
-    for (let nm of prpPth.split('.'))
-        if ((a = a[nm]) === undefined)
+    let v;
+    for (let nm of prpPth.split('.')) {
+        let v = a[nm];
+        if (v === undefined)
             return undefined;
-    return a;
+    }
+    return v;
 };
-exports.oPrpAy = (prpNy) => (a) => exports.itrMap(nm => exports.oPrp(nm)(a))(prpNy);
+exports.oPrpAy = (prpNy) => (a) => exports.itrMap((nm) => exports.oPrp(nm)(a))(prpNy);
 exports.oPrpNy = (a) => Object.getOwnPropertyNames(a);
 exports.oHasPrp = (prpNm) => (a) => a.hasOwnProperty(prpNm);
 exports.oHasLen = exports.oHasPrp('length');
@@ -708,14 +711,14 @@ const funExport = (f) => {
 exports.ayClone = (ay) => ay.slice(0, ay.length);
 // ----------------------------------------------
 exports.sdryColWdt = (colIx) => (a) => exports.sitrWdt(exports.dryCol(colIx)(a));
-exports.sdryColWdtAy = (a) => exports.itrMap(i => exports.sdryColWdt(i)(a))(exports.nItr(exports.dryColCnt(a)));
+exports.sdryColWdtAy = (a) => exports.itrMap((i) => exports.sdryColWdt(i)(a))(exports.nItr(exports.dryColCnt(a)));
 exports.dryCol = (colIx) => (a) => exports.itrMap(exports.ayEleOrDft('')(colIx))(a);
 exports.dryColCnt = (a) => exports.itrMax(exports.itrMap(exports.vLen)(a));
 exports.dryCellMdy = (f) => (a) => { exports.itrEach(exports.ayMdy(f))(a); };
-exports.dryClone = (a) => exports.itrMap(dr => exports.itrClone(dr))(a);
+exports.dryClone = (a) => exports.itrMap((dr) => exports.itrClone(dr))(a);
 exports.dryColMdy = (colIx) => (f) => (a) => { exports.itrEach(exports.ayMdyEle(colIx)(f))(a); };
 exports.sdryLines = (a) => exports.sdryLy(a).join('\r\n');
-exports.wdtAyLin = (wdtAy) => "|-" + exports.itrMap(w => '-'.repeat(w))(wdtAy).join('-|-') + "-|";
+exports.wdtAyLin = (wdtAy) => "|-" + exports.itrMap((w) => '-'.repeat(w))(wdtAy).join('-|-') + "-|";
 exports.sdrLin = (wdtAy) => (a) => {
     let m = ([w, s]) => exports.sAlignL(w)(s);
     let z = exports.ayZip(wdtAy, a);
@@ -787,7 +790,7 @@ exports.pthFnAy = (pth, lik) => {
     let o = exports.itrWhere(isFil)(entries);
     return o;
 }; // const xxx = pthFnAy("c:\\users\\user\\", "sdfdf*.*"); debugger;
-exports.ayZip = (a, b) => exports.itrMap(i => [a[i], b[i]])(exports.nItr(a.length));
+exports.ayZip = (a, b) => exports.itrMap((i) => [a[i], b[i]])(exports.nItr(a.length));
 exports.entryStatPm = async (a) => {
     debugger;
     throw 0;
@@ -971,7 +974,7 @@ exports.linesWdt = (a) => {
 exports.linesAyWdt = (a) => {
     const a1 = exports.itrMap(exports.linesWdt)(a);
     const z = exports.itrMax(a1);
-    return z;
+    return z === null ? 0 : z;
 };
 exports.linesAyAlignL = (a) => {
     const w = exports.linesAyWdt(a) + 1;
@@ -1000,6 +1003,17 @@ exports.sBrwAtFdrFn = (fdr, fn) => (a) => { exports.pipe(exports.tmpffnByFdrFn(f
 exports.sjsonBrw = (a) => { exports.pipe(exports.tmpfjson())(exports.vTee(exports.ftWrt(a)), exports.ftBrw); };
 exports.lyBrw = exports.compose(exports.ayJnLf, exports.sBrw);
 exports.lyBrwStop = exports.compose(exports.lyBrw, exports.stop);
+exports.dicBrkForTrueFalse = (_dicSplitFun) => (_dic) => {
+    const t = new Map();
+    const f = new Map();
+    for (let [k, v] of _dic) {
+        if (_dicSplitFun([k, v]))
+            t.set(k, v);
+        else
+            f.set(k, v);
+    }
+    return { t, f };
+};
 exports.dicBrw = exports.compose(exports.dicLy, exports.lyBrw);
 exports.oJsonLines = JSON.stringify;
 exports.sdryBrw = exports.compose(exports.sdryLines, exports.sBrw);
@@ -1088,7 +1102,7 @@ class Dry {
     get sdry() { return exports.itrMap(exports.aySy)(this.dry); }
     setCurCol(n) { this.curCol = n; return this; }
     mdyAllCell(f) { exports.itrEach(exports.ayMdy(f))(this.dry); }
-    clone() { return new Dry(exports.itrMap(dr => exports.itrClone(dr))(this.dry)); }
+    //clone() { return new Dry(itrMap(dr => itrClone(dr)(this.dry))}
     mdyCol(f, colIx) { exports.itrEach(exports.ayMdyEle(colIx)(f))(this.dry); }
     brw() { exports.sBrw(this.lines); }
 }
