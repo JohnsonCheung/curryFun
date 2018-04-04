@@ -8,68 +8,6 @@ import * as path from 'path'
 import * as os from 'os'
 import * as u from 'util'
 //--------------------------------------------------
-export interface drs { dry: dry; fny: fny }
-export interface p123 { p1: s, p2: s, p3: s }
-export interface s1s2 { s1: s, s2: s }
-export interface tf<T> { t: T[], f: T[] }
-export interface linShift { term: s, remainLin: s }
-export interface quote { q1: s, q2: s }
-export type match = RegExpMatchArray
-export type kv = [s, s]
-export type s = string
-export type vid = s // vid = value-id
-export type sid = s // sid = string-id
-export type lin = s
-export type re = RegExp
-export type n = number
-export type ft = s
-export type fts = ft
-export type fn = s
-export type ffn = string
-export type b = boolean
-export type dr = ay
-export type lines = s
-export type o = object
-export type quoteStr = s
-export type k = s
-export type pfx = s
-export type nm = s
-export type ny = nm[]
-export type wdt = n
-export type cml = s
-export type cnt = n
-export type ix = n
-export type pth = s
-export type cummulator<T> = (cum: T) => (itm) => T
-export type pred<T> = (a: T) => b
-export type opt<T> = T | null
-export type fun<T> = (x: T) => any
-export type Itr<T> = Iterable<T>
-export type dry = Array<dr>
-export type sdic = Map<s, s>
-export type dic<T> = Map<s, T>
-export type set = Set<any>
-export type sset = Set<s>
-export type bdic = Map<s, b>
-export type ly = s[]
-export type src = ly
-export type col = any[]
-export type scol = s[]
-export type sy = s[]
-export type sPred = pred<s>
-export type ay = Array<any>
-export type fny = nm[]
-export type sdry = s[][]
-export type sdr = s[]
-export type itr = Itr<any>
-export type sItr = Itr<s>
-export type p = (a: any) => boolean
-export type f = (a: any) => any
-export type sOrRe = s | re
-export type sOrSy = s | s[]
-export type strOpt = string | null
-export type doFun = () => void
-//---------------------------------------
 export const isEq = (exp, act) => {
     try {
         assert.deepStrictEqual(act, exp)
@@ -490,6 +428,7 @@ export const linShift = (a: lin) => {
             : { term: a2[1], remainLin: a2[2] }
     return o
 }
+export const linRmvFstTerm = (a: lin) => linShift(a).remainLin
 export const setAft = aft => a => _setAft(false, aft, a)
 export const setAftIncl = a => set => _setAft(true, a, set)
 export const setClone = set => itrSet(set)
@@ -515,12 +454,11 @@ const reExpConstNm = /^export\s+const\s+([\w][\$_0-9\w_]*)/
 const reConstNm = /^const\s+([\w][\$_0-9\w_]*)/
 const reExpDollarConstNm = /^export\s+const\s+([\$\w][\$_0-9\w_]*)/
 export const srcDry = (re: re) => compose(srcMatchAy(re), itrMap(matchDr)) as (a: src) => dry
-export const srcCol = (re: re) => (a: src) => {
+export const srcCol = (re: re) => (a: src): scol => {
     const ay = srcMatchAy(re)(a)
     const c = matchAyFstCol(ay)
     const c1 = itrRmvEmp(c)
-    const z = c1.sort() as s[]
-    return z
+    return c1
 }
 export const aySrt = (a: ay) => a.sort()
 export const matchDr = (a: match) => [...a].splice(1)
@@ -669,7 +607,7 @@ export const oPrp = (prpPth: s) => (a: o) => {
  */
     let v
     for (let nm of prpPth.split('.')) {
-        let v = a[nm]
+        v = a[nm]
         if (v === undefined)
             return undefined;
     }
@@ -744,7 +682,7 @@ export const drySrt = (fun_of_dr_to_key: (dr: dr) => s) => (a: dry) => a.sort((d
 export const oyPrpCol = prpNm => oy => { const oo: ay = []; for (let o of oy) oo.push(o[prpNm]); return oo }
 export const oyPrpDry = prpNy => oy => { const oo: ay = []; for (let o of oy) oo.push(oPrpAy(prpNy)(o)); return oo }
 //---------------------------------------
-export let sLik
+export let sLik: (lik: s) => (s: s) => b
 export let sHasSbs
 {
     const _isEsc = i => { for (let spec of "()[]{}/|.+") if (i === spec) return true }
@@ -978,11 +916,11 @@ export const lyBrw = compose(ayJnLf, sBrw) as (a: ly) => void
 export const lyBrwStop = compose(lyBrw, stop) as (a: ly) => void
 export type tfPair<V> = { t: V, f: V }
 export type _dicSplitPred<V> = ([s, V]) => b
-export const dicBrkForTrueFalse = <V>(_dicSplitFun: _dicSplitPred<V>) => (_dic: dic<V>): tfPair<dic<V>> => {
+export const dicBrkForTrueFalse = <V>(fun: _dicSplitPred<V>) => (d: dic<V>): tfPair<dic<V>> => {
     const t = new Map<s, any>()
     const f = new Map<s, any>()
-    for (let [k, v] of _dic) {
-        if (_dicSplitFun([k, v]))
+    for (let [k, v] of d) {
+        if (fun([k, v]))
             t.set(k, v)
         else
             f.set(k, v)
@@ -1085,54 +1023,70 @@ export class Dry {
 }
 export const dry = (a: dry) => new Dry(a)
 // ================
+const tst__Dry = () => {
+    const a = new Dry(nyCmlSdry(srcExpConstNy(src())))
+    debugger
+}
+const tst__drsOf_exportFunctions = () => {
+    require('webpack')
+    require('curryfun')
+    const a = drsof_exportFunctions()
+    const xx = dry(a.dry)
+    xx.setCurCol(1).brw()
+    debugger
+    //drsBrw(a)
+}
+const src = () => ftLy(ffnFts(__filename))
+const tst__srcExpConstNy = () => pipe(src())(srcExpConstNy, lyBrwStop)
+const tst__pthFnAyPm = () => pthFnAyPm(__dirname).then(lyBrwStop)
+const tst__cmlSpcNm = () => pipe(__filename)(ffnFts, ftsExpConstNy, itrMap(cmlSpcNm), lyBrwStop)
+const tst__sNmSet = () => pipe(__filename)(ftLines, sNmSet, ssetSrtBrw, stop)
+const tst__cmlNy = () => cmlNy('abAySpc')
+const tst__sLik = () => { if (!sLik("abc?dd")("abcxdd")) { debugger } }
+const tst__ftsExpConstNyBrw = () => pipe(__filename)(ffnFts, ftsExpConstNyBrw, stop)
+const tst__sBox = () => sBrw(sBox('johnson xx'))
+const tst__pthBrw = () => pthBrw(tmppth)
+const tst__sBrwAtFdrFn = () => sBrwAtFdrFn('aa', '1.json')('[1,2]')
+const tst__isEq = () => {
+    if (isEq(1, '1'))
+        debugger
+    if (!isEq(1, 1))
+        debugger
+    if (!isEq({ a: 1 }, { a: 1 }))
+        debugger
+}
+const tst__vidVal = () => {
+    const v = '234234'
+    vSav('a')(v)
+    const v1 = vidVal('a')
+    assertIsEq(v, v1)
+}
+const tst__sidStr = () => {
+    const s = '234234'
+    sSav('a')(s)
+    const s1 = vidVal('a')
+    assertIsEq(s, s1)
+}
+const tst__vidpthBrw = () => vidpthBrw()
+const tst__sidpthBrw = () => sidpthBrw()
+const tst__oPrp = () => {
+    t1()
+    return
+    function r(exp, prpPth: s, o: o) {
+        debugger
+        let act = oPrp(prpPth)(o)
+        assertIsEq(exp, act)
+    }
+    function t1() {
+        let o = { lin: 'aaa' }
+        let prpPth = 'lin'
+        let exp = 'aaa'
+        r(exp, prpPth, o)
+    }
+}
 if (module.id === '.') {
-    const tst__Dry = () => {
-        const a = new Dry(nyCmlSdry(srcExpConstNy(src())))
-        debugger
-    }
-    const tst__drsOf_exportFunctions = () => {
-        require('webpack')
-        require('curryfun')
-        const a = drsof_exportFunctions()
-        const xx = dry(a.dry)
-        xx.setCurCol(1).brw()
-        debugger
-        //drsBrw(a)
-    }
-    const src = () => ftLy(ffnFts(__filename))
-    const tst__srcExpConstNy = () => pipe(src())(srcExpConstNy, lyBrwStop)
-    const tst__pthFnAyPm = () => pthFnAyPm(__dirname).then(lyBrwStop)
-    const tst__cmlSpcNm = () => pipe(__filename)(ffnFts, ftsExpConstNy, itrMap(cmlSpcNm), lyBrwStop)
-    const tst__sNmSet = () => pipe(__filename)(ftLines, sNmSet, ssetSrtBrw, stop)
-    const tst__cmlNy = () => cmlNy('abAySpc')
-    const tst__sLik = () => { if (!sLik("abc?dd")("abcxdd")) { debugger } }
-    const tst__ftsExpConstNyBrw = () => pipe(__filename)(ffnFts, ftsExpConstNyBrw, stop)
-    const tst__sBox = () => sBrw(sBox('johnson xx'))
-    const tst__pthBrw = () => pthBrw(tmppth)
-    const tst__sBrwAtFdrFn = () => sBrwAtFdrFn('aa', '1.json')('[1,2]')
-    const tst__isEq = () => {
-        if (isEq(1, '1'))
-            debugger
-        if (!isEq(1, 1))
-            debugger
-        if (!isEq({ a: 1 }, { a: 1 }))
-            debugger
-    }
-    const tst__vidVal = () => {
-        const v = '234234'
-        vSav('a')(v)
-        const v1 = vidVal('a')
-        assertIsEq(v, v1)
-    }
-    const tst__sidStr = () => {
-        const s = '234234'
-        sSav('a')(s)
-        const s1 = vidVal('a')
-        assertIsEq(s, s1)
-    }
-    const tst__vidpthBrw = () => vidpthBrw()
-    const tst__sidpthBrw = () => sidpthBrw()
-    tst__srcExpConstNy()
+    //tst__srcExpConstNy()
+    tst__oPrp()
     //tst__vidVal()
     //tst__sidStr()
     //tst__vidpthBrw()

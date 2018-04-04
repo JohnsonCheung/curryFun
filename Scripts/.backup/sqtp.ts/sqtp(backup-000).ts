@@ -1021,15 +1021,11 @@ function tst__yww_wheAndOrLinesPrmAy() {
     }
 }
 //!runTst
-// import * as y from './scanPgm'
-// y.fts_updMainTstIfStmt(x.ffnFts(__filename))
+import * as y from './scanPgm'
+y.fts_updMainTstIfStmt(x.ffnFts(__filename))
 if (module.id === '.') {
-    tst__lin_t2MrkLin()
-    tst__lin_t2PosWdt()
+    //tst__lin_t2MrkLin()
+    //tst__yww_wheAndOrLinesPrmAy()
     tst__sqtpRslt()
-    tst__xssst_tblNmKey()
-    tst__xw_sw()
-    tst__xwww_sw()
-    tst__yww_wheAndOrLinesPrmAy()
 }
 //zEdtSampleExprDic()

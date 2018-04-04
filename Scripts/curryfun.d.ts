@@ -1,86 +1,6 @@
 /// <reference path="typings/node/node.d.ts" />
 import * as fs from 'fs';
 import * as u from 'util';
-export interface drs {
-    dry: dry;
-    fny: fny;
-}
-export interface p123 {
-    p1: s;
-    p2: s;
-    p3: s;
-}
-export interface s1s2 {
-    s1: s;
-    s2: s;
-}
-export interface tf<T> {
-    t: T[];
-    f: T[];
-}
-export interface linShift {
-    term: s;
-    remainLin: s;
-}
-export interface quote {
-    q1: s;
-    q2: s;
-}
-export declare type match = RegExpMatchArray;
-export declare type kv = [s, s];
-export declare type s = string;
-export declare type vid = s;
-export declare type sid = s;
-export declare type lin = s;
-export declare type re = RegExp;
-export declare type n = number;
-export declare type ft = s;
-export declare type fts = ft;
-export declare type fn = s;
-export declare type ffn = string;
-export declare type b = boolean;
-export declare type dr = ay;
-export declare type lines = s;
-export declare type o = object;
-export declare type quoteStr = s;
-export declare type k = s;
-export declare type pfx = s;
-export declare type nm = s;
-export declare type ny = nm[];
-export declare type wdt = n;
-export declare type cml = s;
-export declare type cnt = n;
-export declare type ix = n;
-export declare type pth = s;
-export declare type cummulator<T> = (cum: T) => (itm) => T;
-export declare type pred<T> = (a: T) => b;
-export declare type opt<T> = T | null;
-export declare type fun<T> = (x: T) => any;
-export declare type Itr<T> = Iterable<T>;
-export declare type dry = Array<dr>;
-export declare type sdic = Map<s, s>;
-export declare type dic<T> = Map<s, T>;
-export declare type set = Set<any>;
-export declare type sset = Set<s>;
-export declare type bdic = Map<s, b>;
-export declare type ly = s[];
-export declare type src = ly;
-export declare type col = any[];
-export declare type scol = s[];
-export declare type sy = s[];
-export declare type sPred = pred<s>;
-export declare type ay = Array<any>;
-export declare type fny = nm[];
-export declare type sdry = s[][];
-export declare type sdr = s[];
-export declare type itr = Itr<any>;
-export declare type sItr = Itr<s>;
-export declare type p = (a: any) => boolean;
-export declare type f = (a: any) => any;
-export declare type sOrRe = s | re;
-export declare type sOrSy = s | s[];
-export declare type strOpt = string | null;
-export declare type doFun = () => void;
 export declare const isEq: (exp: any, act: any) => boolean;
 export declare const isNotEq: (exp: any, act: any) => boolean;
 export declare const assertIsEq: (exp: any, act: any) => void;
@@ -282,6 +202,7 @@ export declare const linShift: (a: string) => {
     term: string;
     remainLin: string;
 };
+export declare const linRmvFstTerm: (a: string) => string;
 export declare const setAft: (aft: any) => (a: any) => Set<any>;
 export declare const setAftIncl: (a: any) => (set: any) => Set<any>;
 export declare const setClone: (set: any) => Set<any>;
@@ -393,7 +314,7 @@ export declare const drySrtCol: (colAy: number[]) => (a: any[][]) => void;
 export declare const drySrt: (fun_of_dr_to_key: (dr: any[]) => string) => (a: any[][]) => any[][];
 export declare const oyPrpCol: (prpNm: any) => (oy: any) => any[];
 export declare const oyPrpDry: (prpNy: any) => (oy: any) => any[];
-export declare let sLik: any;
+export declare let sLik: (lik: s) => (s: s) => b;
 export declare let sHasSbs: any;
 export declare const pthFnAy: (pth: string, lik?: string | undefined) => string[] | null;
 export declare const ayZip: (a: any[], b: any[]) => any[][];
@@ -464,7 +385,7 @@ export declare type tfPair<V> = {
     f: V;
 };
 export declare type _dicSplitPred<V> = ([s, V]) => b;
-export declare const dicBrkForTrueFalse: <V>(_dicSplitFun: _dicSplitPred<V>) => (_dic: Map<string, V>) => tfPair<Map<string, V>>;
+export declare const dicBrkForTrueFalse: <V>(fun: _dicSplitPred<V>) => (d: Map<string, V>) => tfPair<Map<string, V>>;
 export declare const dicBrw: <T>(a: Map<string, T>) => void;
 export declare const oJsonLines: (a: object) => string;
 export declare const sdryBrw: (a: string[][]) => void;

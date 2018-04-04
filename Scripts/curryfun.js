@@ -9,7 +9,7 @@ const assert = require('assert');
 const path = require("path");
 const os = require("os");
 const u = require("util");
-//---------------------------------------
+//--------------------------------------------------
 exports.isEq = (exp, act) => {
     try {
         assert.deepStrictEqual(act, exp);
@@ -466,6 +466,7 @@ exports.linShift = (a) => {
         : { term: a2[1], remainLin: a2[2] };
     return o;
 };
+exports.linRmvFstTerm = (a) => exports.linShift(a).remainLin;
 exports.setAft = aft => a => _setAft(false, aft, a);
 exports.setAftIncl = a => set => _setAft(true, a, set);
 exports.setClone = set => exports.itrSet(set);
@@ -498,8 +499,7 @@ exports.srcCol = (re) => (a) => {
     const ay = exports.srcMatchAy(re)(a);
     const c = exports.matchAyFstCol(ay);
     const c1 = exports.itrRmvEmp(c);
-    const z = c1.sort();
-    return z;
+    return c1;
 };
 exports.aySrt = (a) => a.sort();
 exports.matchDr = (a) => [...a].splice(1);
@@ -682,7 +682,7 @@ exports.oPrp = (prpPth) => (a) => {
  */
     let v;
     for (let nm of prpPth.split('.')) {
-        let v = a[nm];
+        v = a[nm];
         if (v === undefined)
             return undefined;
     }
@@ -1003,11 +1003,11 @@ exports.sBrwAtFdrFn = (fdr, fn) => (a) => { exports.pipe(exports.tmpffnByFdrFn(f
 exports.sjsonBrw = (a) => { exports.pipe(exports.tmpfjson())(exports.vTee(exports.ftWrt(a)), exports.ftBrw); };
 exports.lyBrw = exports.compose(exports.ayJnLf, exports.sBrw);
 exports.lyBrwStop = exports.compose(exports.lyBrw, exports.stop);
-exports.dicBrkForTrueFalse = (_dicSplitFun) => (_dic) => {
+exports.dicBrkForTrueFalse = (fun) => (d) => {
     const t = new Map();
     const f = new Map();
-    for (let [k, v] of _dic) {
-        if (_dicSplitFun([k, v]))
+    for (let [k, v] of d) {
+        if (fun([k, v]))
             t.set(k, v);
         else
             f.set(k, v);
@@ -1109,56 +1109,72 @@ class Dry {
 exports.Dry = Dry;
 exports.dry = (a) => new Dry(a);
 // ================
+const tst__Dry = () => {
+    const a = new Dry(exports.nyCmlSdry(exports.srcExpConstNy(src())));
+    debugger;
+};
+const tst__drsOf_exportFunctions = () => {
+    require('webpack');
+    require('curryfun');
+    const a = exports.drsof_exportFunctions();
+    const xx = exports.dry(a.dry);
+    xx.setCurCol(1).brw();
+    debugger;
+    //drsBrw(a)
+};
+const src = () => exports.ftLy(exports.ffnFts(__filename));
+const tst__srcExpConstNy = () => exports.pipe(src())(exports.srcExpConstNy, exports.lyBrwStop);
+const tst__pthFnAyPm = () => exports.pthFnAyPm(__dirname).then(exports.lyBrwStop);
+const tst__cmlSpcNm = () => exports.pipe(__filename)(exports.ffnFts, exports.ftsExpConstNy, exports.itrMap(exports.cmlSpcNm), exports.lyBrwStop);
+const tst__sNmSet = () => exports.pipe(__filename)(exports.ftLines, exports.sNmSet, exports.ssetSrtBrw, exports.stop);
+const tst__cmlNy = () => exports.cmlNy('abAySpc');
+const tst__sLik = () => { if (!exports.sLik("abc?dd")("abcxdd")) {
+    debugger;
+} };
+const tst__ftsExpConstNyBrw = () => exports.pipe(__filename)(exports.ffnFts, exports.ftsExpConstNyBrw, exports.stop);
+const tst__sBox = () => exports.sBrw(exports.sBox('johnson xx'));
+const tst__pthBrw = () => exports.pthBrw(exports.tmppth);
+const tst__sBrwAtFdrFn = () => exports.sBrwAtFdrFn('aa', '1.json')('[1,2]');
+const tst__isEq = () => {
+    if (exports.isEq(1, '1'))
+        debugger;
+    if (!exports.isEq(1, 1))
+        debugger;
+    if (!exports.isEq({ a: 1 }, { a: 1 }))
+        debugger;
+};
+const tst__vidVal = () => {
+    const v = '234234';
+    exports.vSav('a')(v);
+    const v1 = exports.vidVal('a');
+    exports.assertIsEq(v, v1);
+};
+const tst__sidStr = () => {
+    const s = '234234';
+    exports.sSav('a')(s);
+    const s1 = exports.vidVal('a');
+    exports.assertIsEq(s, s1);
+};
+const tst__vidpthBrw = () => exports.vidpthBrw();
+const tst__sidpthBrw = () => exports.sidpthBrw();
+const tst__oPrp = () => {
+    t1();
+    return;
+    function r(exp, prpPth, o) {
+        debugger;
+        let act = exports.oPrp(prpPth)(o);
+        exports.assertIsEq(exp, act);
+    }
+    function t1() {
+        let o = { lin: 'aaa' };
+        let prpPth = 'lin';
+        let exp = 'aaa';
+        r(exp, prpPth, o);
+    }
+};
 if (module.id === '.') {
-    const tst__Dry = () => {
-        const a = new Dry(exports.nyCmlSdry(exports.srcExpConstNy(src())));
-        debugger;
-    };
-    const tst__drsOf_exportFunctions = () => {
-        require('webpack');
-        require('curryfun');
-        const a = exports.drsof_exportFunctions();
-        const xx = exports.dry(a.dry);
-        xx.setCurCol(1).brw();
-        debugger;
-        //drsBrw(a)
-    };
-    const src = () => exports.ftLy(exports.ffnFts(__filename));
-    const tst__srcExpConstNy = () => exports.pipe(src())(exports.srcExpConstNy, exports.lyBrwStop);
-    const tst__pthFnAyPm = () => exports.pthFnAyPm(__dirname).then(exports.lyBrwStop);
-    const tst__cmlSpcNm = () => exports.pipe(__filename)(exports.ffnFts, exports.ftsExpConstNy, exports.itrMap(exports.cmlSpcNm), exports.lyBrwStop);
-    const tst__sNmSet = () => exports.pipe(__filename)(exports.ftLines, exports.sNmSet, exports.ssetSrtBrw, exports.stop);
-    const tst__cmlNy = () => exports.cmlNy('abAySpc');
-    const tst__sLik = () => { if (!exports.sLik("abc?dd")("abcxdd")) {
-        debugger;
-    } };
-    const tst__ftsExpConstNyBrw = () => exports.pipe(__filename)(exports.ffnFts, exports.ftsExpConstNyBrw, exports.stop);
-    const tst__sBox = () => exports.sBrw(exports.sBox('johnson xx'));
-    const tst__pthBrw = () => exports.pthBrw(exports.tmppth);
-    const tst__sBrwAtFdrFn = () => exports.sBrwAtFdrFn('aa', '1.json')('[1,2]');
-    const tst__isEq = () => {
-        if (exports.isEq(1, '1'))
-            debugger;
-        if (!exports.isEq(1, 1))
-            debugger;
-        if (!exports.isEq({ a: 1 }, { a: 1 }))
-            debugger;
-    };
-    const tst__vidVal = () => {
-        const v = '234234';
-        exports.vSav('a')(v);
-        const v1 = exports.vidVal('a');
-        exports.assertIsEq(v, v1);
-    };
-    const tst__sidStr = () => {
-        const s = '234234';
-        exports.sSav('a')(s);
-        const s1 = exports.vidVal('a');
-        exports.assertIsEq(s, s1);
-    };
-    const tst__vidpthBrw = () => exports.vidpthBrw();
-    const tst__sidpthBrw = () => exports.sidpthBrw();
-    tst__srcExpConstNy();
+    //tst__srcExpConstNy()
+    tst__oPrp();
     //tst__vidVal()
     //tst__sidStr()
     //tst__vidpthBrw()
