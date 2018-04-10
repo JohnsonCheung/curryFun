@@ -302,7 +302,6 @@ if (module.id === '.') {
     tst__mpcSet()
     tst__relBrw()
     tst__relInf()
-    $relStrLy              // = (_relLines: lines): ly => lyRmvEmpLin(sSplitLines(_relLines))
     isChd                  // = (_rel: rel) => (itm: s) => {
     isMpc                  // = (_rel: rel) => (_chd: s) => {
     isPar                  // = (rel: rel) => (itm: s) => rel.has(itm)
