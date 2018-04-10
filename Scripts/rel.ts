@@ -129,7 +129,6 @@ const xLvlRel = (_root: sset, _rel: rel): rel => {
         }
     }
 }
-const $relStrLy = (_relLines: lines): ly => lyRmvEmpLin(sSplitLines(_relLines))
 const x1_relItm_or_null = (_relLin: lin): relItm | null => {
     const ay = sSplitSpc(_relLin)
     const k = ay.shift()
