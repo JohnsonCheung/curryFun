@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-//// <reference path="./curryfun.d.ts"/>
+/// <reference path="./curryfun.d.ts"/>
 const x = require("./curryfun");
 //!const==========================================================================
 const sq_UPD = 'UPD';
@@ -599,14 +599,20 @@ const yw_whePhr = (_wheLy, _exprDic) => {
         assertQmrkPfx(_wheLy[0], 'WHE');
         _wheLy.slice(1).forEach(assertQmrkAndOr);
     }
-    const ay = yww_wheAndOrLinesPrmAy(_wheLy, _exprDic);
+    const ay = yww_wheAndOrLines_prmAy(_wheLy, _exprDic);
     const linesAy = x.itrMap(ywl_wheAndOrLines)(ay);
     return linesAy.join('\r\n') + '\r\n';
 };
-const yww_wheAndOrLinesPrmAy = (_wheLy, _exprDic) => {
-    debugger;
-    return []; //?
+const ywwl_wheAndOrLin_prm = (_wheLin) => {
+    const pfx = 'WHE';
+    const opnBkt = '';
+    const fldLines = '';
+    const op = 'between';
+    const oprand = '';
+    const clsBkt = '';
+    return { pfx, opnBkt, fldLines, op, oprand, clsBkt };
 };
+const yww_wheAndOrLines_prmAy = (_wheLy, _exprDic) => x.itrMap(ywwl_wheAndOrLin_prm)(_wheLy);
 const ywl_wheAndOrLines = (_a) => {
     const { pfx, opnBkt, fldLines, op, oprand, clsBkt } = _a;
     const f = fldLines;
@@ -993,7 +999,7 @@ function tst__yww_wheAndOrLinesPrmAy() {
         const wheLy = zSampleLy('wheLy');
         const exprDic = x.lySdic(zSampleLy('exprDic'));
         const exp = {};
-        const act = yww_wheAndOrLinesPrmAy(wheLy, exprDic);
+        const act = yww_wheAndOrLines_prmAy(wheLy, exprDic);
         x.assertIsEq(exp, act);
     }
 }

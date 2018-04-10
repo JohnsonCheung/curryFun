@@ -1,3 +1,4 @@
+/// <reference path="./curryfun.d.ts"/>
 export interface erItm {
     ix: n;
     sfxMsg: s[];

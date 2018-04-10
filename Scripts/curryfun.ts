@@ -1,4 +1,5 @@
 /// <reference path="./typings/node/node.d.ts"/>
+/// <reference path="./common.d.ts"/>
 //--------------------------------------------------
 import * as child_process from 'child_process'
 import * as fs from 'fs'
@@ -7,6 +8,7 @@ const assert = require('assert')
 import * as path from 'path'
 import * as os from 'os'
 import * as u from 'util'
+import { fjs_updFtsMainTstIfStmt } from './scanPgm';
 //--------------------------------------------------
 export const isEq = (exp, act) => {
     try {
@@ -74,16 +76,16 @@ export const er = (msg: s, ...v) => {
     dmp('------------------------------------------------')
     let dbg = true
     debugger
-    if (dbg)
-        halt()
+    //    if (dbg)
+    //        halt()
 }
 //-----------------------------------------------------------------------
 export const sSplit = (sep: sOrRe) => (a: s) => a.split(sep)
 export const sRmvCr = (a: s) => a.replace(/\r/g, '')
 export const sSplitLines = (a: lines) => sSplitLf(sRmvCr(a))
+export const sSplitSpc = (_s: s) => sSplit(/\s+/)(_s.trim())
 export const sSplitCrLf = sSplit('\r\n')
 export const sSplitLf = sSplit('\n')
-export const sSplitSpc = sSplit(/\s+/)
 export const sSplitCommaSpc = sSplit(/,\s*/)
 //-----------------------------------------------------------------------
 export const vDft = <T>(dft: T) => (a: T | null | undefined) => a === null || a === undefined ? dft : a
@@ -99,7 +101,10 @@ export const ayEleOrDft = <T>(dft: T) => (ix: n) => (a: T[]) => vDft(dft)(a[ix])
 export const ayLas = <T>(a: T[]) => a[vLen(a) - 1]
 export const aySetEle = <T>(ix: n) => (v: T) => (a: T[]) => { a[ix] = v }
 export const ayMdyEle = <T>(ix: n) => (f: (a: T) => T) => (a: T[]) => { a[ix] = f(a[ix]) }
-export const ayMdy = <T>(f: (a: T) => T) => (a: T[]) => itrEach(ix => a[ix] = f(a[ix]))(nItr(a.length))
+export const ayMdy = <T>(f: (a: T) => T) => (a: T[]) =>
+    each
+        ((itm, ix) => { if (ix !== undefined) a[ix] = f(a[ix]) })
+        (nItr(a.length))
 //-----------------------------------------------------------------------
 export const ayJn = (sep?: s) => (a: ay) => a.join(sep)
 export const ayJnCrLf = ayJn('\r\n')
@@ -366,32 +371,43 @@ export const pthEnsSubFdr = (subFdr: s) => (a: pth) => {
     itrEach(pthEns)(e)
 }
 //-----------------------------------------------------------------------
-export const itrWhere = <A>(p: pred<A>) => (a: itr) => { const o: A[] = []; for (let i of a) if (p(i)) o.push(i); return o }
+export const itrWhere = <T>(p: pred<T>) => (a: Itr<T>): T[] => { const o: T[] = []; for (let i of a) if (p(i)) o.push(i); return o }
 export const itrExclude = (p: p) => (a: itr) => { const o: ay = []; for (let i of a) if (!p(i)) o.push(i); return o }
 export const itrMap = <A, B>(f: (a: A, i?: n) => B) => (a: itr): B[] => { let i = 0; const o: ay = []; for (let itm of a) o.push(f(itm, i++)); return o }
-export const itrEach = (f: (a, i?: n) => void) => (a: itr) => { let i = 0; for (let itm of a) f(itm, i++) }
+export const itrEach = <T>(f: (a: T, i?: n) => void) => (a: Itr<T>) => { let i = 0; for (let itm of a) f(itm, i++) }
 export const itrFold = _itrFold => f => cum => a => { for (let i of a) cum = f(cum)(i); return cum }
 export const itrReduce = f => (a: itr) => itrFold(f)(itrFst(a))(a)
+export const where = itrWhere
+export const map = itrMap
+export const each = itrEach
 //---------------------------------------------------------------------------
-export type map = Map<any, any>
-export type _mapSet = (a: map) => set
-export type _mapAy = (a: map) => ay
-export type _itrAddPfxSfx = (pfx: s, sfx: s) => (a) => s[]
-export const mapKy: _mapAy = a => itrAy(a.keys())
-export const mapVy: _mapAy = a => itrAy(a.values())
-export const mapKvy: _mapAy = a => itrAy(a.entries())
-export const mapKset: _mapSet = a => new Set(a.keys())
+export const mapKy = (_map: map) => itrAy(_map.keys())
+export const mapVy = (_map: map) => itrAy(_map.values())
+export const mapKvy = (_map: map) => itrAy(_map.entries())
+export const mapKset = (_map: map) => new Set(_map.keys())
 //---------------------------------------------------------------------------
-export const setAy = set => { const o: ay = []; for (let i of set) o.push(i); return o }
-export const setWhere = p => set => {
-    const z = new Set
-    for (let i of set)
-        if (p(i))
+export const setAy = <T>(_set: Set<T>): T[] => { const o: T[] = []; for (let i of _set) o.push(i); return o }
+export const setWhere = <T>(_p: pred<T>) => (_set: Set<T>): Set<T> => {
+    const z = new Set<T>()
+    for (let i of _set)
+        if (_p(i))
             z.add(i)
     return z
 }
-export const setAdd = x => set => { for (let i of x) set.add(i); return set }
-export const setMinus = x => set => { for (let i of x) set.delete(i); return set }
+export const setSrt = <T>(_set: Set<T>): Set<T> => new Set<T>(setAy(_set).sort())
+export const setAdd = <T>(_x: Set<T> | null | undefined) => (_set: Set<T>): Set<T> => {
+    if (_x === null || _x === undefined)
+        return _set
+    for (let i of _x)
+        _set.add(i);
+    return _set
+}
+export const setMinus = <T>(_x: Set<T> | null | undefined) => (_set: Set<T>): Set<T> => {
+    if (_x === null || _x === undefined)
+        return _set
+    for (let i of _x) _set.delete(i);
+    return _set
+}
 const _setAft = (incl, a, set) => {
     const z = new Set
     let found = false
@@ -407,18 +423,13 @@ const _setAft = (incl, a, set) => {
         }
     return z
 }
-
-export const linFstTerm = (a: lin) => {
-    let { term, remainLin } = linShift(a)
-    return term
-}
-
+export const linFstTerm = (a: lin) => sSplitSpc(a)[0]
+export const linLasTerm = (a: lin) => ayLas(sSplitSpc(a))
 export const linT2 = (a: lin) => {
     const { term: t1, remainLin: a1 } = linShift(a)
     const { term: t2, remainLin } = linShift(a1)
     return t2
 }
-
 export const linShift = (a: lin) => {
     const a1 = a.trim()
     const a2 = a1.match(/(\S*)\s*(.*)/)
@@ -428,12 +439,15 @@ export const linShift = (a: lin) => {
             : { term: a2[1], remainLin: a2[2] }
     return o
 }
+export const sRmvFstTerm = (a: s) => linShift(a).remainLin
 export const linRmvFstTerm = (a: lin) => linShift(a).remainLin
 export const setAft = aft => a => _setAft(false, aft, a)
 export const setAftIncl = a => set => _setAft(true, a, set)
 export const setClone = set => itrSet(set)
 export const itrSet = itr => { const o = new Set; for (let i of itr) o.add(i); return o }
-export const itrTfmSet = (f: f) => (a: itr) => { const o = new Set; for (let i of a) o.add(f(i)); return o }
+export const itrTfmSet = (f: f) => (a: itr) => {
+    const o = new Set; for (let i of a) o.add(f(i)); return o
+}
 //---------------------------------------------------------------------------
 export const empSdic = () => new Map<s, s>()
 export const lySdic = (a: ly) => {
@@ -443,16 +457,23 @@ export const lySdic = (a: ly) => {
         return { k, s }
     }
     const x = lin => { let { k, s } = linKs(lin); o.set(k, s) }
-    itrEach(x)(a)
+    each(x)(a)
     return o
 }
-export const itrRmvEmp = (a: itr) => itrWhere(isNonEmp)(a)
-export const lyPfxCnt = (pfx: s) => (a: ly) => { let z = 0; itrEach(lin => { if (sHasPfx(pfx)(lin)) z++ })(a); return z }
+export const itrRmvEmp = <T>(a: Itr<T | null | undefined>): T[] => itrWhere(isNonEmp)(a)
+export const lyRmvEmpLin = itrRmvEmp as (_ly: ly) => ly
+export const lyPfxCnt = (pfx: s) => (a: ly) => {
+    let z = 0
+    each
+        ((lin: s) => { if (sHasPfx(pfx)(lin)) z++ })
+        (a)
+    return z
+}
 export const lyHasMajPfx = (pfx: s) => (a: ly) => 2 * lyPfxCnt(pfx)(a) > a.length
 //---------------------------------------------------------------------------
-const reExpConstNm = /^export\s+const\s+([\w][\$_0-9\w_]*)/
-const reConstNm = /^const\s+([\w][\$_0-9\w_]*)/
-const reExpDollarConstNm = /^export\s+const\s+([\$\w][\$_0-9\w_]*)/
+export const reExpConstNm = /^export const ([$_a-zA-Z][$_a-zA-Z0-9]*) /
+export const reConstNm = /^const ([$_a-zA-Z][$_a-zA-Z0-9]*) /
+const reExpDollarConstNm = /^export const ([\$\w][\$_0-9\w_]*) /
 export const srcDry = (re: re) => compose(srcMatchAy(re), itrMap(matchDr)) as (a: src) => dry
 export const srcCol = (re: re) => (a: src): scol => {
     const ay = srcMatchAy(re)(a)
@@ -538,6 +559,7 @@ export const itrBrkForTrueFalse = <T>(p: (a: T) => b) => (a: Itr<T>) => {
 }
 export const itrAy = <T>(a: Itr<T>) => { const o: T[] = []; for (let i of a) o.push(i); return o }
 export const itrFst = <T>(a: Itr<T>) => { for (let i of a) return i; return null }
+export const itrLas = <T>(a: Itr<T>) => { let i; for (i of a) { }; return (i === undefined ? null : i) }
 export const itrAddPfxSfx = (pfx: s, sfx: s) => (a: itr) => itrMap(sAddPfxSfx(pfx, sfx))(a) as s[]
 export const itrAddPfx = (pfx: s) => (a: itr) => itrMap(sAddPfx(pfx))(a) as s[]
 export const itrAddSfx = (sfx: s) => (a: itr) => itrMap(sAddSfx(sfx))(a) as s[]
@@ -560,6 +582,14 @@ export const itrDupSet = <T>(a: Itr<T>) => {
 export const itrMax = <T>(a: Itr<T>) => { let o = itrFst(a); if (o === null) return null; for (let i of a) if (i > o) o = i; return o }
 export const itrMin = <T>(a: Itr<T>) => { let o = itrFst(a); if (o === null) return null; for (let i of a) if (i < o) o = i; return o }
 //-----------------------------------------------------------------------------------------
+export const oSrt = (o: o): o => {
+    if (o === null || o === undefined) return {}
+    const oo: any = {}
+    for (let k of Object.getOwnPropertyNames(o).sort()) {
+        oo[k] = o[k]
+    }
+    return oo
+}
 export const oBringUpDollarPrp = o => {
     /**
      * Bring up all {o} child object member up one level.  Throw exception if there is name conflict
@@ -904,19 +934,23 @@ pthEns(sidpth)
 export const sidpthBrw = () => pthBrw(sidpth)
 export const sidFt = (a: sid) => sidpth + a + '.txt'
 export const sidStr = (a: sid) => ftLines(sidFt(a))
-
 export const vTee = <T>(f: (a: T) => void) => (a: T) => { f(a); return a }
 export const ftWrt = (s: s) => (a: ft) => fs.writeFileSync(a, s)
 export const cmdShell = child_process.exec as (a: s) => void
 export const ftBrw = (a: ft) => cmdShell(`code.cmd "${a}"`)
 export const sBrw = (a: s) => { pipe(tmpft())(vTee(ftWrt(a)), ftBrw) }
-export const sBrwAtFdrFn = (fdr: s, fn: s) => (a: s) => { pipe(tmpffnByFdrFn(fdr, fn))(vTee(ftWrt(a)), ftBrw) }
+export const sBrwAtFdrFn = (_fdr: s, _fn: s) => (_s: s) => { pipe(tmpffnByFdrFn(_fdr, _fn))(vTee(ftWrt(_s)), ftBrw) }
+export const oBrwAtFdrFn = (_fdr: s, _fn: s) => (_o) => { pipe(tmpffnByFdrFn(_fdr, _fn + '.json'))(vTee(ftWrt(oJsonLines(_o))), ftBrw) }
 export const sjsonBrw = (a: s) => { pipe(tmpfjson())(vTee(ftWrt(a)), ftBrw) }
 export const lyBrw = compose(ayJnLf, sBrw) as (a: ly) => void
 export const lyBrwStop = compose(lyBrw, stop) as (a: ly) => void
-export type tfPair<V> = { t: V, f: V }
 export type _dicSplitPred<V> = ([s, V]) => b
-export const dicBrkForTrueFalse = <V>(fun: _dicSplitPred<V>) => (d: dic<V>): tfPair<dic<V>> => {
+export const dicKy = <T>(_dic: dic<T>): sy => itrAy(_dic.keys())
+export const dicKset = (_dic: dic<any>): sset => itrSet(_dic.keys())
+export const sdicKset = dicKset as (_sdic: sdic) => sset
+export const dicValAy = <T>(_dic: dic<T>): T[] => itrAy(_dic.values())
+export const sdicValAy = (_sdic: sdic): sy => dicValAy(_sdic)
+export const dicBrkForTrueFalse = <V>(fun: ([s, V]) => b) => (d: dic<V>): tfPair<dic<V>> => {
     const t = new Map<s, any>()
     const f = new Map<s, any>()
     for (let [k, v] of d) {
@@ -929,13 +963,15 @@ export const dicBrkForTrueFalse = <V>(fun: _dicSplitPred<V>) => (d: dic<V>): tfP
 }
 export const dicBrw = compose(dicLy, lyBrw) as <T>(a: dic<T>) => void
 export const oJsonLines = JSON.stringify as (a: o) => lines
+export const oAsExp = (o): lines => 'const exp = ' + oJsonLines(o)
 export const sdryBrw = compose(sdryLines, sBrw) as (a: sdry) => void
 export const dryBrw = compose(drySdry, sdryBrw) as (a: dry) => void
 export const drsBrw = compose(sBrw, drsLines) as (a: drs) => void
 export const nyBrw = compose(itrMap(cmlNy), sdryBrw) as (a: ny) => void
 export const srcExpConstNyBrw = compose(srcExpConstNy, nyBrw)
 export const ftsExpConstNyBrw = compose(ftLy, srcExpConstNyBrw)
-export const oBrw = compose(oJsonLines, sjsonBrw) as (a: o) => void
+export const oBrw = compose(oJsonLines, sjsonBrw) as (a) => void
+export const oBrwAsExp = compose(oAsExp, sBrwAtFdrFn('asExpectedJs', 'asExpect.js')) as (a: o) => void
 //---------------------- ------------------
 export const chrCd_isNm = (c: n) => true
 export const chrCd = (s: s) => s.charCodeAt(0)
@@ -956,7 +992,9 @@ export const chrCd_isUnderScore = vEQ(chrCd_underScore)
 export const chrCd_isFstNmChr = predsOr(chrCd_isLetter, chrCd_isUnderScore, chrCd_isDollar) as pred<n>
 export const chrCd_isNmChr = predsOr(chrCd_isFstNmChr, chrCd_isDigit)
 export const ssetSrtBrw = (a: sset) => pipe(a)(itrAy, aySrt, lyBrw)
-export const ssetBrw = (a: sset) => pipe(a)(itrAy, sBrw)
+export const ssetAddPfxAsLin = (_pfx: s) => (_sset: sset) => _pfx + (_pfx ? ' ' : '') + ssetLin(_sset)
+export const ssetLin = (_sset: set) => setAy(_sset).join(' ')
+export const ssetBrw = (_sset: sset) => pipe(_sset)(itrAy, sBrw)
 export const linExpConstNm = (a: lin) => {
     const m = a.match(reExpConstNm)
     if (m === null)
@@ -1023,11 +1061,11 @@ export class Dry {
 }
 export const dry = (a: dry) => new Dry(a)
 // ================
-const tst__Dry = () => {
+function tst__Dry() {
     const a = new Dry(nyCmlSdry(srcExpConstNy(src())))
     debugger
 }
-const tst__drsOf_exportFunctions = () => {
+function tst__drsOf_exportFunctions() {
     require('webpack')
     require('curryfun')
     const a = drsof_exportFunctions()
@@ -1037,17 +1075,17 @@ const tst__drsOf_exportFunctions = () => {
     //drsBrw(a)
 }
 const src = () => ftLy(ffnFts(__filename))
-const tst__srcExpConstNy = () => pipe(src())(srcExpConstNy, lyBrwStop)
-const tst__pthFnAyPm = () => pthFnAyPm(__dirname).then(lyBrwStop)
-const tst__cmlSpcNm = () => pipe(__filename)(ffnFts, ftsExpConstNy, itrMap(cmlSpcNm), lyBrwStop)
-const tst__sNmSet = () => pipe(__filename)(ftLines, sNmSet, ssetSrtBrw, stop)
-const tst__cmlNy = () => cmlNy('abAySpc')
-const tst__sLik = () => { if (!sLik("abc?dd")("abcxdd")) { debugger } }
-const tst__ftsExpConstNyBrw = () => pipe(__filename)(ffnFts, ftsExpConstNyBrw, stop)
-const tst__sBox = () => sBrw(sBox('johnson xx'))
-const tst__pthBrw = () => pthBrw(tmppth)
-const tst__sBrwAtFdrFn = () => sBrwAtFdrFn('aa', '1.json')('[1,2]')
-const tst__isEq = () => {
+function tst__srcExpConstNy() { pipe(src())(srcExpConstNy, lyBrwStop) }
+function tst__pthFnAyPm() { pthFnAyPm(__dirname).then(lyBrwStop) }
+function tst__cmlSpcNm() { pipe(__filename)(ffnFts, ftsExpConstNy, itrMap(cmlSpcNm), lyBrwStop) }
+function tst__sNmSet() { pipe(__filename)(ftLines, sNmSet, ssetSrtBrw, stop) }
+function tst__cmlNy() { cmlNy('abAySpc') }
+function tst__sLik() { if (!sLik("abc?dd")("abcxdd")) { debugger } }
+function tst__ftsExpConstNyBrw() { pipe(__filename)(ffnFts, ftsExpConstNyBrw, stop) }
+function tst__sBox() { sBrw(sBox('johnson xx')) }
+function tst__pthBrw() { pthBrw(tmppth) }
+function tst__sBrwAtFdrFn() { sBrwAtFdrFn('aa', '1.json')('[1,2]') }
+function tst__isEq() {
     if (isEq(1, '1'))
         debugger
     if (!isEq(1, 1))
@@ -1055,21 +1093,21 @@ const tst__isEq = () => {
     if (!isEq({ a: 1 }, { a: 1 }))
         debugger
 }
-const tst__vidVal = () => {
+function tst__vidVal() {
     const v = '234234'
     vSav('a')(v)
     const v1 = vidVal('a')
     assertIsEq(v, v1)
 }
-const tst__sidStr = () => {
+function tst__sidStr() {
     const s = '234234'
     sSav('a')(s)
     const s1 = vidVal('a')
     assertIsEq(s, s1)
 }
-const tst__vidpthBrw = () => vidpthBrw()
-const tst__sidpthBrw = () => sidpthBrw()
-const tst__oPrp = () => {
+function tst__vidpthBrw() { vidpthBrw() }
+function tst__sidpthBrw() { sidpthBrw() }
+function tst__oPrp() {
     t1()
     return
     function r(exp, prpPth: s, o: o) {
@@ -1085,21 +1123,390 @@ const tst__oPrp = () => {
     }
 }
 if (module.id === '.') {
-    //tst__srcExpConstNy()
-    tst__oPrp()
-    //tst__vidVal()
-    //tst__sidStr()
-    //tst__vidpthBrw()
-    //tst__isEq()
-    //tst__pthBrw()
-    //tst__sBrwAtFdrFn()
-    /*
-    tst__drsOf_exportFunctions()
+    tst__vidpthBrw()
+    tst__vidVal()
+    tst__srcExpConstNy()
+    tst__sidpthBrw()
+    tst__sidStr()
+    tst__sNmSet()
+    tst__sLik()
+    tst__sBrwAtFdrFn()
+    tst__sBox()
     tst__pthFnAyPm()
-    tst__cmlSpcNm ()
-    tst__sNmSet   ()
-    tst__cmlNy    ()
-    tst__sLik     ()
+    tst__pthBrw()
+    tst__oPrp()
+    tst__isEq()
     tst__ftsExpConstNyBrw()
-    */
+    tst__drsOf_exportFunctions()
+    tst__cmlSpcNm()
+    tst__cmlNy()
+    tst__Dry()
+    _isBrk
+    _isBrkChrCd
+    _setAft
+    assert
+    assertIsEq
+    assertIsNotEq
+    assertIsPthExist
+    ayClone
+    ayEle
+    ayEleOrDft
+    ayFindIx
+    ayFindIxOrDft
+    ayFst
+    ayJn
+    ayJnAsLines
+    ayJnComma
+    ayJnCommaSpc
+    ayJnCrLf
+    ayJnLf
+    ayJnSpc
+    ayLas
+    ayMdy
+    ayMdyEle
+    aySetEle
+    aySnd
+    aySrt
+    aySy
+    ayZip
+    chrCd
+    chrCd_0
+    chrCd_9
+    chrCd_A
+    chrCd_Z
+    chrCd_a
+    chrCd_dollar
+    chrCd_isCapitalLetter
+    chrCd_isDigit
+    chrCd_isDollar
+    chrCd_isFstNmChr
+    chrCd_isLetter
+    chrCd_isNm
+    chrCd_isNmChr
+    chrCd_isSmallLetter
+    chrCd_isUnderScore
+    chrCd_underScore
+    chrCd_z
+    cmdShell
+    cmlNm
+    cmlNy
+    cmlSpcNm
+    compose
+    curExpStmt
+    dicBrkForTrueFalse
+    dicBrw
+    dicLines
+    dicLy
+    dmp
+    drsBrw
+    drsLines
+    drsLy
+    drsof_exportFunctions
+    dry
+    dryBrw
+    dryCellMdy
+    dryClone
+    dryCol
+    dryColCnt
+    dryColMdy
+    dryLy
+    drySdry
+    drySrt
+    drySrtCol
+    empSdic
+    ensRe
+    ensSy
+    entryStatPm
+    er
+    ffn
+    ffnAddFnSfx
+    ffnCloneTmp
+    ffnExt
+    ffnFfnn
+    ffnFn
+    ffnFnn
+    ffnFts
+    ffnMakBackup
+    ffnPth
+    ffnRmvExt
+    ffnRplExt
+    fjsConstNy
+    fjsExpConstNy
+    fjsRplExpStmt
+    fjsonVal
+    ftBrw
+    ftLines
+    ftLinesPm
+    ftLy
+    ftLyPm
+    ftWrt
+    ftsConstNy
+    ftsExpConstDollarNy
+    ftsExpConstNy
+    ftsExpConstNyBrw
+    funApply
+    funDmp
+    funExport
+    funsExport
+    halt
+    isAy
+    isBool
+    isDte
+    isEmp
+    isEq
+    isEven
+    isFalse
+    isFun
+    isNm
+    isNonEmp
+    isNonNull
+    isNonRmkLin
+    isNotEq
+    isNull
+    isNullOrUndefined
+    isNum
+    isObj
+    isOdd
+    isPrim
+    isPthExist
+    isRe
+    isRmkLin
+    isSpc
+    isStr
+    isSy
+    isTrue
+    isUndefined
+    itrAddPfx
+    itrAddPfxSfx
+    itrAddSfx
+    itrAlignL
+    itrAy
+    itrBrkForTrueFalse
+    itrClone
+    itrDupSet
+    itrEach
+    itrExclude
+    itrFind
+    itrFold
+    itrFst
+    itrHasDup
+    itrIsAllFalse
+    itrIsAllTrue
+    itrIsSomeFalse
+    itrIsSomeTrue
+    itrMap
+    itrMax
+    itrMin
+    itrPredIsAllFalse
+    itrPredIsAllTrue
+    itrPredIsSomeFalse
+    itrPredIsSomeTrue
+    itrReduce
+    itrRmvEmp
+    itrSet
+    itrSy
+    itrTfmSet
+    itrWdt
+    itrWhere
+    kvLin
+    lazy
+    linExpConstNm
+    linFstTerm
+    linRmvFstTerm
+    linRmvMsg
+    linShift
+    linT2
+    linesAlignL
+    linesAyAlignL
+    linesAyWdt
+    linesWdt
+    lyBrw
+    lyBrwStop
+    lyHasMajPfx
+    lyPfxCnt
+    lySdic
+    mapKset
+    mapKvy
+    mapKy
+    mapVy
+    matchAyFstCol
+    matchAySdry
+    matchDr
+    matchFstItm
+    nDecr
+    nDivide
+    nIncr
+    nItr
+    nMinus
+    nMultiply
+    nPadZero
+    nSpc
+    nodeModuleSet
+    nyBrw
+    nyCmlSdry
+    oBringUpDollarPrp
+    oBrw
+    oBrwAtFdrFn
+    oCmlDry
+    oCmlObj
+    oCtorNm
+    oHasCtorNm
+    oHasLen
+    oHasPrp
+    oIsInstance
+    oJsonLines
+    oPrp
+    oPrpAy
+    oPrpNy
+    optMap
+    oyPrpCol
+    oyPrpDry
+    pipe
+    pm
+    pmErRslt
+    pmRsltOpt
+    predNot
+    predsAnd
+    predsOr
+    pthBrw
+    pthEns
+    pthEnsSfxSep
+    pthEnsSubFdr
+    pthFdrAyPm
+    pthFnAy
+    pthFnAyPm
+    pthStatOptAyPm
+    pthsep
+    quoteStrBrk
+    reConstNm
+    reExpConstNm
+    reExpDollarConstNm
+    sAddPfx
+    sAddPfxSfx
+    sAddSfx
+    sAlignL
+    sAlignR
+    sBox
+    sBrk
+    sBrk1
+    sBrk2
+    sBrkAt
+    sBrkP123
+    sBrw
+    sBrwAtFdrFn
+    sEsc
+    sEscCr
+    sEscLf
+    sEscTab
+    sEscVbar
+    sFmt
+    sFstChr
+    sHasPfx
+    sHasPfxIgnCas
+    sHasSfx
+    sLasChr
+    sLeft
+    sLen
+    sMatch
+    sMid
+    sMidN
+    sNmSet
+    sQuote
+    sRevBrk
+    sRevBrk1
+    sRevBrk2
+    sRevTakAft
+    sRevTakBef
+    sRight
+    sRmvColon
+    sRmvCr
+    sRmvFstChr
+    sRmvLasChr
+    sRmvLasNChr
+    sRmvPfx
+    sRmvSfx
+    sRmvSubStr
+    sRplNonNmChr
+    sSav
+    sSbsPos
+    sSbsRevPos
+    sSearch
+    sSplit
+    sSplitCommaSpc
+    sSplitCrLf
+    sSplitLf
+    sSplitLines
+    sSplitSpc
+    sTakAft
+    sTakBef
+    sTrim
+    sWrt
+    sdrLin
+    sdryBrw
+    sdryColWdt
+    sdryColWdtAy
+    sdryLines
+    sdryLy
+    setAdd
+    setAft
+    setAftIncl
+    setAy
+    setClone
+    setMinus
+    setWhere
+    sidFt
+    sidStr
+    sidpth
+    sidpthBrw
+    sitrWdt
+    sjsonBrw
+    src
+    srcCol
+    srcConstNy
+    srcDry
+    srcExpConstDollarNy
+    srcExpConstNy
+    srcExpConstNyBrw
+    srcExpStmt
+    srcMatchAy
+    ssetBrw
+    ssetSrtBrw
+    stack
+    stop
+    swap
+    syLin
+    tmpfdr
+    tmpffn
+    tmpffnByFdrFn
+    tmpfjson
+    tmpft
+    tmpnm
+    tmppth
+    vAdd
+    vBET
+    vDft
+    vDftLower
+    vDftStr
+    vDftUpper
+    vEQ
+    vGE
+    vGT
+    vIN
+    vIsInstanceOf
+    vLE
+    vLT
+    vLen
+    vMap
+    vNE
+    vNotBet
+    vNotIn
+    vSav
+    vTee
+    vidFjson
+    vidVal
+    vidpth
+    vidpthBrw
+    vvCompare
+    wdtAyLin
+    x
 }

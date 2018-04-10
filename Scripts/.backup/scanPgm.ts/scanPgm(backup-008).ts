@@ -15,7 +15,7 @@ export const fts_updMainTstIfStmt = (_fts: fts): void => {
     const oldLines = cf.ftLines(_fts)
     const newLines = xn_newLines(oldLines)
     if (newLines !== null && newLines !== oldLines) {
-        //cf.ffnMakBackup(_fts)
+        cf.ffnMakBackup(_fts)
         cf.sWrt(_fts)(newLines)
     }
 }
@@ -45,79 +45,13 @@ const x2_ix2 = (ly: ly, ix1: ix): ix => {
 const xn1_part1 = (ly: ly, ix1: n): lines => ly.slice(0, ix1 + 1).join('\r\n')
 const xn2_part2 = (ly: ly, ix1: n, ix2: n): lines => {
     const tstNy = xn2t_srtedTstFunNy(ly)
-    const funLy = xn2f_srtedFunLy(ly)
+    const funNy = xn2f_srtedFunNy(ly)
     const t1 = cf.itrAddPfxSfx('    ', '()')(tstNy)
-    const f1 = cf.itrAddPfx('    ')(funLy)
+    const f1 = cf.itrAddPfx('    ')(funNy)
     const n = t1.concat(f1)
     return n.join('\r\n')
 }
 const xn2tsn_nLvl = (ny: ny) => cf.itrMax(cf.itrMap(y_nm_lvlI)(ny))
-const xn2tsli_isLvlINm = (_lvlI: n) => (_tstFunNm: nm): b => {
-    const nm = cf.sRmvPfx('tst__')(_tstFunNm)
-    const lvlI = y_nm_lvlI(nm)
-    const z = lvlI === _lvlI
-    return z
-}
-const xn2tsl_lvlINy = (lvlI: n, ny: ny): ny => cf.itrWhere(xn2tsli_isLvlINm(lvlI))(ny).sort()
-const xn3_part3 = (ly: ly, ix2: n): lines => ly.slice(ix2).join('\r\n')
-const xn2ts_srtedTstFunNy = (_tstFunNy: ny): nm[] => {
-    const ny = cf.itrMap(cf.sRmvPfx("tst__"))(_tstFunNy)
-    const n0 = xn2tsn_nLvl(ny)
-    const n = cf.vDft(0)(n0)
-    let o: ny = []
-    for (let lvlI = n; lvlI >= -1; lvlI--) {
-        const m = xn2tsl_lvlINy(lvlI, _tstFunNy)
-        o = o.concat(m)
-    }
-    if (_tstFunNy.length !== o.length) {
-        debugger
-        cf.er('_ny.length should = o.length', { _tstFunNy, o })
-    }
-    return o
-}
-const xn2t_srtedTstFunNy = (_ly: ly): nm[] => {
-    const ny = cf.srcCol(/^function (tst__[$a-zA-Z][$_0-9a-zA-Z]*)\(\)/)(_ly)
-    return xn2ts_srtedTstFunNy(ny)
-}
-const xn2f_srtedFunLy = (_srcLy: ly): ly => {
-    const v1 = false
-    if (v1)
-        return xn2fn_srtedFunNy(_srcLy)
-    return xn2fl_srtedFunLy(_srcLy)
-}
-const xn2fl_srtedFunLy = (_srcLy: ly): ly => {
-    const funLy = srcLy_funLy(_srcLy)
-    const funNy = cf.itrMap(funLin_funNm)(funLy)
-    const part2Ay = cf.itrMap(funLin_part2)(funLy)
-    const funNy1 = cf.itrAlignL(funNy)
-    const lin = i => funNy1[i] + part2Ay[i]
-    const ly = cf.itrMap(lin)(cf.nItr(funNy.length))
-    return ly.sort(y_funNmCmpr)
-}
-const xn2fdbf_funNm = (_lin: lin): nm => {
-    const m = _lin.match(cf.reConstNm)
-    if (m === null)
-        return ''
-    return m[1]
-}
-const xn2fdbr_rmk = (_lin: lin): s => {
-    const m = _lin.match(/\/\/(.*)$/)
-    if (m === null)
-        return ''
-    return m[1].trim()
-}
-const xn2fdb_brk = (_lin: lin): [s, s] => {
-    const funNm = xn2fdbf_funNm(_lin)
-    const rmk = xn2fdbr_rmk(_lin)
-    return [funNm, rmk]
-}
-const xn2fn_srtedFunNy = (_ly: ly): ly => {
-    const n1 = cf.srcExpConstNy(_ly)
-    const n2 = cf.srcConstNy(_ly)
-    return n1.concat(n2).sort(y_funNmCmpr)
-}
-//!y ====================
-const y_funNmCmpr = (a: s, b: s) => cf.vvCompare(a.replace(/\_/g, ' '), b.replace(/\_/g, ' '))
 const y_nm_lvlI = (nm: nm) => {
     const c0 = nm[0]
     if (c0 !== 'x' && c0 !== 'y')
@@ -127,46 +61,33 @@ const y_nm_lvlI = (nm: nm) => {
         return -1
     return ix - 1
 }
-//!lib ===========
-const funLin_funNm = (_funLin: lin): nm => {
-    const m0 = _funLin.match(cf.reExpConstNm)
-    if (m0 !== null)
-        return m0[1]
-    const m1 = _funLin.match(cf.reConstNm)
-    if (m1 !== null)
-        return m1[1]
-    cf.er('Given _funLin is not a function-line', { _funLin })
-    return ''
+const xn2tli_isLvlINm = (lvlI: n) => (nm: nm): b => y_nm_lvlI(nm) === lvlI
+const xn2tsl_lvlINy = (lvlI: n, ny: ny): ny => cf.itrWhere(xn2tli_isLvlINm(lvlI))(ny).sort()
+const xn3_part3 = (ly: ly, ix2: n): lines => ly.slice(ix2).join('\r\n')
+const xn2ts_srtedTstFunNy = (_tstFunNy: ny): nm[] => {
+    const ny = cf.itrMap(cf.sRmvPfx("tst__"))(_tstFunNy)
+    const n0 = xn2tsn_nLvl(ny)
+    const n = cf.vDft(0)(n0)
+    let o: ny = []
+    for (let lvlI = n; lvlI >= -1; lvlI--) {
+        o = o.concat(xn2tsl_lvlINy(lvlI, _tstFunNy))
+    }
+    if (_tstFunNy.length !== o.length) {
+        debugger
+        cf.er('_ny.length should = o.length', { _tstFunNy, o })
+    }
+    return o.reverse()
 }
-const funLin_part2 = (_funLin: lin): s => {
-    const a0 = cf.sRmvPfx('export ')(_funLin)
-    const a1 = cf.sRmvPfx('const ')(a0)
-    const a2 = cf.sRmvFstTerm(a1)
-    return ' // ' + a2
+const xn2t_srtedTstFunNy = (_ly: ly): nm[] => {
+    const ny = cf.srcCol(/^function (tst__[$a-zA-Z].*)\(\)/)(_ly)
+    return xn2ts_srtedTstFunNy(ny)
 }
-const srcLy_funLy = (_src: src): ly => cf.itrWhere(lin_isFunLin)(_src)
-const lin_isFunLin = (_lin: lin): b => {
-    const z = cf.reConstNm.test(_lin) || cf.reExpConstNm.test(_lin)
-    //    if(cf.sHasPfx('const')(_lin)) {
-    //        console.log(z,_lin)
-    //    }
-    return z
+const xn2f_srtedFunNy = (_ly: ly): nm[] => {
+    const n1 = cf.srcExpConstNy(_ly)
+    const n2 = cf.srcConstNy(_ly)
+    return n1.concat(n2).sort()
 }
 //!tst ===========================================================
-function tst__srcLy_funLy() {
-    t1()
-    return
-    function r(exp: sdic, ly: ly) {
-        const act = srcLy_funLy(ly)
-        debugger
-        cf.assertIsEq(exp, act)
-    }
-    function t1() {
-        const exp = new Map<s, s>()
-        const ly = tstRes_ly()
-        r(exp, ly)
-    }
-}
 function tst__y_nm_lvlI() {
     t1()
     t2()
@@ -197,20 +118,6 @@ function tst__y_nm_lvlI() {
         let exp = 2
         r(exp, 'x12_1')
         r(exp, 'y12_1')
-    }
-}
-function tst__xn2fl_srtedFunLy() {
-    t1()
-    function r(exp, srcLy) {
-        const act = xn2fl_srtedFunLy(srcLy)
-        cf.oBrw(act)
-        debugger
-        cf.assertIsEq(exp, act)
-    }
-    function t1() {
-        const srcLy = tstRes_ly()
-        const exp = []
-        r(exp, srcLy)
     }
 }
 function tst__ftsUpdMainTstIfStmt() {
@@ -245,7 +152,6 @@ function tst__xn2_part2() {
     function r(exp: s, ly: ly, ix1: n, ix2: n) {
         const act = xn2_part2(ly, ix1, ix2)
         cf.assertIsEq(exp, act)
-        //cf.oBrw(act)
         //cf.sBrwAtFdrFn('compare', 'exp')(exp)
         //cf.sBrwAtFdrFn('compare', 'act')(act)
     }
@@ -254,10 +160,10 @@ function tst__xn2_part2() {
         const ix2 = 57
         const ly = tstRes_ly()
         const e0 = [
-            'tst__xn1_part1()',
             'tst__xn3_part3()',
-            'tst__x1_ix1()',
+            'tst__xn1_part1()',
             'tst__x2_ix2()',
+            'tst__x1_ix1()',
             'tst__aa()',
             'fts_updMainTstIfStmt',
             'x1_ix1',
@@ -323,46 +229,6 @@ function tstRes_ly() {
 function tstRes_lines() {
     return cf.ftLines(__dirname + '/scanPgm.tstRes.txt')
 }
-function tst__xn2ts_srtedTstFunNy() {
-    t1()
-    function r(exp: ny, ny) {
-        const act = xn2ts_srtedTstFunNy(ny)
-        cf.assertIsEq(exp, act)
-
-    }
-    function t1() {
-        const ny = [
-            'tst__x_3',
-            'tst__x_1',
-            'tst__x_2',
-            'tst__x_4',
-            'tst__xa_3',
-            'tst__xa_1',
-            'tst__xa_2',
-            'tst__xa_4',
-            'tst__xab_3',
-            'tst__xab_1',
-            'tst__xab_2',
-            'tst__xab_4',
-        ]
-        const exp = [
-            "tst__xab_1",
-            "tst__xab_2",
-            "tst__xab_3",
-            "tst__xab_4",
-            "tst__xa_1",
-            "tst__xa_2",
-            "tst__xa_3",
-            "tst__xa_4",
-            "tst__x_1",
-            "tst__x_2",
-            "tst__x_3",
-            "tst__x_4"
-        ]
-        const act = xn2ts_srtedTstFunNy(ny)
-        cf.assertIsEq(exp, act)
-    }
-}
 function tst__xn2t_srtedTstFunNy() {
     t1()
     function r(exp: ly, ly: ly) {
@@ -374,11 +240,11 @@ function tst__xn2t_srtedTstFunNy() {
     function t1() {
         const ly = tstRes_ly()
         const exp = [
-            "tst__xn1_part1",
-            "tst__xn3_part3",
-            "tst__x1_ix1",
-            "tst__x2_ix2",
-            "tst__aa"
+            'tst__xn3_part3',
+            'tst__xn1_part1',
+            'tst__x2_ix2',
+            'tst__x1_ix1',
+            'tst__aa',
         ]
         r(exp, ly)
     }
@@ -397,11 +263,10 @@ function tst__x2_ix2() {
         r(exp, ly, ix1)
     }
 }
-function tst__xn2fn_srtedFunNy() {
+function tst__xn2f_srtedFunNy() {
     t1()
     function r(exp: ny, ly: ly) {
-        const act = xn2fn_srtedFunNy(ly)
-        //cf.oBrw(ly)
+        const act = xn2f_srtedFunNy(ly)
         cf.assertIsEq(exp, act)
     }
     function t1() {
@@ -420,45 +285,30 @@ function tst__xn2fn_srtedFunNy() {
         r(exp, ly)
     }
 }
-fjs_updFtsMainTstIfStmt(__filename)
 if (module.id === '.') {
-    tst__xn2fl_srtedFunLy()
-    tst__xn2fn_srtedFunNy()
-    tst__xn2ts_srtedTstFunNy()
-    tst__xn2t_srtedTstFunNy()
-    tst__xn1_part1()
-    tst__xn2_part2()
-    tst__xn3_part3()
-    tst__x1_ix1()
-    tst__x2_ix2()
-    tst__xn_newLines()
     tst__y_nm_lvlI()
+    tst__xn_newLines()
+    tst__xn3_part3()
+    tst__xn2t_srtedTstFunNy()
+    tst__xn2f_srtedFunNy()
+    tst__xn2_part2()
+    tst__xn1_part1()
+    tst__x2_ix2()
+    tst__x1_ix1()
     tst__ftsUpdMainTstIfStmt()
-    tst__srcLy_funLy()
-    fjs_updFtsMainTstIfStmt // = (_fjs: fjs): void => fts_updMainTstIfStmt(cf.ffnFts(_fjs))
-    fts_updMainTstIfStmt    // = (_fts: fts): void => {
-    funLin_funNm            // = (_funLin: lin): nm => {
-    funLin_part2            // = (_funLin: lin): s => {
-    lin_isFunLin            // = (_lin: lin): b => {
-    srcLy_funLy             // = (_src: src): ly => cf.itrWhere(lin_isFunLin)(_src)
-    x1_ix1                  // = (ly: ly): ix => cf.ayFindIx(x1e_eq)(ly)
-    x1e_eq                  // = cf.vEQ("if (module.id === '.') {")
-    x2_ix2                  // = (ly: ly, ix1: ix): ix => {
-    xn_newLines             // = (newLines: lines): lines | null => {
-    xn1_part1               // = (ly: ly, ix1: n): lines => ly.slice(0, ix1 + 1).join('\r\n')
-    xn2_part2               // = (ly: ly, ix1: n, ix2: n): lines => {
-    xn2f_srtedFunLy         // = (_srcLy: ly): ly => {
-    xn2fdb_brk              // = (_lin: lin): [s, s] => {
-    xn2fdbf_funNm           // = (_lin: lin): nm => {
-    xn2fdbr_rmk             // = (_lin: lin): s => {
-    xn2fl_srtedFunLy        // = (_srcLy: ly): ly => {
-    xn2fn_srtedFunNy        // = (_ly: ly): ly => {
-    xn2t_srtedTstFunNy      // = (_ly: ly): nm[] => {
-    xn2ts_srtedTstFunNy     // = (_tstFunNy: ny): nm[] => {
-    xn2tsl_lvlINy           // = (lvlI: n, ny: ny): ny => cf.itrWhere(xn2tsli_isLvlINm(lvlI))(ny).sort()
-    xn2tsli_isLvlINm        // = (_lvlI: n) => (_tstFunNm: nm): b => {
-    xn2tsn_nLvl             // = (ny: ny) => cf.itrMax(cf.itrMap(y_nm_lvlI)(ny))
-    xn3_part3               // = (ly: ly, ix2: n): lines => ly.slice(ix2).join('\r\n')
-    y_funNmCmpr             // = (a: s, b: s) => cf.vvCompare(a.replace(/\_/g, ' '), b.replace(/\_/g, ' '))
-    y_nm_lvlI               // = (nm: nm) => {
+    fts_updMainTstIfStmt
+    x1_ix1
+    x1e_eq
+    x2_ix2
+    xn1_part1
+    xn2_part2
+    xn2f_srtedFunNy
+    xn2t_srtedTstFunNy
+    xn2tli_isLvlINm
+    xn2ts_srtedTstFunNy
+    xn2tsl_lvlINy
+    xn2tsn_nLvl
+    xn3_part3
+    xn_newLines
+    y_nm_lvlI
 }

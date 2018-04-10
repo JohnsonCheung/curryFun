@@ -1,4 +1,4 @@
-//// <reference path="./curryfun.d.ts"/>
+/// <reference path="./curryfun.d.ts"/>
 import * as x from './curryfun'
 export interface erItm { ix: n, sfxMsg: s[], endMsg: s[] }
 export type sqtp = s
@@ -604,14 +604,21 @@ const yw_whePhr = (_wheLy: ly, _exprDic: exprDic): lines => {
         assertQmrkPfx(_wheLy[0], 'WHE')
         _wheLy.slice(1).forEach(assertQmrkAndOr)
     }
-    const ay = yww_wheAndOrLinesPrmAy(_wheLy, _exprDic)
+    const ay = yww_wheAndOrLines_prmAy(_wheLy, _exprDic)
     const linesAy = x.itrMap(ywl_wheAndOrLines)(ay)
     return linesAy.join('\r\n') + '\r\n'
 }
-const yww_wheAndOrLinesPrmAy = (_wheLy: ly, _exprDic): wheAndOrLinesPrm[] => {
-    debugger
-    return [] //?
+const ywwl_wheAndOrLin_prm = (_wheLin: lin): wheAndOrLinesPrm | er => {
+    const pfx = 'WHE'
+    const opnBkt = ''
+    const fldLines = ''
+    const op = 'between'
+    const oprand = ''
+    const clsBkt = ''
+    return { pfx, opnBkt, fldLines, op, oprand, clsBkt }
 }
+const yww_wheAndOrLines_prmAy = (_wheLy: ly, _exprDic): (wheAndOrLinesPrm | er)[] =>
+    x.itrMap(ywwl_wheAndOrLin_prm)(_wheLy)
 const ywl_wheAndOrLines = (_a: wheAndOrLinesPrm): lines => {
     const { pfx, opnBkt, fldLines, op, oprand, clsBkt } = _a
     const f = fldLines
@@ -1007,7 +1014,7 @@ function tst__lin_t2MrkLin() {
 }
 function tst__xw_sw() {
     const act = xw_sw(swGp, pm)
-    const exp = new Map<s, s>()
+    const exp: sdic = new Map<s, s>()
     x.assertIsEq(exp, act)
 }
 function tst__yww_wheAndOrLinesPrmAy() {
@@ -1016,7 +1023,7 @@ function tst__yww_wheAndOrLinesPrmAy() {
         const exprDic: exprDic = x.lySdic(zSampleLy('exprDic'))
 
         const exp = {}
-        const act = yww_wheAndOrLinesPrmAy(wheLy, exprDic)
+        const act = yww_wheAndOrLines_prmAy(wheLy, exprDic)
         x.assertIsEq(exp, act)
     }
 }
