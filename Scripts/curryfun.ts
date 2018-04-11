@@ -3,12 +3,12 @@
 //--------------------------------------------------
 import * as child_process from 'child_process'
 import * as fs from 'fs'
-const assert = require('assert')
-//import * as assert from 'assert'
-import * as path from 'path'
+const assert = require('assert') //import * as assert from 'assert'
 import * as os from 'os'
 import * as u from 'util'
-import { fjs_updFtsMainTstIfStmt } from './scanPgm';
+import * as path from 'path'
+import { fjs_updFtsMainTstIfStmt } from './scanPgm'
+
 //--------------------------------------------------
 export const isEq = (exp, act) => {
     try {

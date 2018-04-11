@@ -5,11 +5,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 //--------------------------------------------------
 const child_process = require("child_process");
 const fs = require("fs");
-const assert = require('assert');
-//import * as assert from 'assert'
-const path = require("path");
+const assert = require('assert'); //import * as assert from 'assert'
 const os = require("os");
 const u = require("util");
+const path = require("path");
 //--------------------------------------------------
 exports.isEq = (exp, act) => {
     try {
