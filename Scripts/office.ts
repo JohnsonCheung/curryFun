@@ -5,6 +5,6 @@ const { assertIsEq, er, sSplitLines, pipe, lyRmvEmpLin, map, dicKset, itrAddPfx,
     oSrt, oBrw, each, itrFst, itrLas, itrRmvEmp, ssetAddPfxAsLin, sSplitCommaSpc, sSplitLf, sSplitCrLf, sSplitSpc, itrAy,
     setMinus, setWhere, setAy, dmp, where, predsAnd, predNot, compose }
     = cf
-const xls = new ActiveXObject('Excel.application')
-xls.visible = true
+//const xls = new ActiveXObject('Excel.application')
+//xls.visible = true
 

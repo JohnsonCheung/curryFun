@@ -6,43 +6,26 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /// <reference path="./curryfun.d.ts"/>
 const cf = require("./curryfun");
 'use strict';
-const { assertIsEq, er, sSplitLines, pipe, lyRmvEmpLin, map, dicKset, itrAddPfx, linFstTerm, linLasTerm, setAftIncl, setClone, oSrt, oBrw, each, itrFst, itrLas, itrRmvEmp, ssetAddPfxAsLin, sSplitCommaSpc, sSplitLf, sSplitCrLf, sSplitSpc, itrAy, setMinus, setWhere, setAy, setSrt, dmp, where, predsAnd, predNot, compose } = cf;
-const x1_isCyc = (_rel, _par, _chd) => {
-    for (let [par, chdSet] of _rel) {
-        if (par === _chd)
-            if (chdSet.has(_par))
-                return true;
-    }
-    return false;
-};
-const x1_rel_add_par_chd = (_o_rel, _par, _chd) => {
-    const chdSet = _o_rel.get(_par);
-    if (chdSet === undefined) {
-        _o_rel.set(_par, new Set(_chd));
-    }
-    else {
-        _o_rel.set(_par, chdSet.add(_chd));
-    }
-};
+const { assertIsEq, er, sSplitLines, pipe, lyRmvEmpLin, map, dicKset, itrAddPfx, linFstTerm, linLasTerm, setAftIncl, setClone, oSrt, oBrw, each, itrFst, itrLas, itrRmvEmp, ssetAddPfxAsLin, sSplitCommaSpc, sSplitLf, sSplitCrLf, sSplitSpc, itrAy, ssetSy, setMinus, setWhere, setAy, setSrt, dmp, where, predsAnd, predNot, compose } = cf;
 exports.relInf = (_relLines) => {
     const relLy = sSplitLines(_relLines);
-    const [cycPairAy, srtRel] = x1cycPairAy_and_srtRel(relLy);
-    const itmSet = setSrt(xItmSet(srtRel));
+    const [cycPairAy, srtRel] = x1_cycPairAy_and_srtRel(relLy);
+    const itmSet = setSrt(x2_ItmSet(srtRel));
     const parSet = setSrt(dicKset(srtRel));
-    const rootSet = setSrt(setWhere(isRoot(srtRel))(parSet));
-    const chdSet = setSrt(setWhere(isChd(srtRel))(itmSet));
-    const leafSet = setSrt(setWhere(predNot(isPar(srtRel)))(chdSet));
-    const mpcSet = setSrt(setWhere(isMpc(srtRel))(chdSet));
-    const tpnRel = xTpnRel(rootSet, srtRel);
-    const evlRel = xEvlRel(rootSet, srtRel);
-    const lvlRel = xLvlRel(rootSet, srtRel);
+    const rootSet = setSrt(setWhere(y_isRoot(srtRel))(parSet));
+    const chdSet = setSrt(setWhere(y_isChd(srtRel))(itmSet));
+    const leafSet = setSrt(setWhere(predNot(y_isPar(srtRel)))(chdSet));
+    const mpcSet = setSrt(setWhere(y_isMpc(srtRel))(chdSet));
+    const tpnRel = x3_TpnRel(rootSet, srtRel);
+    const evlRel = x4_EvlRel(rootSet, srtRel);
+    const lvlRel = x5_LvlRel(rootSet, srtRel);
     let ly;
     {
-        const tpnLy = map(relItmAddPfxAsLin('topDownRel'))(tpnRel);
-        const lvlLy = map(relItmAddPfxAsLin('levelRel'))(lvlRel);
-        const evlLy = map(relItmAddPfxAsLin('inOrderRel'))(evlRel);
+        const tpnLy = map(y_relItmAddPfxAsLin('topDownRel'))(tpnRel);
+        const lvlLy = map(y_relItmAddPfxAsLin('levelRel'))(lvlRel);
+        const evlLy = map(y_relItmAddPfxAsLin('inOrderRel'))(evlRel);
         const inp = itrAddPfx('inp ')(relLy);
-        const rel = map(relItmAddPfxAsLin('srtRel'))(srtRel.entries());
+        const rel = map(y_relItmAddPfxAsLin('srtRel'))(srtRel.entries());
         const root = ssetAddPfxAsLin('rootSet')(rootSet);
         const itm = ssetAddPfxAsLin('itmSet')(itmSet);
         const par = ssetAddPfxAsLin('parSet')(parSet);
@@ -59,18 +42,33 @@ exports.relInf = (_relLines) => {
         ly,
     };
 };
-const x1cycPairAy_and_srtRel = (_relLy) => {
+const x11_isCyc = (_rel, _par, _chd) => {
+    if (_par === _chd)
+        return true;
+    const allChdSet = y_par_descnSet(_rel, _chd);
+    return allChdSet.has(_par);
+};
+const x12_rel_add_par_chd = (_o_rel, _par, _chd) => {
+    const chdSet = _o_rel.get(_par);
+    if (chdSet === undefined) {
+        _o_rel.set(_par, new Set(_chd));
+    }
+    else {
+        _o_rel.set(_par, chdSet.add(_chd));
+    }
+};
+const x1_cycPairAy_and_srtRel = (_relLy) => {
     const oCycPairAy = [];
     const relItmAy = map(x1_relItm_or_null)(_relLy);
     const relItmAy1 = itrRmvEmp(relItmAy);
     let rel = new Map();
     for (let [par, chdSet] of relItmAy1) {
         for (let chd of chdSet) {
-            if (x1_isCyc(rel, par, chd)) {
+            if (x11_isCyc(rel, par, chd)) {
                 oCycPairAy.push([par, chd]);
             }
             else {
-                x1_rel_add_par_chd(rel, par, chd);
+                x12_rel_add_par_chd(rel, par, chd);
             }
         }
     }
@@ -78,7 +76,7 @@ const x1cycPairAy_and_srtRel = (_relLy) => {
     return [oCycPairAy, oSrtRel];
 };
 const x1_srtRel = (_rel) => _rel;
-const xTpnRel = (_root, _rel) => {
+const x3_TpnRel = (_root, _rel) => {
     const z = new Map();
     each(r)(_root);
     return z;
@@ -90,7 +88,7 @@ const xTpnRel = (_root, _rel) => {
         }
     }
 };
-const xEvlRel = (_root, rel) => {
+const x4_EvlRel = (_root, rel) => {
     const z = new Map();
     each(r)(_root);
     return z;
@@ -104,7 +102,7 @@ const xEvlRel = (_root, rel) => {
         }
     }
 };
-const xLvlRel = (_root, _rel) => {
+const x5_LvlRel = (_root, _rel) => {
     //console.log($rel2ly(rel))
     //debugger
     const z = new Map();
@@ -123,7 +121,6 @@ const xLvlRel = (_root, _rel) => {
         }
     }
 };
-const $relStrLy = (_relLines) => lyRmvEmpLin(sSplitLines(_relLines));
 const x1_relItm_or_null = (_relLin) => {
     const ay = sSplitSpc(_relLin);
     const k = ay.shift();
@@ -135,13 +132,65 @@ const x1_relItm_or_null = (_relLin) => {
         return null;
     return [k, chdSet];
 };
-const isChd = (_rel) => (itm) => {
+//!lib ===
+exports.setIsEq = (a, b) => {
+    if (a.size !== b.size)
+        return false;
+    for (let ia of a)
+        if (!b.has(ia))
+            return false;
+    return true;
+};
+exports.ssetIsEq = exports.setIsEq;
+exports.setAdd = (...sets) => (_set) => {
+    for (let iset of sets) {
+        for (let i of iset) {
+            _set.add(i);
+        }
+    }
+    return _set;
+};
+exports.ssetAdd = exports.setAdd;
+//!y ======
+const y_par_descnSet = (_rel, _par) => {
+    const o = new Set();
+    r_add(_par);
+    return o;
+    function r_add(_p) {
+        const chdSet = _rel.get(_p);
+        if (chdSet === undefined)
+            return;
+        for (let chd of chdSet) {
+            if (!o.has(chd)) {
+                o.add(chd);
+                r_add(chd);
+            }
+        }
+    }
+};
+const y_chd_parSet = (_rel, _par) => {
+    return new Set();
+};
+const y_chd_ascnSet = (_rel, _par) => {
+    const o = new Set();
+    r_add(_par);
+    return o;
+    function r_add(_c) {
+        const parSet = y_chd_parSet(_rel, _c);
+        if (parSet.size === 0)
+            return;
+        for (let par of parSet)
+            if (!o.has(par))
+                r_add(par);
+    }
+};
+const y_isChd = (_rel) => (itm) => {
     for (let [par, chdSet] of _rel)
         if (chdSet.has(itm))
             return true;
     return false;
 };
-const isMpc = (_rel) => (_chd) => {
+const y_isMpc = (_rel) => (_chd) => {
     let parCnt = 0;
     for (let [par, chdSet] of _rel) {
         if (chdSet.has(_chd)) {
@@ -157,9 +206,9 @@ const isMpc = (_rel) => (_chd) => {
     //    console.log(_chd, 'isMpc=false')
     return false;
 };
-const isPar = (rel) => (itm) => rel.has(itm);
-const isRoot = (_rel) => predsAnd(isPar(_rel), predNot(isChd(_rel)));
-const xItmSet = (_rel) => {
+const y_isPar = (rel) => (itm) => rel.has(itm);
+const y_isRoot = (_rel) => predsAnd(y_isPar(_rel), predNot(y_isChd(_rel)));
+const x2_ItmSet = (_rel) => {
     const o = new Set();
     for (let [k, chdSet] of _rel) {
         o.add(k);
@@ -169,15 +218,14 @@ const xItmSet = (_rel) => {
     }
     return o;
 };
-const relItmAddPfxAsLin = (_pfx) => (_relItm) => {
+const y_relItmAddPfxAsLin = (_pfx) => (_relItm) => {
     const pfx = _pfx === undefined ? '' : _pfx;
     const [k, chdSet] = _relItm;
     const z = pfx + (pfx ? ' ' : '') + k + ' ' + ssetAddPfxAsLin('')(chdSet);
     return z;
 };
-exports.relBrw = (_rel) => oBrw(relJson(_rel));
-const ssetSy = (_sset) => itrAy(_sset);
-const relJson = (_rel) => {
+exports.relBrw = (_rel) => oBrw(exports.relJson(_rel));
+exports.relJson = (_rel) => {
     let o = {};
     for (let [par, chdSet] of _rel) {
         o[par] = ssetSy(chdSet).sort();
@@ -192,11 +240,10 @@ function tst__cycPairAy() {
         assertIsEq(exp, act);
     }
     function t1() {
-        const relLines = `a z b c d e
-y 1
-b d e f
-x y z`;
-        const exp = [];
+        const relLines = `a b
+b c
+c a`;
+        const exp = [['c', 'a']];
         r(exp, relLines);
     }
 }
@@ -259,13 +306,15 @@ function tst__x1_isCyc() {
     t2();
     t3();
     function r(exp, rel, par, chd) {
-        const act = x1_isCyc(rel, par, chd);
+        const act = x11_isCyc(rel, par, chd);
         assertIsEq(exp, act);
     }
     function t1() {
         dmp('\tt1');
         const exp = true;
-        const rel = new Map([['a', new Set('b')]]);
+        const rel = new Map([
+            ['a', new Set('b')]
+        ]);
         const par = 'b';
         const chd = 'a';
         r(exp, rel, par, chd);
@@ -273,7 +322,9 @@ function tst__x1_isCyc() {
     function t2() {
         dmp('\tt2');
         const exp = false;
-        const rel = new Map([['a', new Set('b')]]);
+        const rel = new Map([
+            ['a', new Set('b')]
+        ]);
         const par = 'b';
         const chd = 'c';
         r(exp, rel, par, chd);
@@ -282,39 +333,59 @@ function tst__x1_isCyc() {
         dmp('\tt3');
         const exp = true;
         const rel = new Map([
-            ['a', new Set(['b', 'c'])]
+            ['a', new Set(['b'])],
+            ['b', new Set(['c'])]
         ]);
         const par = 'c';
         const chd = 'a';
         r(exp, rel, par, chd);
     }
 }
+function tst__y_par_descnSet() {
+    t1();
+    return;
+    function r(exp, rel, par) {
+        const act = y_par_descnSet(rel, par);
+        if (!exports.ssetIsEq(exp, act))
+            debugger;
+    }
+    function t1() {
+        const exp = new Set(['b', 'c']);
+        const rel = new Map([
+            ['a', new Set(['b'])],
+            ['b', new Set(['c'])]
+        ]);
+        const par = 'a';
+        r(exp, rel, par);
+    }
+}
 //import * as scanPgm from './scanPgm'; scanPgm.fjs_updFtsMainTstIfStmt(__filename)
 //!runTst ==================
 if (module.id === '.') {
+    //tst__y_par_descnSet()
     tst__x1_isCyc();
-    tst__cycPairAy();
-    tst__mpcSet();
-    tst__relBrw();
-    tst__relInf();
-    $relStrLy; // = (_relLines: lines): ly => lyRmvEmpLin(sSplitLines(_relLines))
-    isChd; // = (_rel: rel) => (itm: s) => {
-    isMpc; // = (_rel: rel) => (_chd: s) => {
-    isPar; // = (rel: rel) => (itm: s) => rel.has(itm)
-    isRoot; // = (_rel: rel) => predsAnd(isPar(_rel), predNot(isChd(_rel))) as ((_itm: k) => b)
-    exports.relBrw; // = (_rel: rel) => oBrw(relJson(_rel))
+    /*
+        tst__cycPairAy()
+        tst__mpcSet()
+        tst__relBrw()
+        tst__relInf()
+    */
+    exports.relBrw; // = (_rel: rel): void => oBrw(relJson(_rel))
     exports.relInf; // = (_relLines: lines): relInf => {
-    relItmAddPfxAsLin; // = (_pfx: s) => (_relItm: relItm) => {
-    relJson; // = (_rel: rel) => {
-    ssetSy; // = (_sset: sset): sy => itrAy(_sset)
-    x1_isCyc; // = (_rel: rel, _par: s, _chd: s): b => {
-    x1_rel_add_par_chd; // = (_o_rel: rel, _par: s, _chd: s): void => {
+    exports.relJson; // = (_rel: rel): o => {
+    x1_cycPairAy_and_srtRel; // = (_relLy: ly): [cycPairAy, srtRel] => {
     x1_relItm_or_null; // = (_relLin: lin): relItm | null => {
     x1_srtRel; // = (_rel: rel): rel => _rel
-    x1cycPairAy_and_srtRel; // = (_relLy: ly): [cycPairAy, srtRel] => {
-    xEvlRel; // = (_root: sset, rel: rel): rel => {
-    xItmSet; // = (_rel: rel): sset => {
-    xLvlRel; // = (_root: sset, _rel: rel): rel => {
-    xTpnRel; // = (_root: sset, _rel: rel): rel => { // Top down relation array
+    x11_isCyc; // = (_rel: rel, _par: s, _chd: s): b => {
+    x12_rel_add_par_chd; // = (_o_rel: rel, _par: s, _chd: s): void => {
+    x2_ItmSet; // = (_rel: rel): sset => {
+    x3_TpnRel; // = (_root: sset, _rel: rel): rel => { // Top down relation array
+    x4_EvlRel; // = (_root: sset, rel: rel): rel => {
+    x5_LvlRel; // = (_root: sset, _rel: rel): rel => {
+    y_isChd; // = (_rel: rel) => (itm: s) => {
+    y_isMpc; // = (_rel: rel) => (_chd: s) => {
+    y_isPar; // = (rel: rel) => (itm: s): b => rel.has(itm)
+    y_isRoot; // = (_rel: rel) => predsAnd(y_isPar(_rel), predNot(y_isChd(_rel))) as ((_itm: k) => b)
+    y_relItmAddPfxAsLin; // = (_pfx: s) => (_relItm: relItm): lin => {
 }
 //# sourceMappingURL=rel.js.map

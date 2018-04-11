@@ -992,6 +992,7 @@ export const chrCd_isUnderScore = vEQ(chrCd_underScore)
 export const chrCd_isFstNmChr = predsOr(chrCd_isLetter, chrCd_isUnderScore, chrCd_isDollar) as pred<n>
 export const chrCd_isNmChr = predsOr(chrCd_isFstNmChr, chrCd_isDigit)
 export const ssetSrtBrw = (a: sset) => pipe(a)(itrAy, aySrt, lyBrw)
+export const ssetSy = (_sset: sset): sy => setAy(_sset)
 export const ssetAddPfxAsLin = (_pfx: s) => (_sset: sset) => _pfx + (_pfx ? ' ' : '') + ssetLin(_sset)
 export const ssetLin = (_sset: set) => setAy(_sset).join(' ')
 export const ssetBrw = (_sset: sset) => pipe(_sset)(itrAy, sBrw)

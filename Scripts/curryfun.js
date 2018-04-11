@@ -1086,6 +1086,7 @@ exports.chrCd_isUnderScore = exports.vEQ(exports.chrCd_underScore);
 exports.chrCd_isFstNmChr = exports.predsOr(exports.chrCd_isLetter, exports.chrCd_isUnderScore, exports.chrCd_isDollar);
 exports.chrCd_isNmChr = exports.predsOr(exports.chrCd_isFstNmChr, exports.chrCd_isDigit);
 exports.ssetSrtBrw = (a) => exports.pipe(a)(exports.itrAy, exports.aySrt, exports.lyBrw);
+exports.ssetSy = (_sset) => exports.setAy(_sset);
 exports.ssetAddPfxAsLin = (_pfx) => (_sset) => _pfx + (_pfx ? ' ' : '') + exports.ssetLin(_sset);
 exports.ssetLin = (_sset) => exports.setAy(_sset).join(' ');
 exports.ssetBrw = (_sset) => exports.pipe(_sset)(exports.itrAy, exports.sBrw);

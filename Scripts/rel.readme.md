@@ -1,11 +1,12 @@
 # Description
-proivde a [function rel : `relLines` => `relInf`]  
-`relLines`   lsdkfjlksdf
- s dflkj sdlf
-|`relLin` | lskdjfklsdf |
-|-|-|
-|`relInf` | klsdflskdjf  kllsdfj kd fkdf kdfj kdf
-| | ksldfjsdklf |
+proivde [ relInf : `relLines` => `relInf`] -- convert `relLines` into `relInf`  
+provide [ relBrw : `rel` => void ] -- browse `rel`  
+`relLines`  
+lskdjfklsdf |
+
+`relInf`  
+ | klsdflskdjf  kllsdfj kd fkdf kdfj kdf
+ | ksldfjsdklf |
 xxlkdf kljsf
 sdfkljsdlf |
 | sdjf | lskdjf |
