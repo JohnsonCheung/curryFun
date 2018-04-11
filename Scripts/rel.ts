@@ -78,10 +78,35 @@ const x1_cycPairAy_and_srtRel = (_relLy: ly): [cycPairAy, srtRel] => {
             }
         }
     }
-    const oSrtRel = x1_srtRel(rel)
+    const oSrtRel = x13_srtRel(rel)
     return [oCycPairAy, oSrtRel]
 }
-const x1_srtRel = (_rel: rel): rel => _rel
+const x131_srtChdSet = (_rel: rel): rel => {
+    const o = new Map<s, sset>()
+    for (let [par, chdSet] of _rel)
+        o.set(par, setSrt(chdSet))
+    return o
+}
+const x132_srtPar = (_rel: rel): rel => {
+    const parAy: sy = []
+    for (let [par, chdSet] of _rel)
+        parAy.push(par)
+    parAy.sort()
+    const o = new Map<s, sset>()
+    for (let par of parAy) {
+        const chdSet = _rel.get(par)
+        if (chdSet !== undefined) {
+            o.set(par, chdSet)
+        } else {
+            er('impossible')
+        }
+    }
+    return o
+}
+const x13_srtRel = (_rel: rel): rel => {
+    const o = x131_srtChdSet(_rel)
+    return x132_srtPar(o)
+}
 const x3_TpnRel = (_root: sset, _rel: rel): rel => { // Top down relation array
     const z = new Map<s, sset>()
     each(r)(_root)
@@ -369,12 +394,12 @@ function tst__y_par_descnSet() {
 //!runTst ==================
 if (module.id === '.') {
     //tst__y_par_descnSet()
-    tst__x1_isCyc()
+    tst__relInf()
     /*
+    tst__x1_isCyc()
         tst__cycPairAy()
         tst__mpcSet()
         tst__relBrw()
-        tst__relInf()
     */
     relBrw                  // = (_rel: rel): void => oBrw(relJson(_rel))
     relInf                  // = (_relLines: lines): relInf => {

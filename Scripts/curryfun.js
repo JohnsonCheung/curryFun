@@ -436,6 +436,7 @@ exports.setWhere = (_p) => (_set) => {
     return z;
 };
 exports.setSrt = (_set) => new Set(exports.setAy(_set).sort());
+exports.ssetSrt = exports.setSrt;
 exports.setAdd = (_x) => (_set) => {
     if (_x === null || _x === undefined)
         return _set;

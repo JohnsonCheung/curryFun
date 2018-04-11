@@ -252,7 +252,6 @@ export const isNonRmkLin: sPred = predNot(isRmkLin)
 export const linRmvMsg = (a: lin) => {
     const a1 = a.match(/(.*)---/)
     const a2 = a1 === null ? a : a1[1]
-    a2.trim
     if (sHasPfx("^")(a2.trimLeft())) return ""
     return a2
 }
@@ -305,8 +304,10 @@ export const ftLy = (a: ft) => sSplitLines(ftLines(a))
 //-----------------------------------------------------------------------
 export const tmpnm = () => sRmvColon(new Date().toJSON())
 export const tmppth = os.tmpdir + pthsep
-export const tmpffn = (pfx = "", ext) => tmppth + pfx + tmpnm() + ext
-export const tmpfdr = (fdr: s) => {
+export const tmpffn = (pfx = "", ext, _fdr?: s, _fn?: s) => tmpfdr(_fdr) + pfx + tmpnm() + ext
+export const tmpfdr = (fdr?: s) => {
+    if (fdr === undefined)
+        return tmppth
     const a = tmppth + 'Fdr/'; pthEns(a)
     const a1 = a + fdr + pthsep; pthEns(a1)
     const a2 = a1 + tmpnm() + pthsep; pthEns(a2)
@@ -314,7 +315,7 @@ export const tmpfdr = (fdr: s) => {
 }
 export const tmpffnByFdrFn = (fdr: s, fn: s) => tmpfdr(fdr) + fn
 export const tmpft = () => tmpffn("T", ".txt")
-export const tmpfjson = () => tmpffn("T", ".json")
+export const tmpfjson = (_fdr?: s, _fn?: s) => tmpffn("T", ".json", _fdr, _fn)
 export const ffnCloneTmp = (a: ffn) => {
     const o = tmpffn(undefined, ffnExt(a))
     fs.copyFileSync(a, o)
@@ -395,6 +396,7 @@ export const setWhere = <T>(_p: pred<T>) => (_set: Set<T>): Set<T> => {
     return z
 }
 export const setSrt = <T>(_set: Set<T>): Set<T> => new Set<T>(setAy(_set).sort())
+export const ssetSrt = setSrt as (_sset: sset) => sset
 export const setAdd = <T>(_x: Set<T> | null | undefined) => (_set: Set<T>): Set<T> => {
     if (_x === null || _x === undefined)
         return _set
@@ -941,7 +943,7 @@ export const ftBrw = (a: ft) => cmdShell(`code.cmd "${a}"`)
 export const sBrw = (a: s) => { pipe(tmpft())(vTee(ftWrt(a)), ftBrw) }
 export const sBrwAtFdrFn = (_fdr: s, _fn: s) => (_s: s) => { pipe(tmpffnByFdrFn(_fdr, _fn))(vTee(ftWrt(_s)), ftBrw) }
 export const oBrwAtFdrFn = (_fdr: s, _fn: s) => (_o) => { pipe(tmpffnByFdrFn(_fdr, _fn + '.json'))(vTee(ftWrt(oJsonLines(_o))), ftBrw) }
-export const sjsonBrw = (a: s) => { pipe(tmpfjson())(vTee(ftWrt(a)), ftBrw) }
+export const sjsonBrw = (_s: s, _fdr?: s, _fn?: s) => { pipe(tmpfjson(_fdr, _fn))(vTee(ftWrt(_s)), ftBrw) }
 export const lyBrw = compose(ayJnLf, sBrw) as (a: ly) => void
 export const lyBrwStop = compose(lyBrw, stop) as (a: ly) => void
 export type _dicSplitPred<V> = ([s, V]) => b
@@ -970,7 +972,7 @@ export const drsBrw = compose(sBrw, drsLines) as (a: drs) => void
 export const nyBrw = compose(itrMap(cmlNy), sdryBrw) as (a: ny) => void
 export const srcExpConstNyBrw = compose(srcExpConstNy, nyBrw)
 export const ftsExpConstNyBrw = compose(ftLy, srcExpConstNyBrw)
-export const oBrw = compose(oJsonLines, sjsonBrw) as (a) => void
+export const oBrw = (o, fdr?: s, nm?: s): void => pipe(o)(oJsonLines, sjsonBrw)
 export const oBrwAsExp = compose(oAsExp, sBrwAtFdrFn('asExpectedJs', 'asExpect.js')) as (a: o) => void
 //---------------------- ------------------
 export const chrCd_isNm = (c: n) => true

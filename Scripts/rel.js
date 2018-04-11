@@ -72,10 +72,36 @@ const x1_cycPairAy_and_srtRel = (_relLy) => {
             }
         }
     }
-    const oSrtRel = x1_srtRel(rel);
+    const oSrtRel = x13_srtRel(rel);
     return [oCycPairAy, oSrtRel];
 };
-const x1_srtRel = (_rel) => _rel;
+const x131_srtChdSet = (_rel) => {
+    const o = new Map();
+    for (let [par, chdSet] of _rel)
+        o.set(par, setSrt(chdSet));
+    return o;
+};
+const x132_srtPar = (_rel) => {
+    const parAy = [];
+    for (let [par, chdSet] of _rel)
+        parAy.push(par);
+    parAy.sort();
+    const o = new Map();
+    for (let par of parAy) {
+        const chdSet = _rel.get(par);
+        if (chdSet !== undefined) {
+            o.set(par, chdSet);
+        }
+        else {
+            er('impossible');
+        }
+    }
+    return o;
+};
+const x13_srtRel = (_rel) => {
+    const o = x131_srtChdSet(_rel);
+    return x132_srtPar(o);
+};
 const x3_TpnRel = (_root, _rel) => {
     const z = new Map();
     each(r)(_root);
@@ -363,12 +389,12 @@ function tst__y_par_descnSet() {
 //!runTst ==================
 if (module.id === '.') {
     //tst__y_par_descnSet()
-    tst__x1_isCyc();
+    tst__relInf();
     /*
+    tst__x1_isCyc()
         tst__cycPairAy()
         tst__mpcSet()
         tst__relBrw()
-        tst__relInf()
     */
     exports.relBrw; // = (_rel: rel): void => oBrw(relJson(_rel))
     exports.relInf; // = (_relLines: lines): relInf => {
