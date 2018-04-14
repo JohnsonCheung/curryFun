@@ -1,0 +1,479 @@
+{
+    "pmGp": [
+        {
+            "ix": 3,
+            "lin": "%?BrkMbr 0"
+        },
+        {
+            "ix": 4,
+            "lin": "%?BrkMbr 0"
+        },
+        {
+            "ix": 5,
+            "lin": "%?BrkMbr 0"
+        },
+        {
+            "ix": 6,
+            "lin": "%?BrkSto 0"
+        },
+        {
+            "ix": 7,
+            "lin": "%?BrkCrd 0"
+        },
+        {
+            "ix": 8,
+            "lin": "%?BrkDiv 0"
+        },
+        {
+            "ix": 9,
+            "lin": "%SumLvl  Y"
+        },
+        {
+            "ix": 10,
+            "lin": "%?MbrEmail 1"
+        },
+        {
+            "ix": 11,
+            "lin": "%?MbrNm    1"
+        },
+        {
+            "ix": 12,
+            "lin": "%?MbrPhone 1"
+        },
+        {
+            "ix": 13,
+            "lin": "%?MbrAdr   1"
+        },
+        {
+            "ix": 14,
+            "lin": "%%DteFm 20170101"
+        },
+        {
+            "ix": 15,
+            "lin": "%%DteTo 20170131"
+        },
+        {
+            "ix": 16,
+            "lin": "%LisDiv 1 2"
+        },
+        {
+            "ix": 17,
+            "lin": "%LisSto"
+        },
+        {
+            "ix": 18,
+            "lin": "%LisCrd"
+        },
+        {
+            "ix": 19,
+            "lin": "%CrdExpr ..."
+        }
+    ],
+    "swGp": [
+        {
+            "ix": 21,
+            "lin": "?LvlY    EQ %SumLvl Y"
+        },
+        {
+            "ix": 22,
+            "lin": "?LvlM    EQ %SumLvl M"
+        },
+        {
+            "ix": 23,
+            "lin": "?LvlW    EQ %SumLvl W"
+        },
+        {
+            "ix": 24,
+            "lin": "?LvlD    EQ %SumLvl D"
+        },
+        {
+            "ix": 25,
+            "lin": "?Y       OR ?LvlD ?LvlW ?LvlM ?LvlY"
+        },
+        {
+            "ix": 26,
+            "lin": "?M       OR ?LvlD ?LvlW ?LvlM"
+        },
+        {
+            "ix": 27,
+            "lin": "?W       OR ?LvlD ?LvlW"
+        },
+        {
+            "ix": 28,
+            "lin": "?D       OR ?LvlD"
+        },
+        {
+            "ix": 29,
+            "lin": "?Dte     OR ?LvlD"
+        },
+        {
+            "ix": 30,
+            "lin": "?Mbr     OR %?BrkMbr"
+        },
+        {
+            "ix": 31,
+            "lin": "?MbrCnt  OR %?BrkMbr"
+        },
+        {
+            "ix": 32,
+            "lin": "?Div     OR %?BrkDiv"
+        },
+        {
+            "ix": 33,
+            "lin": "?Sto     OR %?BrkSto"
+        },
+        {
+            "ix": 34,
+            "lin": "?Crd     OR %?BrkCrd"
+        },
+        {
+            "ix": 35,
+            "lin": "?#SEL#Div NE %LisDiv *blank"
+        },
+        {
+            "ix": 36,
+            "lin": "?#SEL#Sto NE %LisSto *blank"
+        },
+        {
+            "ix": 37,
+            "lin": "?#SEL#Crd NE %LisCrd *blank"
+        }
+    ],
+    "sqGpy": [
+        [
+            {
+                "ix": 1,
+                "lin": "Drp Tx TxMbr MbrDta Div Sto Crd Cnt Oup MbrWs"
+            }
+        ],
+        [
+            {
+                "ix": 39,
+                "lin": "sel  ?Crd ?Mbr ?Div ?Sto ?Y ?M ?W ?WD ?D ?Dte Amt Qty Cnt "
+            },
+            {
+                "ix": 40,
+                "lin": "into #Tx"
+            },
+            {
+                "ix": 41,
+                "lin": "fm   SalesHistory"
+            },
+            {
+                "ix": 42,
+                "lin": "wh   bet str    %%DteFm %%DteTo"
+            },
+            {
+                "ix": 43,
+                "lin": "?and in  strlis Div %LisDiv"
+            },
+            {
+                "ix": 44,
+                "lin": "?and in  strlis Sto %LisSto"
+            },
+            {
+                "ix": 45,
+                "lin": "?and in  nbrlis Crd %LisCrd"
+            },
+            {
+                "ix": 46,
+                "lin": "?gp  ?Crd ?Mbr ?Div ?Sto ?Crd ?Y ?M ?W ?WD ?D ?Dte"
+            },
+            {
+                "ix": 47,
+                "lin": "$Crd %CrdExpr"
+            },
+            {
+                "ix": 48,
+                "lin": "$Mbr JCMCode"
+            },
+            {
+                "ix": 49,
+                "lin": "$Sto"
+            },
+            {
+                "ix": 50,
+                "lin": "$Y"
+            },
+            {
+                "ix": 51,
+                "lin": "$M"
+            },
+            {
+                "ix": 52,
+                "lin": "$W"
+            },
+            {
+                "ix": 53,
+                "lin": "$WD"
+            },
+            {
+                "ix": 54,
+                "lin": "$D"
+            },
+            {
+                "ix": 55,
+                "lin": "$Dte"
+            },
+            {
+                "ix": 56,
+                "lin": "$Amt Sum(SHAmount)"
+            },
+            {
+                "ix": 57,
+                "lin": "$Qty Sum(SHQty)"
+            },
+            {
+                "ix": 58,
+                "lin": "$Cnt Count(SHInvoice+SHSDate+SHRef)"
+            }
+        ],
+        [
+            {
+                "ix": 64,
+                "lin": "sel   Mbr Age Sex Sts Dist Area"
+            },
+            {
+                "ix": 65,
+                "lin": "fm    #TxMbr x"
+            },
+            {
+                "ix": 66,
+                "lin": "jn    JCMMember a on x.Mbr = a.JCMMCode"
+            },
+            {
+                "ix": 67,
+                "lin": "into  #MbrDta"
+            },
+            {
+                "ix": 68,
+                "lin": "$Mbr  x.Mbr"
+            },
+            {
+                "ix": 69,
+                "lin": "$Age  DATEDIFF(YEAR,CONVERT(DATETIME ,x.JCMDOB,112),GETDATE())"
+            },
+            {
+                "ix": 70,
+                "lin": "$Sex  a.JCMSex"
+            },
+            {
+                "ix": 71,
+                "lin": "$Sts  a.JCMStatus"
+            },
+            {
+                "ix": 72,
+                "lin": "$Dist a.JCMDist"
+            },
+            {
+                "ix": 73,
+                "lin": "$Area a.JCMArea"
+            }
+        ],
+        [
+            {
+                "ix": 75,
+                "lin": "?sel Div DivNm DivSeq DivSts"
+            },
+            {
+                "ix": 76,
+                "lin": "fm   Division"
+            },
+            {
+                "ix": 77,
+                "lin": "into #Div"
+            },
+            {
+                "ix": 78,
+                "lin": "?wh in strLis Div %LisDiv"
+            },
+            {
+                "ix": 79,
+                "lin": "$Div Dept + Division"
+            },
+            {
+                "ix": 80,
+                "lin": "$DivNm LongDies"
+            },
+            {
+                "ix": 81,
+                "lin": "$DivSeq Seq"
+            },
+            {
+                "ix": 82,
+                "lin": "$DivSts Status"
+            }
+        ],
+        [
+            {
+                "ix": 84,
+                "lin": "?sel Sto StoNm StoCNm"
+            },
+            {
+                "ix": 85,
+                "lin": "fm   Location"
+            },
+            {
+                "ix": 86,
+                "lin": "into #Sto"
+            },
+            {
+                "ix": 87,
+                "lin": "?wh in strLis Loc %LisLoc"
+            },
+            {
+                "ix": 88,
+                "lin": "$Sto"
+            },
+            {
+                "ix": 89,
+                "lin": "$StoNm"
+            },
+            {
+                "ix": 90,
+                "lin": "$StoCNm"
+            }
+        ],
+        [
+            {
+                "ix": 92,
+                "lin": "?sel        Crd CrdNm"
+            },
+            {
+                "ix": 93,
+                "lin": "fm          Location"
+            },
+            {
+                "ix": 94,
+                "lin": "into        #Crd"
+            },
+            {
+                "ix": 95,
+                "lin": "?wh in nbrLis Crd %LisCrd"
+            },
+            {
+                "ix": 96,
+                "lin": "$Crd"
+            },
+            {
+                "ix": 97,
+                "lin": "$CrdNm"
+            }
+        ],
+        [
+            {
+                "ix": 99,
+                "lin": "sel  ?Crd ?CrdNm ?Mbr ?Age ?Sex ?Sts ?Dist ?Area ?Div ?DivNm ?Sto ?StoNm ?StoCNm ?Y ?M ?W ?WD ?D ?Dte Amt Qty Cnt"
+            },
+            {
+                "ix": 100,
+                "lin": "into #Oup"
+            },
+            {
+                "ix": 101,
+                "lin": "fm   #Tx x"
+            },
+            {
+                "ix": 102,
+                "lin": "left #Crd a on x.Crd = a.Crd"
+            },
+            {
+                "ix": 103,
+                "lin": "left #Div b on x.Div = b.Div"
+            },
+            {
+                "ix": 104,
+                "lin": "left #Sto c on x.Sto = c.Sto"
+            },
+            {
+                "ix": 105,
+                "lin": "left #MbrDta d on x.Mbr = d.Mbr"
+            },
+            {
+                "ix": 106,
+                "lin": "wh   JCMCode in (Select Mbr From #TxMbr)"
+            }
+        ],
+        [
+            {
+                "ix": 108,
+                "lin": "sel ?MbrCnt RecCnt TxCnt Qty Amt"
+            },
+            {
+                "ix": 109,
+                "lin": "into #Cnt"
+            },
+            {
+                "ix": 110,
+                "lin": "fm  #Tx"
+            },
+            {
+                "ix": 111,
+                "lin": "$MbrCnt Count(Distinct Mbr)"
+            },
+            {
+                "ix": 112,
+                "lin": "$RecCnt Count(*)"
+            },
+            {
+                "ix": 113,
+                "lin": "$TxCnt  Sum(TxCnt)"
+            },
+            {
+                "ix": 114,
+                "lin": "$Qty    Sum(Qty)"
+            },
+            {
+                "ix": 115,
+                "lin": "$Amt    Sum(Amt)"
+            }
+        ]
+    ],
+    "pmExcessGpy": [],
+    "swExcessGpy": [
+        [
+            {
+                "ix": 120,
+                "lin": "?LvlY    EQ %SumLvl Y"
+            },
+            {
+                "ix": 121,
+                "lin": "?LvlM    EQ %SumLvl M"
+            },
+            {
+                "ix": 122,
+                "lin": "?LvlW    EQ %SumLvl W"
+            },
+            {
+                "ix": 123,
+                "lin": "?LvlD    EQ %SumLvl D"
+            },
+            {
+                "ix": 124,
+                "lin": "?Y       OR ?LvlD ?LvlW ?LvlM ?LvlY`"
+            }
+        ]
+    ],
+    "erGpy": [
+        [
+            {
+                "ix": 60,
+                "lin": "selDis  Mbr"
+            },
+            {
+                "ix": 61,
+                "lin": "fm      #Tx"
+            },
+            {
+                "ix": 62,
+                "lin": "into    #TxMbr"
+            }
+        ],
+        [
+            {
+                "ix": 118,
+                "lin": "df eror fs--"
+            }
+        ]
+    ]
+}
