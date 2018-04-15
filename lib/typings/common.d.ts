@@ -20,6 +20,7 @@ declare type ft = s
 declare type fts = ft
 declare type fjs = ft
 declare type fTstJs = ft
+declare type fTstTs = ft
 declare type fn = s
 declare type ffn = string
 declare type b = boolean

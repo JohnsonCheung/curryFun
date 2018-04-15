@@ -246,7 +246,7 @@ export const cmlNy = (a: cml) => {
 export const sHasPfx = (pfx: s) => (a: s) => a.startsWith(pfx)
 export const sHasSfx = (sfx: s) => (a: s) => a.endsWith(sfx)
 export const sRmvSfx = (sfx: s) => (a: s) => sHasSfx(sfx)(a) ? a.substr(0, a.length - sfx.length) : a
-export const sRmvPfx = (pfx: s) => (a: s) => sHasPfx(pfx)(a) ? a.substr(pfx.length) : a
+export const sRmvPfx = (pfx: s) => (a: s) => sHasPfx(pfx)(a) ? a.substr(a.length) : a
 export const sHasPfx_IGNORE_CASE = (pfx: s) => (a: s) => a.toUpperCase().startsWith(pfx.toUpperCase())
 export const sHasSfx_IGNORE_CASE = (sfx: s) => (a: s) => a.toUpperCase().endsWith(sfx.toUpperCase())
 export const sRmvPfx_IGNORE_CASE = (pfx: s) => (a: s) => sHasPfx(pfx)(a) ? a.substr(pfx.length) : a

@@ -2,8 +2,7 @@
 'use strict'
 import * as cf from './curryfun.js'
 import * as fs from 'fs'
-import { ENGINE_METHOD_PKEY_ASN1_METHS } from 'constants';
-const { pipe, rmvEmp, map } = cf
+const { ftLy, pipe, rmvEmp, map } = cf
 //!export
 export const fjs_updMainTstIfStmt = (_fjs: fjs): void => {
     const fTstJs = ''
@@ -16,7 +15,7 @@ export const fTstJs_updMainTstIfStmt = (_fTstJs: fTstJs): void => {
     x(fTstJs, fjs)
 }
 //!x
-const x = (_fTstJs: fTstJs, _fjs: fjs): void => {
+export const x = (_fTstTs: fTstTs, _fts: fts): void => {
     // assume: [ module.id | function tst__* ]
     // aim:    [ upd module.id ]
     // assume[module.id]: each fts (*.ts-file), there is a statement of
@@ -25,47 +24,60 @@ const x = (_fTstJs: fTstJs, _fjs: fjs): void => {
     //       : }
     // assume[function tst__*]: each fts, there are some /^function (tst__[\w$0-0_])\(\)/
     // aim:[upd module.id]: update the {context} by list of tst__xxxx
-    const oldLines = cf.ftLines(_fts)
-    const newLines = xn_newLines(oldLines)
-    const fTstTs = ''
-    if (newLines !== null && newLines !== oldLines) {
+    const tstSrc: src = ftLy(_fTstTs)
+    const eq = cf.vEQ("if (module.id === '.') {")
+    const ix1Opt: n | null = cf.ayFindIx(eq)(tstSrc)
+    if (ix1Opt === null)
+        return
+    const ix1 = ix1Opt
+    const ix2Opt: n | null = (() => {
+        for (let ix = ix1 + 1; ix < tstSrc.length; ix++) {
+            if (tstSrc[ix] === '}')
+                return ix
+        }
+        return null
+    })()
+    if (ix2Opt === null)
+        return
+    const ix2: n = ix2Opt
+    const p1: lines = tstSrc.slice(0, ix1 + 1).join('\r\n')
+    const tstNy: ny = (() => {
+        const ny0 = cf.srcCol(/^function (tst__[$a-zA-Z][$_0-9a-zA-Z]*)\(\)/)(tstSrc)
+        const ny = cf.itrMap(cf.sRmvPfx("tst__"))(ny0)
+        return ny
+    })()
+    const nTstFunLvlOpt: n | null = cf.itrMax(cf.itrMap(funNm_lvlNo)(tstNy))
+    const nTstFunLvl: n = cf.vDft(0)(nTstFunLvlOpt)
+    const srtedTstNy: ny = (() => {
+        let o: ny = []
+        for (let lvlI = nTstFunLvl; lvlI >= -1; lvlI--) {
+            const m = yAl_lvlINy(lvlI, tstNy)
+            o = o.concat(m)
+        }
+        if (tstNy.length !== o.length) {
+            debugger
+            cf.er('ny.length should = o.length', { tstNy, o })
+        }
+        return o
+    })()
+    const src: src = (_fTstTs === _fts) ? tstSrc : ftLy(_fts)
+    const expConstLy = src_srtedExpConstLy(src)
+    const p2_tstFunLy: lines = cf.itrAddPfxSfx('    ', '()')(srtedTstNy).join('\r\n') + '\r\n'
+    const p2_funLy: lines = cf.itrAddPfx('    ')(expConstLy).join('\r\n') + '\r\n'
+    const p2: lines = p2_tstFunLy + p2_funLy
+    const p3: lines = ix2 === null ? '' : tstSrc.slice(ix2).join('\r\n')
+    const newLines = p1 + p2 + p3
+    {
+        const newLy = newLines.split('\r\n')
+        cf.oBrw({ newLy })
+    }
+    debugger
+    const oldLines: lines = tstSrc.join('\r\n')
+    if (newLines !== '' && newLines !== oldLines) {
         //cf.ffnMakBackup(_fts)
-        cf.sWrt(fTstTs)(newLines)
+        cf.sWrt(_fTstTs)(newLines)
     }
 }
-export const xn_newLines = (newLines: lines): lines | null => {
-    const ly = cf.sSplitLines(newLines)
-    const ix1 = x1_ix1(ly)
-    const ix2 = x2_ix2(ly, ix1)
-    if (ix1 === null || ix2 === null)
-        return null
-    const p1 = xn1_part1(ly, ix1 as number)
-    const p2 = xn2_part2(tstSrc, ix1, ix2, src)
-    const p3 = xn3_part3(ly, ix2)
-    return p1 + '\r\n' + p2 + '\r\n' + p3
-}
-type ix = number | null
-export const x1e_eq = cf.vEQ("if (module.id === '.') {")
-export const x1_ix1 = (ly: ly): ix => cf.ayFindIx(x1e_eq)(ly)
-export const x2_ix2 = (ly: ly, ix1: ix): ix => {
-    if (ix1 === null)
-        return null
-    for (let ix = ix1 + 1; ix < ly.length; ix++) {
-        if (ly[ix] === '}')
-            return ix
-    }
-    return null
-}
-export const xn1_part1 = (_src: src, ix1: n): lines => _src.slice(0, ix1 + 1).join('\r\n')
-export const xn2_part2 = (_tstSrc: src, ix1: n, ix2: n, _src: src): lines => {
-    const tstNy = tstSrc_srtedTstFunNy(_tstSrc)
-    const expConstLy = src_srtedExpConstLy(_src)
-    const t1 = cf.itrAddPfxSfx('    ', '()')(tstNy)
-    const f1 = cf.itrAddPfx('    ')(expConstLy)
-    const n = t1.concat(f1)
-    return n.join('\r\n')
-}
-export const xn3_part3 = (ly: ly, ix2: n): lines => ly.slice(ix2).join('\r\n')
 export const xn2fdbf_funNm = (_lin: lin): nm => {
     const m = _lin.match(cf.reConstNm)
     if (m === null)
@@ -78,7 +90,6 @@ export const xn2fdb_brk = (_lin: lin): [s, s] => {
     return [funNm, rmk]
 }
 //!lib ===========
-export const tstSrc_srtedTstFunNy = yA
 export const srcLin_rmk = (_lin: lin): s => {
     const m = _lin.match(/\/\/(.*)$/)
     if (m === null)
@@ -139,7 +150,6 @@ export const src_srtedExpConstLy = (_src: src): ly => {
         : b()
 }
 //!y ====================
-export const yAn_nLvl = (ny: ny) => cf.itrMax(cf.itrMap(funNm_lvlNo)(ny))
 export const yAli_isLvlINm = (_lvlI: n) => (_tstFunNm: nm): b => {
     const nm = cf.sRmvPfx('tst__')(_tstFunNm)
     const lvlI = funNm_lvlNo(nm)
@@ -147,20 +157,3 @@ export const yAli_isLvlINm = (_lvlI: n) => (_tstFunNm: nm): b => {
     return z
 }
 export const yAl_lvlINy = (lvlI: n, ny: ny): ny => cf.itrWhere(yAli_isLvlINm(lvlI))(ny).sort()
-export function yA(_tstSrc: src): nm[] {
-    tstSrc_srtedTstFunNy
-    const ny0 = cf.srcCol(/^function (tst__[$a-zA-Z][$_0-9a-zA-Z]*)\(\)/)(_tstSrc)
-    const ny = cf.itrMap(cf.sRmvPfx("tst__"))(ny0)
-    const n0 = yAn_nLvl(ny)
-    const n = cf.vDft(0)(n0)
-    let o: ny = []
-    for (let lvlI = n; lvlI >= -1; lvlI--) {
-        const m = yAl_lvlINy(lvlI, ny)
-        o = o.concat(m)
-    }
-    if (ny.length !== o.length) {
-        debugger
-        cf.er('ny.length should = o.length', { ny, o })
-    }
-    return o
-}
